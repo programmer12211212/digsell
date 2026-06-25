@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}{% if product %}Tahrir{% else %}Yangi mahsulot{% endif %}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-black mb-6">{% if product %}Mahsulotni tahrirlash{% else %}Yangi mahsulot qo'shish{% endif %}</h1>
+    <form method="POST" enctype="multipart/form-data" class="glass p-6 rounded-3xl space-y-4">
+        {% csrf_token %}
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Nomi *</label>
+        <input name="title" value="{{ product.title|default:'' }}" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl" required></div>
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Tavsif *</label>
+        <textarea name="description" rows="4" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl" required>{{ product.description|default:'' }}</textarea></div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-xs font-bold text-slate-400 uppercase">Turi</label>
+            <select name="product_type" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl">
+                <option value="DIGITAL" {% if product.product_type == 'DIGITAL' %}selected{% endif %}>Raqamli</option>
+                <option value="VIDEO" {% if product.product_type == 'VIDEO' %}selected{% endif %}>Video kurs</option>
+                <option value="PHYSICAL" {% if product.product_type == 'PHYSICAL' %}selected{% endif %}>Jismoniy</option>
+                <option value="SERVICE" {% if product.product_type == 'SERVICE' %}selected{% endif %}>Xizmat</option>
+            </select></div>
+            <div><label class="text-xs font-bold text-slate-400 uppercase">Kategoriya</label>
+            <select name="category" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl">
+                <option value="">—</option>
+                {% for cat in categories %}<option value="{{ cat.id }}" {% if product.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>{% endfor %}
+            </select></div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div><label class="text-xs font-bold text-slate-400 uppercase">Narx (so'm)</label>
+            <input name="price" type="number" value="{{ product.price|default:'' }}" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl" required></div>
+            <div><label class="text-xs font-bold text-slate-400 uppercase">Chegirma narxi</label>
+            <input name="discount_price" type="number" value="{{ product.discount_price|default:'' }}" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl"></div>
+        </div>
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Rasm (thumbnail)</label>
+        <input name="thumbnail" type="file" accept="image/*" class="w-full mt-1 text-sm"></div>
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Video preview / fayl</label>
+        <input name="preview_video" type="file" class="w-full mt-1 text-sm"></div>
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Raqamli fayl (ZIP, PDF...)</label>
+        <input name="digital_file" type="file" class="w-full mt-1 text-sm"></div>
+        <label class="flex items-center gap-2"><input type="checkbox" name="is_active" {% if product.is_active or not product %}checked{% endif %}><span class="text-sm font-bold">Faol (ko'rinadi)</span></label>
+        <div class="flex gap-3 pt-4">
+            <button type="submit" class="btn-premium btn-primary px-8 py-3 rounded-2xl font-bold">Saqlash</button>
+            <a href="{% url 'seller:dashboard' %}" class="px-8 py-3 border border-slate-700 rounded-2xl font-bold text-sm">Bekor</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

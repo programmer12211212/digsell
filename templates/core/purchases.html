@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Haridlarim | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto space-y-6">
+    <div class="glass p-8 rounded-3xl border-slate-800/50">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+                <h1 class="text-3xl font-heading font-bold text-white">Haridlarim</h1>
+                <p class="text-slate-400 mt-2">Bu yerda sotib olgan barcha mahsulotlaringiz va ularni yuklab olish havolalari ko'rsatiladi.</p>
+            </div>
+            <a href="{% url 'marketplace:product_list' %}" class="inline-flex items-center gap-2 px-5 py-3 bg-primary-600 hover:bg-primary-500 rounded-2xl text-white font-bold transition-all">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                Bozorni ko'rish
+            </a>
+        </div>
+    </div>
+
+    {% if orders %}
+    <div class="grid gap-6">
+        {% for order in orders %}
+        <div class="glass p-6 rounded-3xl border-slate-800/50">
+            <div class="lg:flex lg:items-center lg:justify-between gap-6">
+                <div class="space-y-3">
+                    <p class="text-sm text-slate-400">Buyurtma #{{ order.id|stringformat:"05d" }}</p>
+                    <h2 class="text-xl font-bold text-white">{{ order.product.title }}</h2>
+                    <p class="text-sm text-slate-400">Sotuvchi: {{ order.product.seller.username }}</p>
+                    <p class="text-sm text-slate-400">Holat: <span class="font-semibold text-white">{{ order.get_status_display }}</span></p>
+                    <p class="text-sm text-slate-400">To'lov: {{ order.amount|uzs }}</p>
+                </div>
+
+                <div class="flex flex-col gap-3 sm:flex-row items-start sm:items-center">
+                    <a href="{% url 'core:order_tracking' order.id %}" class="px-4 py-3 rounded-2xl bg-primary-600/10 text-primary-400 border border-primary-500/20 hover:bg-primary-500/20 transition-all font-semibold flex items-center gap-2">
+                        <i data-lucide="map-pin" class="w-4 h-4"></i>
+                        Kuzatish
+                    </a>
+                    <a href="{% url 'marketplace:product_detail' order.product.slug %}" class="px-4 py-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 transition-all font-semibold">
+                        Mahsulotga
+                    </a>
+                    {% if order.status == 'PAID' or order.status == 'COMPLETED' or order.status == 'DELIVERED' %}
+                        <a href="{% url 'core:download_purchase' order.id %}" class="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all font-semibold flex items-center gap-2">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            Yuklab olish
+                        </a>
+                    {% elif order.status == 'PENDING' %}
+                        <a href="{% url 'marketplace:payment_page' order.id %}" class="px-4 py-3 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white transition-all font-semibold">
+                            To'lov qilish
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass p-8 rounded-3xl border-slate-800/50 text-center">
+        <p class="text-lg font-semibold text-slate-200">Sizda hozircha hech qanday tasdiqlangan haridlar yo'q.</p>
+        <p class="text-slate-400 mt-2">Marketplace bo'limiga o'tib yangi mahsulotlarni xarid qiling.</p>
+    </div>
+    {% endif %}
+
+    <div class="glass p-6 rounded-3xl border-slate-800/50 text-slate-400 text-sm">
+        <p><strong>Ma'lumot:</strong> Faqat admin tomonidan tasdiqlangan buyurtmalar uchun yuklab olish mumkin.</p>
+    </div>
+</div>
+{% endblock %}

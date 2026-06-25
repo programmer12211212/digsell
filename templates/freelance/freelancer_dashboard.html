@@ -1,0 +1,351 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Frilanser paneli{% endblock %}
+
+{% block content %}
+<div class="space-y-8 py-8">
+    <!-- Profile Header Section -->
+    <div class="glass p-8 rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div class="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+            <div class="flex gap-6 items-start flex-1">
+                <!-- Avatar -->
+                <div class="relative">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="{{ request.user.username }}" class="w-24 h-24 rounded-2xl object-cover">
+                    {% else %}
+                        <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center">
+                            <span class="text-3xl font-bold text-white">{{ request.user.first_name|first }}{{ request.user.last_name|first }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Profile Info -->
+                <div class="flex-1">
+                    <div class="flex flex-wrap items-center gap-3 mb-2">
+                        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">{{ request.user.get_full_name|default:request.user.username }}</h1>
+                        {% if profile.is_verified %}
+                            <span class="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-bold flex items-center gap-1">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i> Verified
+                            </span>
+                        {% endif %}
+                        {% if profile.is_top_rated %}
+                            <span class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs font-bold flex items-center gap-1">
+                                <i data-lucide="star" class="w-4 h-4"></i> Top Rated
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-lg font-bold text-primary-500 mb-2">{{ profile.title|default:"Mutaxassislik kiritmadingiz" }}</p>
+                    <p class="text-slate-500 mb-4 max-w-lg">{{ profile.bio|default:"Biografiya kiritmadingiz" }}</p>
+                    
+                    <!-- Contact Info -->
+                    <div class="flex flex-wrap gap-4 text-sm text-slate-400">
+                        {% if request.user.email %}
+                            <span class="flex items-center gap-2">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                {{ request.user.email }}
+                            </span>
+                        {% endif %}
+                        {% if profile.phone %}
+                            <span class="flex items-center gap-2">
+                                <i data-lucide="phone" class="w-4 h-4"></i>
+                                {{ profile.phone }}
+                            </span>
+                        {% endif %}
+                        {% if profile.telegram %}
+                            <span class="flex items-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                @{{ profile.telegram }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Verification request & Edit buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                {% if not profile.is_verified %}
+                <a href="{% url 'freelance:request_verification' %}" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 whitespace-nowrap justify-center">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                    Verifikatsiyadan o'tish
+                </a>
+                {% endif %}
+                <button onclick="openEditModal()" class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20 flex items-center gap-2 whitespace-nowrap justify-center">
+                    <i data-lucide="edit-3" class="w-5 h-5"></i>
+                    Profilni tahrirlash
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <div>
+                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Reyting</p>
+                <p class="text-2xl font-bold text-primary-500">{{ profile.user.rating }} ★</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Tugallangan loyihalar</p>
+                <p class="text-2xl font-bold">{{ profile.completed_projects }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Soatlik stavka</p>
+                <p class="text-2xl font-bold">{{ profile.hourly_rate|uzs }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-slate-500 uppercase font-bold mb-1">Tajriba</p>
+                <p class="text-2xl font-bold">{{ profile.experience_years }} yil</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Proposals Section -->
+    <section>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-1 h-8 bg-primary-600 rounded-full"></div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Mening takliflarim</h2>
+        </div>
+        <div class="space-y-3">
+            {% for p in proposals %}
+            <a href="{% url 'freelance:project_detail' p.project.slug %}" class="glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-primary-500/30 transition-all flex justify-between items-center">
+                <div>
+                    <p class="font-bold text-slate-900 dark:text-white">{{ p.project.title }}</p>
+                    <p class="text-sm text-slate-500">{{ p.created_at|date:"d M, Y" }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm font-bold text-primary-500">{{ p.get_status_display }}</p>
+                    <p class="text-sm font-bold">{{ p.bid_amount|uzs }}</p>
+                </div>
+            </a>
+            {% empty %}
+            <div class="glass p-8 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                <i data-lucide="inbox" class="w-12 h-12 mx-auto text-slate-400 mb-3"></i>
+                <p class="text-slate-500">Hali takliflar yo'q</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Active Projects Section -->
+    <section>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-1 h-8 bg-emerald-600 rounded-full"></div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Faol loyihalar</h2>
+        </div>
+        <div class="space-y-3">
+            {% for p in assigned_projects %}
+            <a href="{% url 'freelance:project_detail' p.slug %}" class="glass p-4 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-emerald-500/30 transition-all">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="font-bold text-slate-900 dark:text-white">{{ p.title }}</p>
+                    <p class="text-sm font-bold text-emerald-500">{{ p.progress_percent }}%</p>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-2">
+                    <div class="bg-gradient-to-r from-emerald-500 to-emerald-400 h-2 rounded-full" style="width: {{ p.progress_percent }}%"></div>
+                </div>
+            </a>
+            {% empty %}
+            <div class="glass p-8 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                <i data-lucide="briefcase" class="w-12 h-12 mx-auto text-slate-400 mb-3"></i>
+                <p class="text-slate-500">Hali faol loyihalar yo'q</p>
+                <a href="{% url 'freelance:project_list' %}" class="inline-block mt-4 px-4 py-2 bg-primary-600 text-white rounded-lg font-bold text-sm hover:bg-primary-700 transition-colors">
+                    Loyihalarni qidirish
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- AI Recommended Projects Section -->
+    <section>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-1 h-8 bg-purple-600 rounded-full"></div>
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <i data-lucide="sparkles" class="text-purple-500 w-6 h-6 animate-pulse"></i>
+                AI Tavsiya etgan loyihalar
+            </h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for p in ai_projects %}
+            <article class="glass p-5 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-purple-500/30 transition-all flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-start gap-2 mb-2">
+                        <h3 class="font-bold text-base text-slate-900 dark:text-white line-clamp-1">
+                            <a href="{% url 'freelance:project_detail' p.slug %}" class="hover:text-primary-500 transition">{{ p.title }}</a>
+                        </h3>
+                        <span class="px-2 py-0.5 bg-purple-500/10 text-purple-400 rounded text-[10px] font-bold uppercase shrink-0">98% Match</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mb-3">{{ p.description }}</p>
+                </div>
+                <div class="flex justify-between items-center pt-3 border-t border-slate-100 dark:border-slate-800/60">
+                    <span class="font-bold text-sm text-slate-900 dark:text-white">{{ p.budget|uzs }}</span>
+                    <a href="{% url 'freelance:project_detail' p.slug %}" class="px-3.5 py-1.5 bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold rounded-lg transition">Ko'rish</a>
+                </div>
+            </article>
+            {% empty %}
+            <div class="col-span-full glass p-8 rounded-xl border border-slate-200 dark:border-slate-800 text-center">
+                <i data-lucide="sparkles" class="w-12 h-12 mx-auto text-slate-400 mb-3"></i>
+                <p class="text-slate-500">Tavsiya etiladigan loyihalar hozircha yo'q</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<!-- Edit Profile Modal -->
+<div id="editModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="glass max-w-2xl w-full rounded-2xl border border-slate-200 dark:border-slate-800 p-8 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Profilni tahrirlash</h2>
+            <button onclick="closeEditModal()" class="text-slate-500 hover:text-slate-300">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+        </div>
+
+        <form id="editForm" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Title -->
+            <div>
+                <label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Mutaxassislik</label>
+                <input type="text" name="title" value="{{ profile.title }}" placeholder="Masalan: Web Developer, UI/UX Designer" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-primary-500">
+            </div>
+
+            <!-- Bio -->
+            <div>
+                <label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Biografiya</label>
+                <textarea name="bio" placeholder="O'zingiz haqida yozing..." rows="4" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-primary-500">{{ profile.bio }}</textarea>
+            </div>
+
+            <!-- Hourly Rate -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Soatbay stavka (UZS)</label>
+                    <input type="number" name="hourly_rate" value="{{ profile.hourly_rate }}" min="0" step="1000" placeholder="50000" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-primary-500">
+                </div>
+                
+                <!-- Experience Years -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Tajriba (yillar)</label>
+                    <input type="number" name="experience_years" value="{{ profile.experience_years }}" min="0" max="70" placeholder="5" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-primary-500">
+                </div>
+            </div>
+
+            <!-- Availability -->
+            <div>
+                <label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Ishga tayyorlik</label>
+                <select name="availability" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-primary-500">
+                    <option value="FULL_TIME" {% if profile.availability == 'FULL_TIME' %}selected{% endif %}>To'liq vaqt (Full Time)</option>
+                    <option value="PART_TIME" {% if profile.availability == 'PART_TIME' %}selected{% endif %}>Qisman vaqt (Part Time)</option>
+                    <option value="CONTRACT" {% if profile.availability == 'CONTRACT' %}selected{% endif %}>Shartnoma asosida</option>
+                </select>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Telefon</label>
+                    <input type="tel" name="phone" value="{{ profile.phone }}" placeholder="+998 90 123 45 67" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-primary-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-bold text-slate-900 dark:text-white mb-2">Telegram</label>
+                    <input type="text" name="telegram" value="{{ profile.telegram }}" placeholder="username" class="w-full px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-primary-500">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 pt-6 border-t border-slate-200 dark:border-slate-800">
+                <button type="submit" class="flex-1 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all">
+                    <i data-lucide="save" class="inline w-4 h-4 mr-2"></i>
+                    Saqlash
+                </button>
+                <button type="button" onclick="closeEditModal()" class="flex-1 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-xl font-bold transition-all">
+                    <i data-lucide="x" class="inline w-4 h-4 mr-2"></i>
+                    Bekor qilish
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openEditModal() {
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('editModal')?.addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeEditModal();
+        }
+    });
+
+    // Handle form submission
+    const editForm = document.getElementById('editForm');
+    if (editForm) {
+        editForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            console.log('Form submitted');
+            
+            const formData = new FormData(this);
+            const csrfToken = formData.get('csrfmiddlewaretoken');
+            
+            const data = {
+                title: formData.get('title'),
+                bio: formData.get('bio'),
+                hourly_rate: parseFloat(formData.get('hourly_rate')) || 0,
+                experience_years: parseInt(formData.get('experience_years')) || 0,
+                availability: formData.get('availability'),
+                phone: formData.get('phone'),
+                telegram: formData.get('telegram'),
+            };
+
+            console.log('Sending data:', data);
+            console.log('CSRF Token:', csrfToken);
+
+            try {
+                const response = await fetch('{% url "freelance:profile_edit" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                console.log('Response status:', response.status);
+                const responseText = await response.text();
+                console.log('Response body:', responseText);
+
+                if (response.ok) {
+                    alert('Profil muvaffaqiyatli yangilandi!');
+                    location.reload();
+                } else {
+                    alert('Xato yuz berdi: ' + responseText);
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Xato yuz berdi: ' + error.message);
+            }
+        });
+    } else {
+        console.error('editForm not found!');
+    }
+
+</script>
+
+<style>
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
+</style>
+{% endblock %}

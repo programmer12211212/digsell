@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Sotuvchi bo'lish arizasi{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto py-20">
+    <div class="glass p-8 rounded-2xl">
+        <h2 class="text-2xl font-black mb-4">Sotuvchi bo'lish uchun ariza</h2>
+
+        {% if existing %}
+            <div class="mb-4 p-4 bg-slate-100 dark:bg-slate-800 rounded">
+                <p class="font-bold">Siz avval ariza yuborgansiz.</p>
+                <p class="text-sm text-slate-400">Holat: {{ existing.get_status_display }}</p>
+                {% if existing.admin_note %}
+                <p class="text-sm mt-2">Admin izohi: {{ existing.admin_note }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            {% for field in form %}
+            <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<p class="text-[10px] text-slate-400">{{ field.help_text }}</p>{% endif %}
+                {% if field.errors %}<p class="text-rose-500 text-[10px]">{{ field.errors.0 }}</p>{% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="pt-4">
+                <button type="submit" class="px-6 py-3 bg-primary-600 rounded-2xl text-white font-bold">Arizani yuborish</button>
+                <a href="{% url 'core:dashboard' %}" class="ml-4 text-sm text-slate-400">Bekor qilish</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

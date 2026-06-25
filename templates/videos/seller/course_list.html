@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}Sotuvchi Paneli - Video Kurslar{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container mt-10">
+        <div class="flex justify-between items-center mb-12">
+            <div>
+                <h1 class="text-4xl font-extrabold">Sotuvchi Paneli</h1>
+                <p class="text-muted">Kurslaringiz boshqaruvi va statistikasi</p>
+            </div>
+            <div class="flex gap-4">
+                <a href="{% url 'videos:seller_lesson_form' %}" class="btn-premium btn-secondary">
+                    <i class="fas fa-plus"></i> Yangi dars qo'shish
+                </a>
+                <a href="{% url 'videos:seller_course_form' %}" class="btn-premium btn-primary">
+                    <i class="fas fa-folder-plus"></i> Yangi kurs yaratish
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div class="glass p-6 rounded-2xl border border-border">
+                <p class="text-muted text-sm font-bold mb-2">UMUMIY KURSLAR</p>
+                <p class="text-3xl font-extrabold text-main">{{ courses.count }}</p>
+            </div>
+            <div class="glass p-6 rounded-2xl border border-border">
+                <p class="text-muted text-sm font-bold mb-2">UMUMIY SOTUVLAR</p>
+                <p class="text-3xl font-extrabold text-success">{{ total_sales|default:"0" }}</p>
+            </div>
+            <div class="glass p-6 rounded-2xl border border-border">
+                <p class="text-muted text-sm font-bold mb-2">UMUMIY DAROMAD</p>
+                <p class="text-3xl font-extrabold text-primary">{{ total_revenue|default:"0" }} UZS</p>
+            </div>
+        </div>
+
+        <div class="glass rounded-3xl border border-border overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-border/10 border-b border-border">
+                    <tr>
+                        <th class="p-6 font-bold">Kurs Nomi</th>
+                        <th class="p-6 font-bold">Kategoriya</th>
+                        <th class="p-6 font-bold">Narxi</th>
+                        <th class="p-6 font-bold">Sotuvlar</th>
+                        <th class="p-6 font-bold">Holat</th>
+                        <th class="p-6 font-bold">Amallar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in courses %}
+                    <tr class="border-b border-border hover:bg-border/5 transition">
+                        <td class="p-6">
+                            <div class="flex items-center gap-4">
+                                <img src="{{ course.thumbnail.url }}" class="w-12 h-12 rounded-lg object-cover">
+                                <span class="font-bold">{{ course.title }}</span>
+                            </div>
+                        </td>
+                        <td class="p-6 text-muted">{{ course.category.name }}</td>
+                        <td class="p-6 font-bold">{{ course.price }} UZS</td>
+                        <td class="p-6">
+                            <span class="badge badge-primary">{{ course.sales_count }} ta</span>
+                        </td>
+                        <td class="p-6">
+                            {% if course.is_published %}
+                            <span class="badge badge-success">E'lon qilingan</span>
+                            {% else %}
+                            <span class="badge badge-secondary">Qoralama</span>
+                            {% endif %}
+                        </td>
+                        <td class="p-6">
+                            <div class="flex gap-2">
+                                <a href="{% url 'videos:course_detail' course.slug %}" class="p-2 hover:text-primary transition"><i class="fas fa-eye"></i></a>
+                                <button class="p-2 hover:text-warning transition"><i class="fas fa-edit"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="p-20 text-center text-muted">
+                            Hali hech qanday kurs yaratmagansiz.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock %}

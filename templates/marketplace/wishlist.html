@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Istaklar Ro'yxati | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-heading font-bold">Istaklar Ro'yxati ❤️</h1>
+            <p class="text-slate-400 mt-1">Saqlangan mahsulotlaringiz</p>
+        </div>
+        <a href="{% url 'marketplace:product_list' %}" class="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors flex items-center gap-2 text-sm">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Marketplace
+        </a>
+    </div>
+
+    {% if wishlisted %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for item in wishlisted %}
+        <div class="glass group rounded-2xl border-slate-800/50 hover:border-primary-500/30 transition-all overflow-hidden flex flex-col">
+            <div class="aspect-video relative overflow-hidden bg-slate-900">
+                {% if item.video.thumbnail %}
+                    <img src="{{ item.video.thumbnail.url }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" alt="">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-slate-700">
+                        <i data-lucide="image" class="w-12 h-12"></i>
+                    </div>
+                {% endif %}
+                <div class="absolute top-3 right-3">
+                    <form method="post" action="{% url 'marketplace:toggle_wishlist' item.video.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center hover:bg-rose-400 transition-colors shadow-lg">
+                            <i data-lucide="heart" class="w-5 h-5 text-white"></i>
+                        </button>
+                    </form>
+                </div>
+                {% if item.video.discount_price %}
+                <div class="absolute top-3 left-3 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg">CHEGIRMA</div>
+                {% endif %}
+            </div>
+            <div class="p-5 flex-1 flex flex-col">
+                <h3 class="font-bold text-lg group-hover:text-primary-400 transition-colors">{{ item.video.title }}</h3>
+                <p class="text-slate-400 text-sm mt-1 line-clamp-2">{{ item.video.description|truncatechars:80 }}</p>
+                <div class="mt-auto pt-4 flex items-center justify-between">
+                    <div>
+                        {% if item.video.discount_price %}
+                        <span class="text-lg font-black text-primary-400">{{ item.video.discount_price|format_uzs }}</span>
+                        <span class="text-sm text-slate-500 line-through ml-2">{{ item.video.price|format_uzs }}</span>
+                        {% else %}
+                        <span class="text-lg font-black">{{ item.video.price|format_uzs }}</span>
+                        {% endif %}
+                    </div>
+                    <a href="{% url 'marketplace:product_detail' item.video.slug %}" class="px-4 py-2 bg-primary-600 rounded-xl text-sm font-bold">Ko'rish</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-20 glass rounded-2xl">
+        <i data-lucide="heart-off" class="w-16 h-16 mx-auto text-slate-600 mb-4"></i>
+        <p class="text-slate-400">Sevimlilar ro'yxati bo'sh</p>
+        <a href="{% url 'marketplace:product_list' %}" class="inline-block mt-4 text-primary-400 font-bold">Marketplace ga o'tish</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

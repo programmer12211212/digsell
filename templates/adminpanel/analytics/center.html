@@ -1,0 +1,37 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Analytics Markazi{% endblock %}
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="fas fa-chart-pie text-primary me-2"></i> Analytics Markazi</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Foydalanuvchilar</small><h3>{{ total_users }}</h3></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Sellerlar</small><h3>{{ sellers }}</h3></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Bugungi daromad</small><h3 class="text-success">{{ today_revenue|floatformat:0 }}</h3></div></div>
+    <div class="col-md-3"><div class="card p-3"><small class="text-muted">Oylik daromad</small><h3>{{ monthly_revenue|floatformat:0 }}</h3></div></div>
+</div>
+<div class="card p-4 mb-4">
+    <h5 class="mb-3">14 kunlik daromad</h5>
+    <canvas id="revChart" height="80"></canvas>
+</div>
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card p-4"><h5>Top mahsulotlar</h5>
+        <table class="table table-dark table-sm mt-3"><tbody>
+        {% for p in top_products %}<tr><td>{{ p.title }}</td><td class="text-end">{{ p.sales_count }}</td></tr>{% endfor %}
+        </tbody></table></div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-4"><h5>Kategoriyalar</h5>
+        <table class="table table-dark table-sm mt-3"><tbody>
+        {% for c in top_categories %}<tr><td>{{ c.category__name|default:'—' }}</td><td class="text-end">{{ c.cnt }}</td></tr>{% endfor %}
+        </tbody></table></div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('revChart'), {
+    type: 'line',
+    data: { labels: {{ labels_json|safe }}, datasets: [{ label: 'Daromad', data: {{ daily_revenue_json|safe }}, borderColor: '#3b82f6', tension: 0.4, fill: true, backgroundColor: 'rgba(59,130,246,0.1)' }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#94a3b8' } }, x: { ticks: { color: '#94a3b8' } } } }
+});
+</script>
+{% endblock %}

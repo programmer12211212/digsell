@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Bildirishnomalar | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+  <div class="flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Bildirishnomalar</h1>
+    <form method="post" action="{% url 'notifications:mark_all_read' %}">
+      {% csrf_token %}
+      <button type="submit" class="text-sm text-primary-400 font-bold">Hammasini o'qilgan deb belgilash</button>
+    </form>
+  </div>
+  <div class="space-y-3">
+    {% for n in notifications %}
+    <a href="{{ n.target_url|default:'#' }}" class="block glass p-4 rounded-xl border border-slate-800/50 hover:border-primary-500/30 {% if not n.is_read %}border-l-4 border-l-primary-500{% endif %}">
+      <div class="font-bold text-sm">{{ n.title }}</div>
+      <div class="text-slate-400 text-sm mt-1">{{ n.message }}</div>
+      <div class="text-xs text-slate-500 mt-2">{{ n.created_at|date:"d.m.Y H:i" }}</div>
+    </a>
+    {% empty %}
+    <p class="text-center text-slate-500 py-12">Bildirishnomalar yo'q</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

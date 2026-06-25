@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}{{ course.title }} | Video{% endblock %}
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+    <div class="relative rounded-3xl overflow-hidden bg-black aspect-video" oncontextmenu="return false;">
+        {% if hls_url %}
+        <video id="player" class="w-full h-full" controls controlsList="nodownload" disablePictureInPicture></video>
+        {% elif course.preview_video %}
+        <video id="player" class="w-full h-full" controls controlsList="nodownload">
+            <source src="{{ course.preview_video.url }}" type="video/mp4">
+        </video>
+        {% else %}
+        <div class="flex items-center justify-center h-full text-slate-400">
+            <p>Video hali tayyor emas</p>
+        </div>
+        {% endif %}
+        <div id="watermark" class="absolute top-4 right-4 text-white/40 text-xs font-mono pointer-events-none select-none">
+            {{ request.user.username }} | ID:{{ request.user.id }} | Digsell.uz
+        </div>
+    </div>
+
+    <div class="glass p-8 rounded-3xl space-y-4">
+        <h1 class="text-3xl font-black font-heading">{{ course.title }}</h1>
+        <p class="text-slate-400">{{ course.description }}</p>
+        <div class="flex items-center gap-4">
+            <img src="https://ui-avatars.com/api/?name={{ course.seller.username }}&background=0ea5e9&color=fff" class="w-10 h-10 rounded-xl" alt="">
+            <div>
+                <p class="font-bold">{{ course.seller.username }}</p>
+                <p class="text-xs text-slate-500">Muallif</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if hls_url %}
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.7/dist/hls.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const video = document.getElementById('player');
+    const src = '{{ hls_url }}';
+    if (Hls.isSupported()) {
+        const hls = new Hls({ enableWorker: true });
+        hls.loadSource(src);
+        hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = src;
+    }
+    video.addEventListener('contextmenu', e => e.preventDefault());
+});
+</script>
+{% endif %}
+{% endblock %}

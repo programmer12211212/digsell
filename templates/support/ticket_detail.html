@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Ticket #{{ ticket.id }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <a href="{% url 'support:ticket_list' %}" class="text-sm text-primary-400 font-bold">← Orqaga</a>
+    <div class="glass p-6 rounded-3xl">
+        <div class="flex justify-between mb-4">
+            <h1 class="text-xl font-black">#{{ ticket.id }}: {{ ticket.subject }}</h1>
+            <span class="text-xs font-bold px-3 py-1 rounded-lg bg-primary-500/10 text-primary-400">{{ ticket.get_status_display }}</span>
+        </div>
+        <p class="text-slate-400">{{ ticket.message }}</p>
+    </div>
+    {% for reply in replies %}
+    <div class="glass p-4 rounded-2xl {% if reply.is_staff_reply %}border-l-4 border-primary-500{% endif %}">
+        <div class="flex justify-between text-sm mb-2">
+            <span class="font-bold">{{ reply.author.username }}{% if reply.is_staff_reply %} <span class="text-primary-400">(Support)</span>{% endif %}</span>
+            <span class="text-slate-500">{{ reply.created_at|date:"d.m H:i" }}</span>
+        </div>
+        <p class="text-sm text-slate-300">{{ reply.message }}</p>
+    </div>
+    {% endfor %}
+    {% if ticket.status != 'CLOSED' %}
+    <form method="POST" action="{% url 'support:ticket_reply' ticket.id %}" class="glass p-4 rounded-2xl">
+        {% csrf_token %}
+        <textarea name="message" rows="3" class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl mb-3" placeholder="Javob yozing..." required></textarea>
+        <button type="submit" class="btn-premium btn-primary px-6 py-2 rounded-xl font-bold text-sm">Yuborish</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

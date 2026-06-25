@@ -1,0 +1,360 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ block.super }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .tg-admin-card {
+        background: #1e293b;
+        color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .tg-admin-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+    .status-dot {
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .status-dot-active {
+        background-color: #10b981;
+        box-shadow: 0 0 8px #10b981;
+    }
+    .status-dot-inactive {
+        background-color: #f43f5e;
+        box-shadow: 0 0 8px #f43f5e;
+    }
+    .tg-table th {
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        color: #94a3b8 !important;
+    }
+    .tg-table td {
+        vertical-align: middle !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12 flex justify-between items-center">
+            <div>
+                <h1 class="h3 font-weight-bold text-white mb-1">Telegram Xizmatlari Dashboard</h1>
+                <p class="text-muted text-sm">Stars, Premium va Gifts xizmatlarining savdo ko'rsatkichlari, tahlillari va provayder holati.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Row -->
+    <div class="row mb-4">
+        <!-- Revenue Card -->
+        <div class="col-md-3 mb-3">
+            <div class="tg-admin-card bg-gradient-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted text-xs text-uppercase font-weight-bold">Umumiy Tushum</span>
+                        <h3 class="font-weight-black mt-2 text-success">{{ total_revenue|floatformat:0 }} UZS</h3>
+                    </div>
+                    <div class="bg-success-light p-3 rounded-circle">
+                        <i class="fas fa-wallet fa-2x text-success"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-muted">
+                    <span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Tasdiqlangan</span> to'lovlar tushumi
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Card -->
+        <div class="col-md-3 mb-3">
+            <div class="tg-admin-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted text-xs text-uppercase font-weight-bold">Buyurtmalar</span>
+                        <h3 class="font-weight-black mt-2 text-white">{{ total_orders }} ta</h3>
+                    </div>
+                    <div class="bg-primary-light p-3 rounded-circle">
+                        <i class="fas fa-shopping-bag fa-2x text-primary"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-muted">
+                    <span class="text-info font-weight-bold">{{ pending_orders_count }} ta</span> hozirda jarayonda/kutilmoqda
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversion Rate Card -->
+        <div class="col-md-3 mb-3">
+            <div class="tg-admin-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted text-xs text-uppercase font-weight-bold">Muvaffaqiyat ko'rsatkichi</span>
+                        <h3 class="font-weight-black mt-2 text-warning">{{ success_rate|floatformat:1 }}%</h3>
+                    </div>
+                    <div class="bg-warning-light p-3 rounded-circle">
+                        <i class="fas fa-chart-line fa-2x text-warning"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-muted">
+                    <span class="text-warning font-weight-bold">{{ success_count }} ta</span> muvaffaqiyatli yetkazilgan
+                </div>
+            </div>
+        </div>
+
+        <!-- Providers Status Card -->
+        <div class="col-md-3 mb-3">
+            <div class="tg-admin-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-muted text-xs text-uppercase font-weight-bold">Provayderlar Ulanishi</span>
+                        <h3 class="font-weight-black mt-2 text-info">{{ provider_stats|length }} ta</h3>
+                    </div>
+                    <div class="bg-info-light p-3 rounded-circle">
+                        <i class="fas fa-server fa-2x text-info"></i>
+                    </div>
+                </div>
+                <div class="mt-3 text-xs text-muted">
+                    <span class="text-success font-weight-bold"><i class="fas fa-circle text-xs mr-1"></i>Hamma</span> provayderlar ishlamoqda
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <!-- Sales Chart -->
+        <div class="col-md-8 mb-3">
+            <div class="card bg-dark text-white border-secondary h-100">
+                <div class="card-header border-secondary d-flex justify-content-between align-items-center bg-transparent">
+                    <h5 class="card-title font-weight-bold mb-0">Savdolar Dinamikasi (Oxirgi 30 Kun)</h5>
+                </div>
+                <div class="card-body">
+                    <div style="position: relative; height: 320px; width: 100%;">
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Categories Chart -->
+        <div class="col-md-4 mb-3">
+            <div class="card bg-dark text-white border-secondary h-100">
+                <div class="card-header border-secondary bg-transparent">
+                    <h5 class="card-title font-weight-bold mb-0">Kategoriyalar Bo'yicha Tushum</h5>
+                </div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    {% if category_revenues %}
+                        <div style="position: relative; height: 260px; width: 100%;">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-sm text-center py-5">Hozircha sotuvlar haqida ma'lumot yo'q.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Provider and Recent Transactions Row -->
+    <div class="row">
+        <!-- Provider Connections -->
+        <div class="col-md-4 mb-3">
+            <div class="card bg-dark text-white border-secondary h-100">
+                <div class="card-header border-secondary bg-transparent">
+                    <h5 class="card-title font-weight-bold mb-0">Provayderlar va Ulanish Monitoringi</h5>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush bg-transparent">
+                        {% for prov in provider_stats %}
+                            <li class="list-group-item bg-transparent text-white border-secondary py-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div>
+                                        <span class="status-dot {% if prov.provider.is_active %}status-dot-active{% else %}status-dot-inactive{% endif %} mr-2"></span>
+                                        <strong>{{ prov.provider.get_name_display }}</strong>
+                                    </div>
+                                    <span class="badge {% if prov.success_rate >= 90 %}badge-success{% else %}badge-warning{% endif %}">
+                                        Success Rate: {{ prov.success_rate|floatformat:1 }}%
+                                    </span>
+                                </div>
+                                <div class="text-xs text-muted">
+                                    Balans: <strong class="text-white">{{ prov.provider.balance }} UZS</strong> (⭐ {{ prov.provider.stars_balance }} / 💎 {{ prov.provider.premium_balance }})
+                                </div>
+                                <div class="mt-3">
+                                    <span class="text-xs text-muted block mb-1">Oxirgi loglar:</span>
+                                    {% for log in prov.logs %}
+                                        <div class="d-flex justify-content-between text-[11px] border-bottom border-secondary py-1 text-slate-300">
+                                            <span>{{ log.method }} {{ log.endpoint }}</span>
+                                            <span class="font-weight-bold {% if log.status_code == 200 %}text-success{% else %}text-danger{% endif %}">{{ log.status_code }}</span>
+                                        </div>
+                                    {% empty %}
+                                        <span class="text-xs text-muted">Loglar mavjud emas</span>
+                                    {% endfor %}
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item bg-transparent text-muted py-4 text-center">
+                                Hozircha hech qanday provayder mavjud emas.
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="col-md-8 mb-3">
+            <div class="card bg-dark text-white border-secondary h-100">
+                <div class="card-header border-secondary bg-transparent">
+                    <h5 class="card-title font-weight-bold mb-0">Oxirgi Tranzaksiyalar</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-dark bg-transparent mb-0 tg-table">
+                            <thead>
+                                <tr>
+                                    <th>Kod</th>
+                                    <th>Foydalanuvchi</th>
+                                    <th>Mahsulot</th>
+                                    <th>Summa</th>
+                                    <th>Username</th>
+                                    <th>Holat</th>
+                                    <th>Sana</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                    <tr onclick="window.location='/admin/telegram_services/telegramorder/{{ order.id }}/change/';" style="cursor: pointer;">
+                                        <td><strong>{{ order.unique_code }}</strong></td>
+                                        <td>{{ order.user.username }}</td>
+                                        <td>{{ order.product.name }}</td>
+                                        <td><span class="text-success">{{ order.unique_amount|floatformat:0 }} UZS</span></td>
+                                        <td><span class="text-info">@{{ order.telegram_username }}</span></td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if order.status == 'completed' %}badge-success
+                                                {% elif order.status in 'waiting_payment,waiting_confirmation' %}badge-warning
+                                                {% elif order.status == 'processing' %}badge-info
+                                                {% else %}badge-danger{% endif %}">
+                                                {{ order.get_status_display }}
+                                            </span>
+                                        </td>
+                                        <td class="text-xs text-muted">{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-muted">
+                                            Hozircha hech qanday buyurtma mavjud emas.
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sales Chart
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    const salesChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: {{ daily_labels|safe }},
+            datasets: [{
+                label: 'Kunlik Tushum (UZS)',
+                data: {{ daily_revenues|safe }},
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.3,
+                yAxisID: 'y'
+            }, {
+                label: 'Buyurtmalar Soni',
+                data: {{ daily_counts|safe }},
+                borderColor: '#6366f1',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                tension: 0.3,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#94a3b8' }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    ticks: { color: '#94a3b8' }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: { color: '#94a3b8' }
+                }
+            }
+        }
+    });
+
+    // Category Chart
+    const catCtx = document.getElementById('categoryChart').getContext('2d');
+    const categoryChart = new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+            labels: {{ category_labels|safe }},
+            datasets: [{
+                data: {{ category_revenues|safe }},
+                backgroundColor: [
+                    '#fbbf24', // Stars - Gold
+                    '#8b5cf6', // Premium - Purple
+                    '#f43f5e', // Gifts - Rose
+                    '#3b82f6',
+                    '#10b981'
+                ],
+                borderWidth: 1,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#94a3b8' }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

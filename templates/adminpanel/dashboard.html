@@ -1,0 +1,218 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="row">
+    <!-- Quick Stats -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2 bg-dark text-white border-primary">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Jami Daromad</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ analytics.total_revenue|floatformat:0|intcomma }} UZS</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2 bg-dark text-white border-success">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Faol Foydalanuvchilar</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ analytics.active_users }} / {{ analytics.total_users }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2 bg-dark text-white border-info">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Yangi Buyurtmalar</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ analytics.new_orders }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2 bg-dark text-white border-warning">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Server CPU</div>
+                        <div class="h5 mb-0 font-weight-bold">{{ server.cpu_usage }}%</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-server fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Revenue Chart -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4 bg-dark text-white">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between bg-secondary">
+                <h6 class="m-0 font-weight-bold text-white">Haftalik Savdo Grafigi</h6>
+                <div class="dropdown no-arrow">
+                    <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-area">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Registrations -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4 bg-dark text-white text-info">
+            <div class="card-header py-3 bg-secondary">
+                <h6 class="m-0 font-weight-bold text-white">Yangi Registratsiyalar</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover border-0">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Sana</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in latest_registrations %}
+                            <tr>
+                                <td>{{ u.username }}</td>
+                                <td>{{ u.created_at|naturaltime }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center">
+                    <a href="#" class="btn btn-sm btn-outline-info">Barchasini ko'rish</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Orders -->
+    <div class="col-lg-12 mb-4">
+        <div class="card shadow mb-4 bg-dark text-white border-0">
+            <div class="card-header py-3 bg-secondary">
+                <h6 class="m-0 font-weight-bold text-white">Oxirgi Buyurtmalar</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped border-0">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Foydalanuvchi</th>
+                                <th>Summa</th>
+                                <th>Status</th>
+                                <th>Sana</th>
+                                <th>Harakat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.buyer.username }}</td>
+                                <td>{{ order.final_amount|intcomma }}</td>
+                                <td>
+                                    <span class="badge badge-{% if order.status == 'PAID' %}success{% elif order.status == 'NEW' %}primary{% else %}warning{% endif %}">
+                                        {{ order.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-info"><i class="fas fa-eye"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: {{ chart_labels|safe }},
+            datasets: [{
+                label: 'Kunlik Daromad (UZS)',
+                data: {{ chart_data|safe }},
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                fill: true,
+                tension: 0.3
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                    ticks: { color: '#fff' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#fff' }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#fff' } }
+            }
+        }
+    });
+</script>
+
+<style>
+    .chart-area {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    .card-header { border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .border-left-primary { border-left: 4px solid #4e73df !important; }
+    .border-left-success { border-left: 4px solid #1cc88a !important; }
+    .border-left-info { border-left: 4px solid #36b9cc !important; }
+    .border-left-warning { border-left: 4px solid #f6c23e !important; }
+</style>
+{% endblock %}

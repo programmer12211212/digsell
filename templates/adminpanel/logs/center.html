@@ -1,0 +1,49 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Loglar — Admin{% endblock %}
+{% block page_title %}Loglar{% endblock %}
+
+{% block content %}
+<div class="d-flex gap-2 mb-4">
+  <a href="?tab=audit" class="tab-btn {% if tab == 'audit' %}active{% endif %}">Audit Logs</a>
+  <a href="?tab=security" class="tab-btn {% if tab == 'security' %}active{% endif %}">Security Logs</a>
+</div>
+
+<div class="card-neon">
+  {% if tab == 'security' %}
+  <table class="table-neon w-100">
+    <thead><tr><th>Vaqt</th><th>Level</th><th>Action</th><th>IP</th><th>User</th></tr></thead>
+    <tbody>
+      {% for log in security_logs %}
+      <tr>
+        <td class="text-muted small">{{ log.timestamp|date:"d.m.Y H:i:s" }}</td>
+        <td><span class="badge-status badge-{% if log.level == 'CRITICAL' %}rejected{% else %}active{% endif %}">{{ log.level }}</span></td>
+        <td>{{ log.action }}</td>
+        <td>{{ log.ip_address|default:"—" }}</td>
+        <td>{{ log.user.username|default:"—" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center text-muted py-4">Loglar yo'q</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <table class="table-neon w-100">
+    <thead><tr><th>Vaqt</th><th>Admin</th><th>Action</th><th>Model</th><th>Object ID</th></tr></thead>
+    <tbody>
+      {% for log in audit_logs %}
+      <tr>
+        <td class="text-muted small">{{ log.timestamp|date:"d.m.Y H:i:s" }}</td>
+        <td>{{ log.admin.username }}</td>
+        <td>{{ log.action }}</td>
+        <td>{{ log.model_name }}</td>
+        <td class="font-monospace small">{{ log.object_id }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center text-muted py-4">Audit loglar yo'q</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}🤖 AI Qidiruv | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="text-center space-y-4 mb-8">
+        <div class="w-20 h-20 bg-primary-500/10 rounded-3xl flex items-center justify-center mx-auto border border-primary-500/20">
+            <i data-lucide="sparkles" class="w-10 h-10 text-primary-400"></i>
+        </div>
+        <h1 class="text-4xl font-heading font-bold text-white">AI Smart Search</h1>
+        <p class="text-slate-400 max-w-lg mx-auto">Oddiy tilida yozing, AI sizga eng mos mahsulotlarni topib beradi</p>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" class="max-w-2xl mx-auto">
+        <div class="flex gap-3">
+            <div class="flex-1 relative">
+                <i data-lucide="bot" class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-primary-400"></i>
+                <input type="text" name="ai_q" value="{{ query }}"
+                    placeholder="Masalan: 'telegram uchun shop bot kerak' yoki 'eng arzon dizayn shablonlar'"
+                    class="w-full pl-12 pr-4 py-4 bg-slate-900 border border-slate-800 rounded-2xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 text-sm">
+            </div>
+            <button type="submit" class="px-8 py-4 bg-primary-600 hover:bg-primary-500 rounded-2xl font-bold text-white transition-all shadow-lg shadow-primary-500/20 flex items-center gap-2">
+                <i data-lucide="search" class="w-5 h-5"></i>
+                Qidirish
+            </button>
+        </div>
+    </form>
+
+    {% if ai_suggestion %}
+    <div class="max-w-2xl mx-auto glass p-5 rounded-2xl border-primary-500/20 flex items-start gap-4">
+        <div class="w-10 h-10 bg-primary-500 rounded-xl flex-shrink-0 flex items-center justify-center">
+            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+            <p class="text-xs font-bold text-primary-400 uppercase tracking-widest mb-1">AI Tavsiyasi</p>
+            <p class="text-sm text-slate-300 leading-relaxed">{{ ai_suggestion }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if results %}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for product in results %}
+        <a href="{% url 'marketplace:product_detail' product.slug %}" class="glass group rounded-2xl border-slate-800/50 hover:border-primary-500/30 transition-all overflow-hidden flex flex-col">
+            <div class="aspect-video relative overflow-hidden bg-slate-900">
+                {% if product.preview_image %}
+                    <img src="{{ product.preview_image.url }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-slate-700">
+                        <i data-lucide="image" class="w-8 h-8"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="p-5 flex-1 flex flex-col">
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="text-[10px] font-bold bg-primary-500/10 text-primary-400 px-2 py-0.5 rounded-lg uppercase">{{ product.get_product_type_display }}</span>
+                    {% if product.seller.badge != 'NONE' %}
+                    <span class="text-[10px] font-bold bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-lg">{{ product.seller.get_badge_display }}</span>
+                    {% endif %}
+                </div>
+                <h3 class="font-bold text-white mb-1">{{ product.title }}</h3>
+                <p class="text-xs text-slate-500 mb-3 line-clamp-2">{{ product.description|truncatechars:80 }}</p>
+                <div class="mt-auto flex items-center justify-between">
+                    <p class="text-lg font-bold text-white">{{ product.price|uzs }}</p>
+                    <div class="flex items-center gap-2">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ product.seller.username }}" class="w-5 h-5 rounded-full">
+                        <span class="text-[10px] text-slate-400">{{ product.seller.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% elif query %}
+    <div class="text-center py-16">
+        <i data-lucide="search-x" class="w-16 h-16 text-slate-700 mx-auto mb-4"></i>
+        <h3 class="text-xl font-bold text-slate-400 mb-2">Hech narsa topilmadi</h3>
+        <p class="text-slate-500 text-sm">Boshqa so'zlar bilan qidirib ko'ring</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

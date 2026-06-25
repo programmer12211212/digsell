@@ -1,0 +1,405 @@
+{% extends "telegram_services/base.html" %}
+{% load static %}
+
+{% block title %}Telegram Xizmatlari - Digsell.uz{% endblock %}
+
+{% block telegram_content %}
+<div class="space-y-12">
+    <!-- Quick Statistics Widgets -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+        <div class="p-5 tg-glass flex items-center gap-4 hover:border-sky-500/30 transition duration-300 group">
+            <span class="p-3 bg-sky-500/10 text-sky-400 rounded-2xl group-hover:scale-110 transition duration-300">
+                <i data-lucide="zap" class="w-6 h-6"></i>
+            </span>
+            <div>
+                <div class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Tezkor yetkazish</div>
+                <div class="text-base font-heading font-black text-slate-100 mt-0.5">Avtomatik (1-3 min)</div>
+            </div>
+        </div>
+        <div class="p-5 tg-glass flex items-center gap-4 hover:border-amber-500/30 transition duration-300 group">
+            <span class="p-3 bg-amber-500/10 text-amber-400 rounded-2xl group-hover:scale-110 transition duration-300">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </span>
+            <div>
+                <div class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Xavfsiz To'lov</div>
+                <div class="text-base font-heading font-black text-slate-100 mt-0.5">100% Himoyalangan</div>
+            </div>
+        </div>
+        <div class="p-5 tg-glass flex items-center gap-4 hover:border-indigo-500/30 transition duration-300 group">
+            <span class="p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl group-hover:scale-110 transition duration-300">
+                <i data-lucide="wallet" class="w-6 h-6"></i>
+            </span>
+            <div>
+                <div class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Karta orqali</div>
+                <div class="text-base font-heading font-black text-slate-100 mt-0.5">Oson o'tkazma</div>
+            </div>
+        </div>
+        <div class="p-5 tg-glass flex items-center gap-4 hover:border-emerald-500/30 transition duration-300 group">
+            <span class="p-3 bg-emerald-500/10 text-emerald-400 rounded-2xl group-hover:scale-110 transition duration-300">
+                <i data-lucide="activity" class="w-6 h-6"></i>
+            </span>
+            <div>
+                <div class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Tizim holati</div>
+                <div class="text-base font-heading font-black text-emerald-400 mt-0.5 flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Faol
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Selector Section -->
+    <div id="categories" class="space-y-6">
+        <h3 class="text-xl font-heading font-black text-slate-100 tracking-tight">Kategoriyalar</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for category in categories %}
+                <div class="tg-glass p-6 flex flex-col justify-between h-56 group relative overflow-hidden">
+                    <div class="absolute -right-6 -top-6 text-8xl opacity-5 select-none pointer-events-none group-hover:scale-110 transition duration-500">{{ category.icon }}</div>
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-inner bg-slate-900/60 border border-white/5">
+                            {{ category.icon }}
+                        </div>
+                        <h4 class="text-lg font-heading font-black text-slate-100 mt-4">{{ category.display_name }}</h4>
+                        <p class="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">{{ category.description }}</p>
+                    </div>
+                    <a href="{% url 'telegram_services:product_list' %}?category={{ category.name }}" class="mt-4 inline-flex items-center justify-center gap-2 py-3 bg-white/5 hover:bg-sky-500 hover:text-slate-950 rounded-2xl text-xs font-black text-slate-200 transition">
+                        Batafsil ko'rish <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Featured Stars -->
+    {% if featured_stars %}
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 class="text-xl font-heading font-black text-slate-100 tracking-tight flex items-center gap-2">
+                    <span class="text-amber-400">⭐</span> Telegram Stars
+                </h3>
+                <a href="{% url 'telegram_services:product_list' %}?category=stars" class="text-xs font-black text-sky-400 hover:underline">Barchasini ko'rish &rarr;</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+                {% for product in featured_stars %}
+                    {% if product.sku == 'custom_stars' %}
+                        <div class="tg-card-fintech tg-card-sky group flex flex-col h-full relative" 
+                             id="customStarsCard"
+                             data-id="{{ product.id }}"
+                             data-name="100 Telegram Stars"
+                             data-description="Siz xohlagan miqdorda Telegram Stars: 100 Stars."
+                             data-price="22,000 UZS"
+                             data-icon="{{ product.icon }}"
+                             data-category-display="{{ product.category.display_name }}"
+                             data-category-name="{{ product.category.name }}"
+                             data-availability="{% if product.is_available %}Sotuvda bor{% else %}Tugagan{% endif %}"
+                             data-delivery-type="{% if product.delivery_type == 'instant' %}Avtomatik (1-3 min){% else %}Navbat bilan{% endif %}"
+                             data-image="{% if product.image %}{{ product.image.url }}{% elif product.category.image %}{{ product.category.image.url }}{% endif %}"
+                             data-checkout-base-url="{% url 'telegram_services:checkout' product.pk %}"
+                             data-checkout-url="{% url 'telegram_services:checkout' product.pk %}?quantity=100">
+                            
+                            <div class="card-glow"></div>
+                            
+                            <!-- Image Container -->
+                            <div class="tg-card-image-wrapper relative overflow-hidden rounded-[20px] bg-slate-950/60 border border-white/5 flex items-center justify-center" style="height: 140px;">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                                {% elif product.category.image %}
+                                    <img src="{{ product.category.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                                {% else %}
+                                    <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/80 to-slate-950/80 relative">
+                                        <span class="text-5xl transform transition-transform duration-500 group-hover:scale-110">{{ product.icon }}</span>
+                                        <span class="text-[8px] text-slate-500 uppercase tracking-widest font-extrabold mt-2">{{ product.category.display_name }}</span>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="card-icon-overlay absolute bottom-2 left-2 w-9 h-9 rounded-lg bg-[#090b16]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg z-10 shadow-lg">
+                                    {{ product.icon }}
+                                </div>
+                            </div>
+
+                            <!-- Card Body -->
+                            <div class="tg-card-content flex-grow flex flex-col justify-between mt-3">
+                                <div>
+                                    <h5 class="tg-card-title text-sm font-heading font-black text-slate-100 group-hover:text-sky-400 transition-colors duration-300 line-clamp-1">
+                                        {{ product.name }}
+                                    </h5>
+                                    
+                                    <div class="mt-2 space-y-1">
+                                        <label for="customStarsInput" class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Miqdorni kiriting:</label>
+                                        <input type="number" id="customStarsInput" min="1" max="100000" value="100" 
+                                               class="w-full px-3 py-1.5 tg-input text-xs focus:outline-none text-center font-black"
+                                               oninput="updateCustomStarsPrice(this.value)">
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 pt-2.5 border-t border-white/5 flex items-baseline justify-between">
+                                    <span class="text-[8px] text-slate-500 font-bold uppercase tracking-wider">Narxi:</span>
+                                    <span id="customStarsPriceValue" class="text-base font-heading font-black text-sky-400">22,000 UZS</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Footer / Actions -->
+                            <div class="tg-card-footer mt-3 pt-2.5 border-t border-white/5">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" class="px-2.5 py-2 bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white border border-white/5 hover:border-white/10 font-bold text-[10px] rounded-xl transition duration-350 flex items-center justify-center gap-1 shadow-inner"
+                                            onclick="openProductModal('{{ product.id }}')">
+                                        👁 Ko'rish
+                                    </button>
+                                    {% if product.is_available %}
+                                        <a href="{% url 'telegram_services:checkout' product.pk %}?quantity=100" id="customStarsBuyBtn" class="px-2.5 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-[10px] rounded-xl shadow-lg shadow-sky-500/20 transition duration-350 flex items-center justify-center gap-1 hover:scale-[1.02]">
+                                            🛒 Sotib olish
+                                        </a>
+                                    {% else %}
+                                        <button class="px-2.5 py-2 bg-slate-800 text-slate-500 font-bold text-[10px] rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                                            Tugagan
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="tg-card-fintech tg-card-sky group flex flex-col h-full relative" 
+                             data-id="{{ product.id }}"
+                             data-name="{{ product.name }}"
+                             data-description="{{ product.description|escapejs }}"
+                             data-price="{{ product.price_uzs|floatformat:0 }} UZS"
+                             data-icon="{{ product.icon }}"
+                             data-category-display="{{ product.category.display_name }}"
+                             data-category-name="{{ product.category.name }}"
+                             data-availability="{% if product.is_available %}Sotuvda bor{% else %}Tugagan{% endif %}"
+                             data-delivery-type="{% if product.delivery_type == 'instant' %}Avtomatik (1-3 min){% else %}Navbat bilan{% endif %}"
+                             data-image="{% if product.image %}{{ product.image.url }}{% elif product.category.image %}{{ product.category.image.url }}{% endif %}"
+                             data-checkout-url="{% url 'telegram_services:checkout' product.pk %}">
+                            
+                            <div class="card-glow"></div>
+                            
+                            <!-- Image Container -->
+                            <div class="tg-card-image-wrapper relative overflow-hidden rounded-[20px] bg-slate-950/60 border border-white/5 flex items-center justify-center" style="height: 140px;">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                                {% elif product.category.image %}
+                                    <img src="{{ product.category.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                                {% else %}
+                                    <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/80 to-slate-950/80 relative">
+                                        <span class="text-5xl transform transition-transform duration-500 group-hover:scale-110">{{ product.icon }}</span>
+                                        <span class="text-[8px] text-slate-500 uppercase tracking-widest font-extrabold mt-2">{{ product.category.display_name }}</span>
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="card-icon-overlay absolute bottom-2 left-2 w-9 h-9 rounded-lg bg-[#090b16]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg z-10 shadow-lg">
+                                    {{ product.icon }}
+                                </div>
+                            </div>
+
+                            <!-- Card Body -->
+                            <div class="tg-card-content flex-grow flex flex-col justify-between mt-3">
+                                <div>
+                                    <h5 class="tg-card-title text-sm font-heading font-black text-slate-100 group-hover:text-sky-400 transition-colors duration-300 line-clamp-1">
+                                        {{ product.name }}
+                                    </h5>
+                                    <p class="text-[11px] text-slate-400 mt-1 line-clamp-2 min-h-[30px] leading-relaxed font-semibold">
+                                        {{ product.quantity }} Stars (Tezkor yetkazish)
+                                    </p>
+                                </div>
+                                
+                                <div class="mt-3 pt-2.5 border-t border-white/5 flex items-baseline justify-between">
+                                    <span class="text-[8px] text-slate-500 font-bold uppercase tracking-wider">Narxi:</span>
+                                    <span class="text-base font-heading font-black text-sky-400">{{ product.price_uzs|floatformat:0 }} UZS</span>
+                                </div>
+                            </div>
+
+                            <!-- Card Footer / Actions -->
+                            <div class="tg-card-footer mt-3 pt-2.5 border-t border-white/5">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" class="px-2.5 py-2 bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white border border-white/5 hover:border-white/10 font-bold text-[10px] rounded-xl transition duration-350 flex items-center justify-center gap-1 shadow-inner"
+                                            onclick="openProductModal('{{ product.id }}')">
+                                        👁 Ko'rish
+                                    </button>
+                                    {% if product.is_available %}
+                                        <a href="{% url 'telegram_services:checkout' product.pk %}" class="px-2.5 py-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-[10px] rounded-xl shadow-lg shadow-sky-500/20 transition duration-350 flex items-center justify-center gap-1 hover:scale-[1.02]">
+                                            🛒 Sotib olish
+                                        </a>
+                                    {% else %}
+                                        <button class="px-2.5 py-2 bg-slate-800 text-slate-500 font-bold text-[10px] rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                                            Tugagan
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Featured Premium -->
+    {% if featured_premium %}
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 class="text-xl font-heading font-black text-slate-100 tracking-tight flex items-center gap-2">
+                    <span class="text-violet-400">💎</span> Telegram Premium
+                </h3>
+                <a href="{% url 'telegram_services:product_list' %}?category=premium" class="text-xs font-black text-sky-400 hover:underline">Barchasini ko'rish &rarr;</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+                {% for product in featured_premium %}
+                    <div class="tg-card-fintech tg-card-purple group flex flex-col h-full relative" 
+                         data-id="{{ product.id }}"
+                         data-name="{{ product.name }}"
+                         data-description="{{ product.description|escapejs }}"
+                         data-price="{{ product.price_uzs|floatformat:0 }} UZS"
+                         data-icon="{{ product.icon }}"
+                         data-category-display="{{ product.category.display_name }}"
+                         data-category-name="{{ product.category.name }}"
+                         data-availability="{% if product.is_available %}Sotuvda bor{% else %}Tugagan{% endif %}"
+                         data-delivery-type="{% if product.delivery_type == 'instant' %}Avtomatik (1-3 min){% else %}Navbat bilan{% endif %}"
+                         data-image="{% if product.image %}{{ product.image.url }}{% elif product.category.image %}{{ product.category.image.url }}{% endif %}"
+                         data-checkout-url="{% url 'telegram_services:checkout' product.pk %}">
+                        
+                        <div class="card-glow"></div>
+                        
+                        <!-- Image Container -->
+                        <div class="tg-card-image-wrapper relative overflow-hidden rounded-[20px] bg-slate-950/60 border border-white/5 flex items-center justify-center" style="height: 140px;">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                            {% elif product.category.image %}
+                                <img src="{{ product.category.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                            {% else %}
+                                <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/80 to-slate-950/80 relative">
+                                    <span class="text-5xl transform transition-transform duration-500 group-hover:scale-110">{{ product.icon }}</span>
+                                    <span class="text-[8px] text-slate-500 uppercase tracking-widest font-extrabold mt-2">{{ product.category.display_name }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="card-icon-overlay absolute bottom-2 left-2 w-9 h-9 rounded-lg bg-[#090b16]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg z-10 shadow-lg">
+                                {{ product.icon }}
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="tg-card-content flex-grow flex flex-col justify-between mt-3">
+                            <div>
+                                <h5 class="tg-card-title text-sm font-heading font-black text-slate-100 group-hover:text-purple-400 transition-colors duration-300 line-clamp-1">
+                                    {{ product.name }}
+                                </h5>
+                                <p class="text-[11px] text-slate-400 mt-1 line-clamp-2 min-h-[30px] leading-relaxed font-semibold">
+                                    {{ product.quantity }} oy muddatga Premium
+                                </p>
+                            </div>
+                            
+                            <div class="mt-3 pt-2.5 border-t border-white/5 flex items-baseline justify-between">
+                                <span class="text-[8px] text-slate-500 font-bold uppercase tracking-wider">Narxi:</span>
+                                <span class="text-base font-heading font-black text-purple-400">{{ product.price_uzs|floatformat:0 }} UZS</span>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer / Actions -->
+                        <div class="tg-card-footer mt-3 pt-2.5 border-t border-white/5">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" class="px-2.5 py-2 bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white border border-white/5 hover:border-white/10 font-bold text-[10px] rounded-xl transition duration-350 flex items-center justify-center gap-1 shadow-inner"
+                                        onclick="openProductModal('{{ product.id }}')">
+                                    👁 Ko'rish
+                                </button>
+                                {% if product.is_available %}
+                                    <a href="{% url 'telegram_services:checkout' product.pk %}" class="px-2.5 py-2 bg-purple-600 hover:bg-purple-500 text-white font-black text-[10px] rounded-xl shadow-lg shadow-purple-600/20 transition duration-350 flex items-center justify-center gap-1 hover:scale-[1.02]">
+                                        🛒 Sotib olish
+                                    </a>
+                                {% else %}
+                                    <button class="px-2.5 py-2 bg-slate-800 text-slate-500 font-bold text-[10px] rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                                        Tugagan
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Featured Gifts -->
+    {% if featured_gifts %}
+        <div class="space-y-6">
+            <div class="flex items-center justify-between border-b border-white/5 pb-3">
+                <h3 class="text-xl font-heading font-black text-slate-100 tracking-tight flex items-center gap-2">
+                    <span class="text-rose-400">🎁</span> Telegram Gifts (Eksklyuziv Sovg'alar)
+                </h3>
+                <a href="{% url 'telegram_services:product_list' %}?category=gifts" class="text-xs font-black text-sky-400 hover:underline">Barchasini ko'rish &rarr;</a>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
+                {% for product in featured_gifts %}
+                    <div class="tg-card-fintech tg-card-rose group flex flex-col h-full relative" 
+                         data-id="{{ product.id }}"
+                         data-name="{{ product.name }}"
+                         data-description="{{ product.description|escapejs }}"
+                         data-price="{{ product.price_uzs|floatformat:0 }} UZS"
+                         data-icon="{{ product.icon }}"
+                         data-category-display="{{ product.category.display_name }}"
+                         data-category-name="{{ product.category.name }}"
+                         data-availability="{% if product.is_available %}Sotuvda bor{% else %}Tugagan{% endif %}"
+                         data-delivery-type="{% if product.delivery_type == 'instant' %}Avtomatik (1-3 min){% else %}Navbat bilan{% endif %}"
+                         data-image="{% if product.image %}{{ product.image.url }}{% elif product.category.image %}{{ product.category.image.url }}{% endif %}"
+                         data-checkout-url="{% url 'telegram_services:product_detail' product.pk %}">
+                        
+                        <div class="card-glow"></div>
+                        
+                        <!-- Image Container -->
+                        <div class="tg-card-image-wrapper relative overflow-hidden rounded-[20px] bg-slate-950/60 border border-white/5 flex items-center justify-center" style="height: 140px;">
+                            {% if product.image %}
+                                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                            {% elif product.category.image %}
+                                <img src="{{ product.category.image.url }}" alt="{{ product.name }}" class="w-full h-full object-contain">
+                            {% else %}
+                                <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-900/80 to-slate-950/80 relative">
+                                    <span class="text-5xl transform transition-transform duration-500 group-hover:scale-110">{{ product.icon }}</span>
+                                    <span class="text-[8px] text-slate-500 uppercase tracking-widest font-extrabold mt-2">{{ product.category.display_name }}</span>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="card-icon-overlay absolute bottom-2 left-2 w-9 h-9 rounded-lg bg-[#090b16]/80 backdrop-blur-md border border-white/10 flex items-center justify-center text-lg z-10 shadow-lg">
+                                {{ product.icon }}
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="tg-card-content flex-grow flex flex-col justify-between mt-3">
+                            <div>
+                                <h5 class="tg-card-title text-sm font-heading font-black text-slate-100 group-hover:text-rose-450 transition-colors duration-300 line-clamp-1">
+                                    {{ product.name }}
+                                </h5>
+                                <p class="text-[11px] text-slate-400 mt-1 line-clamp-2 min-h-[30px] leading-relaxed font-semibold">
+                                    {{ product.description }}
+                                </p>
+                            </div>
+                            
+                            <div class="mt-3 pt-2.5 border-t border-white/5 flex items-baseline justify-between">
+                                <span class="text-[8px] text-slate-500 font-bold uppercase tracking-wider">Narxi:</span>
+                                <span class="text-base font-heading font-black text-rose-450">{{ product.price_uzs|floatformat:0 }} UZS</span>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer / Actions -->
+                        <div class="tg-card-footer mt-3 pt-2.5 border-t border-white/5">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" class="px-2.5 py-2 bg-white/5 hover:bg-white/10 text-slate-200 hover:text-white border border-white/5 hover:border-white/10 font-bold text-[10px] rounded-xl transition duration-350 flex items-center justify-center gap-1 shadow-inner"
+                                        onclick="openProductModal('{{ product.id }}')">
+                                    👁 Ko'rish
+                                </button>
+                                {% if product.is_available %}
+                                    <a href="{% url 'telegram_services:product_detail' product.pk %}" class="px-2.5 py-2 bg-rose-600 hover:bg-rose-500 text-white font-black text-[10px] rounded-xl shadow-lg shadow-rose-600/20 transition duration-350 flex items-center justify-center gap-1 hover:scale-[1.02]">
+                                        🎁 Yuborish
+                                    </a>
+                                {% else %}
+                                    <button class="px-2.5 py-2 bg-slate-800 text-slate-500 font-bold text-[10px] rounded-xl cursor-not-allowed flex items-center justify-center" disabled>
+                                        Tugagan
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

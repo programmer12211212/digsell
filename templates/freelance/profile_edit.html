@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Profil tahrirlash{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-8 py-8">
+    <div class="space-y-2">
+        <h1 class="text-3xl font-bold text-slate-900 dark:text-white">Freelancer profili tahrirlash</h1>
+        <p class="text-slate-500">Siz freelancer sifatida qanday ekanligi haqida ma'lumot qo'shing</p>
+    </div>
+
+    <form method="post" class="glass p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-4 text-sm text-rose-200">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="space-y-2">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-bold text-slate-900 dark:text-white">
+                {{ field.label }}
+            </label>
+            <div class="relative">
+                {{ field }}
+            </div>
+            {% if field.errors %}
+            <p class="text-rose-500 text-sm font-bold">
+                {% for error in field.errors %}
+                    {{ error }}{% if not forloop.last %}<br>{% endif %}
+                {% endfor %}
+            </p>
+            {% endif %}
+            {% if field.help_text %}
+            <p class="text-slate-500 text-xs">{{ field.help_text|safe }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="flex gap-3">
+            <button type="submit" class="flex-1 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20">
+                <i data-lucide="save" class="inline w-4 h-4 mr-2"></i>
+                Saqlash
+            </button>
+            <a href="{% url 'freelance:freelancer_profile' request.user.username %}" class="flex-1 py-3 bg-slate-600 hover:bg-slate-700 text-white rounded-xl font-bold transition-all text-center">
+                <i data-lucide="x" class="inline w-4 h-4 mr-2"></i>
+                Bekor qilish
+            </a>
+        </div>
+    </form>
+
+    {% if portfolio %}
+    <div class="glass p-8 rounded-2xl border border-slate-200 dark:border-slate-800">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-slate-900 dark:text-white">Portfolio</h2>
+            <a href="{% url 'freelance:portfolio_add' %}" class="px-4 py-2 bg-primary-600 text-white rounded-xl font-bold text-sm hover:bg-primary-700 transition-colors">
+                <i data-lucide="plus" class="inline w-4 h-4 mr-1"></i>
+                Qo'shish
+            </a>
+        </div>
+        <div class="space-y-3">
+            {% for item in portfolio %}
+            <div class="p-4 rounded-lg bg-slate-900/30 border border-slate-800 flex justify-between items-center">
+                <div>
+                    <p class="font-bold text-slate-900 dark:text-white">{{ item.title }}</p>
+                    <p class="text-sm text-slate-500">{{ item.description|truncatechars:80 }}</p>
+                </div>
+                <a href="#" class="text-red-500 hover:text-red-400">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    textarea,
+    select {
+        width: 100%;
+        background: #0f172a !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 0.75rem !important;
+        padding: 0.875rem 1.25rem !important;
+        color: white !important;
+        outline: none !important;
+        transition: all 0.2s;
+    }
+    input:focus,
+    textarea:focus,
+    select:focus {
+        border-color: #0ea5e9 !important;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1) !important;
+    }
+    textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+    .helptext {
+        display: none;
+    }
+</style>
+{% endblock %}

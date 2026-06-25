@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+{% load static %}
+{% load humanize %}
+<html lang="uz" x-data="{ darkMode: localStorage.getItem('darkMode') !== 'false', sidebarOpen: false }" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Digsell.uz | Enterprise Marketplace{% endblock %}</title>
+    
+    <!-- Enterprise Tech Stack -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc', 
+                            400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1', 
+                            800: '#075985', 900: '#0c4a6e', 950: '#082f49',
+                        },
+                        accent: '#f59e0b',
+                    },
+                    fontFamily: {
+                        'sans': ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
+                        'heading': ['Outfit', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/modern.css' %}">
+    <link rel="stylesheet" href="{% static 'css/freelance.css' %}">
+    
+    <!-- Frameworks -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 min-h-screen font-sans selection:bg-primary-500/30 overflow-x-hidden">
+
+    <!-- Global Layout Wrapper -->
+    <div class="flex min-h-screen overflow-hidden">
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" class="fixed inset-0 bg-black/50 z-40 lg:hidden"></div>
+        <aside 
+            x-show="sidebarOpen" 
+            x-cloak
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="-translate-x-full"
+            x-transition:enter-end="translate-x-0"
+            class="fixed inset-y-0 left-0 z-50 flex flex-col w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 lg:hidden">
+            {% include "partials/sidebar_nav.html" %}
+        </aside>
+
+        <!-- Enterprise Sidebar -->
+        <aside 
+            class="hidden lg:flex flex-col w-72 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50">
+            {% include "partials/sidebar_nav.html" %}
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+            
+            <!-- Global Top Bar -->
+            <header class="h-16 md:h-20 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-8 z-40">
+                <div class="flex items-center gap-3 md:gap-4">
+                    <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition">
+                        <i data-lucide="menu" class="w-5 h-5 md:w-6 md:h-6"></i>
+                    </button>
+                    
+                    <a href="/" class="lg:hidden flex items-center gap-2">
+                         <h1 class="text-xl font-black tracking-tighter text-primary-500">DIGSELL</h1>
+                    </a>
+
+                    <form action="{% url 'marketplace:product_list' %}" method="get" class="hidden md:flex items-center bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-4 py-2 rounded-2xl h-12 w-64 lg:w-96">
+                        <i data-lucide="search" class="w-4 h-4 text-slate-400"></i>
+                        <input type="text" name="q" placeholder="Qidiruv..." class="bg-transparent border-none focus:ring-0 text-xs font-medium w-full ml-2">
+                    </form>
+                </div>
+
+                <div class="flex items-center gap-2 md:gap-4">
+                    <!-- Search Icon for Mobile -->
+                    <button class="md:hidden p-2 text-slate-500">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </button>
+
+                    <!-- Notifications -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary transition relative">
+                            <i data-lucide="bell" class="w-5 h-5 text-slate-500"></i>
+                            {% if unread_notifications_count > 0 %}
+                            <span class="absolute -top-1 -right-1 flex min-w-[18px] h-4.5 items-center justify-center rounded-full bg-danger px-1 text-[9px] font-black text-white ring-4 ring-white dark:ring-slate-950 shadow-lg">
+                                {{ unread_notifications_count }}
+                            </span>
+                            {% endif %}
+                        </button>
+                        <!-- Dropdown omitted for brevity but remains same -->
+                        <div x-show="open" @click.outside="open = false" x-cloak class="absolute right-0 mt-3 w-72 md:w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl z-50 p-4">
+                            <h4 class="font-black text-sm mb-4">Bildirishnomalar</h4>
+                            <div class="space-y-3">
+                            {% if recent_notifications %}
+                                {% for n in recent_notifications %}
+                                <a href="{{ n.target_url|default:'/support/' }}" class="block p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition">
+                                    <div class="font-bold text-xs">{{ n.title }}</div>
+                                    <div class="text-[10px] text-slate-500 mt-1">{{ n.message|truncatechars:100 }}</div>
+                                </a>
+                                {% endfor %}
+                                <a href="{% url 'notifications:list' %}" class="block text-center text-xs font-black text-primary-500 mt-2">Barchasi</a>
+                            {% else %}
+                                <p class="text-center text-xs text-slate-500 py-4">Hozircha yo'q</p>
+                            {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Theme -->
+                    <button @click="darkMode = !darkMode; localStorage.setItem('darkMode', darkMode)" class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 transition">
+                        <i x-show="!darkMode" data-lucide="moon" class="w-5 h-5"></i>
+                        <i x-show="darkMode" data-lucide="sun" class="w-5 h-5 text-warning" x-cloak></i>
+                    </button>
+                    
+                    <a href="/support/" class="hidden sm:flex items-center gap-2 h-10 md:h-12 px-4 md:px-6 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-primary transition">
+                        <i data-lucide="message-square" class="w-4 h-4"></i>
+                        <span class="text-[10px] md:text-xs font-black">YORDAM</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Page Content Scroll Area -->
+            <main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+                <div class="container-premium mx-auto">
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    {% if ad_popup %}
+    <div x-data="{ show: true }" x-show="show" x-cloak
+         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="relative max-w-md w-full glass rounded-3xl overflow-hidden shadow-2xl border border-primary-500/20"
+             @click.outside="show = false">
+            <button @click="show = false" class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+            {% if ad_popup.image %}
+            <img src="{{ ad_popup.image.url }}" class="w-full h-40 object-cover" alt="{{ ad_popup.title }}">
+            {% endif %}
+            <div class="p-6 space-y-4" style="background: linear-gradient(135deg, {{ ad_popup.bg_color }}15, transparent);">
+                <h3 class="text-xl font-black" style="color: {{ ad_popup.text_color|default:'#fff' }}">{{ ad_popup.title }}</h3>
+                {% if ad_popup.description %}<p class="text-sm text-slate-400">{{ ad_popup.description }}</p>{% endif %}
+                <div class="flex gap-3">
+                    {% if ad_popup.link_url %}
+                    <a href="{% url 'marketing:track_ad_click' ad_popup.id %}" class="flex-1 btn-premium btn-primary py-3 rounded-xl text-center text-sm font-bold">Batafsil</a>
+                    {% endif %}
+                    <form method="POST" action="{% url 'marketing:dismiss_ad' ad_popup.id %}" class="flex-1">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class="w-full py-3 border border-slate-700 rounded-xl text-sm font-bold text-slate-400 hover:bg-slate-800">Yopish</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Initialization Scripts -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

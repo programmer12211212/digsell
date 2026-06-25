@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Mijoz paneli | Frilans{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <h1 class="text-2xl font-bold text-slate-900 dark:text-white">Mening loyihalarim</h1>
+    <div class="grid gap-4">
+        {% for project in projects %}
+        <div class="glass p-6 rounded-2xl border border-slate-200 dark:border-slate-800 flex flex-wrap justify-between gap-4">
+            <div>
+                <h3 class="font-bold text-lg"><a href="{% url 'freelance:project_detail' project.slug %}" class="hover:text-primary-500">{{ project.title }}</a></h3>
+                <p class="text-sm text-slate-500">{{ project.get_status_display }} · {{ project.proposals.count }} taklif · {{ project.budget|uzs }}</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <a href="{% url 'freelance:manage_proposals' project.id %}" class="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold">Takliflar</a>
+                <a href="{% url 'freelance:milestone_manage' project.id %}" class="px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-sm font-bold">Bosqichlar</a>
+                {% if project.status == 'OPEN' %}
+                <form method="post" action="{% url 'freelance:cancel_project' project.id %}">{% csrf_token %}<button class="px-4 py-2 rounded-lg text-rose-500 text-sm font-bold">Bekor</button></form>
+                {% endif %}
+                {% if project.status == 'COMPLETED' %}
+                <a href="{% url 'freelance:leave_review' project.id %}" class="px-4 py-2 rounded-lg bg-primary-600 text-white text-sm font-bold">Sharh</a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-slate-500">Hali loyiha yo'q. <a href="{% url 'freelance:project_create' %}" class="text-primary-500 font-bold">E'lon qiling</a></p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

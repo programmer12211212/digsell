@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Loyiha yaratish | Freelance{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6 text-slate-900 dark:text-white">Yangi loyiha e'lon qilish</h1>
+    <form method="post" class="glass p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-5">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<p class="text-rose-500 text-xs mt-1">{{ field.errors.0 }}</p>{% endif %}
+        </div>
+        {% endfor %}
+        <button type="button" id="ai-desc-btn" class="text-sm text-primary-500 font-bold">AI bilan tavsif yaratish</button>
+        <button type="submit" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold">E'lon qilish</button>
+    </form>
+</div>
+<script>
+document.getElementById('ai-desc-btn')?.addEventListener('click', async () => {
+    const title = document.querySelector('[name=title]')?.value;
+    const budget = document.querySelector('[name=budget]')?.value;
+    if (!title) return;
+    const r = await fetch(`{% url 'freelance:ai_description' %}?title=${encodeURIComponent(title)}&budget=${budget||''}`);
+    const d = await r.json();
+    const desc = document.querySelector('[name=description]');
+    if (desc && d.description) desc.value = d.description;
+});
+</script>
+{% endblock %}

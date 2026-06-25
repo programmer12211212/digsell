@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Bonus Markazi | Digsell.uz{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="text-center space-y-4">
+        <h1 class="text-4xl font-black font-heading">Bonus Markazi</h1>
+        <p class="text-slate-400">Kunlik bonuslar, spin wheel va cashback imkoniyatlari</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+        <div class="glass p-8 rounded-3xl text-center space-y-4">
+            <div class="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mx-auto">
+                <i data-lucide="coins" class="w-8 h-8 text-emerald-500"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-400 uppercase">Balans</p>
+            <p class="text-3xl font-black">{{ wallet.balance|floatformat:0 }} <span class="text-sm">so'm</span></p>
+        </div>
+        <div class="glass p-8 rounded-3xl text-center space-y-4">
+            <div class="w-16 h-16 bg-primary-500/10 rounded-2xl flex items-center justify-center mx-auto">
+                <i data-lucide="star" class="w-8 h-8 text-primary-500"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-400 uppercase">Bonus ballar</p>
+            <p class="text-3xl font-black">{{ wallet.bonus_points }}</p>
+        </div>
+        <div class="glass p-8 rounded-3xl text-center space-y-4">
+            <div class="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto">
+                <i data-lucide="rotate-ccw" class="w-8 h-8 text-amber-500"></i>
+            </div>
+            <p class="text-xs font-bold text-slate-400 uppercase">Cashback</p>
+            <p class="text-3xl font-black">{{ wallet.cashback_balance|floatformat:0 }}</p>
+        </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+        <div class="glass p-8 rounded-3xl space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-primary-600 rounded-2xl flex items-center justify-center text-white">
+                    <i data-lucide="calendar-check" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black">Kunlik Bonus</h3>
+                    <p class="text-sm text-slate-400">Har 24 soatda bir marta</p>
+                </div>
+            </div>
+            {% if claimed_today %}
+            <div class="p-4 bg-slate-800/50 rounded-2xl text-center text-slate-400">
+                <i data-lucide="check-circle" class="w-8 h-8 mx-auto mb-2 text-emerald-500"></i>
+                Bugun bonus olgansiz. Ertaga qaytib keling!
+            </div>
+            {% else %}
+            <a href="{% url 'marketing:claim_daily_bonus' %}" class="btn-premium btn-primary w-full py-4 rounded-2xl text-center block font-bold">
+                Bonusni Olish
+            </a>
+            {% endif %}
+        </div>
+
+        <div class="glass p-8 rounded-3xl space-y-6">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white">
+                    <i data-lucide="disc-3" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-black">Spin Wheel</h3>
+                    <p class="text-sm text-slate-400">Kuniga 1 marta aylantiring</p>
+                </div>
+            </div>
+            {% if spun_today %}
+            <div class="p-4 bg-slate-800/50 rounded-2xl text-center text-slate-400">
+                Bugungi imkoniyatdan foydalanib bo'lgansiz.
+            </div>
+            {% else %}
+            <a href="{% url 'marketing:spin_wheel' %}" class="btn-premium w-full py-4 rounded-2xl text-center block font-bold bg-gradient-to-r from-amber-500 to-orange-600 text-white">
+                G'ildirakni Aylantirish
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

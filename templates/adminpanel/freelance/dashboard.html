@@ -1,0 +1,50 @@
+{% extends 'adminpanel/base_admin.html' %}
+
+{% block title %}Freelance Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <h1 class="text-2xl font-bold">Freelance Boshqaruv</h1>
+    <div class="grid md:grid-cols-4 gap-4">
+        <div class="glass p-4 rounded-xl"><p class="text-xs text-slate-500">Loyihalar</p><p class="text-2xl font-bold">{{ stats.total_projects }}</p></div>
+        <div class="glass p-4 rounded-xl"><p class="text-xs text-slate-500">Ochiq</p><p class="text-2xl font-bold">{{ stats.open_projects }}</p></div>
+        <div class="glass p-4 rounded-xl"><p class="text-xs text-slate-500">GMV</p><p class="text-2xl font-bold">{{ stats.gmv }}</p></div>
+        <div class="glass p-4 rounded-xl"><p class="text-xs text-slate-500">Fill rate</p><p class="text-2xl font-bold">{{ stats.fill_rate }}%</p></div>
+    </div>
+
+    <section>
+        <h2 class="font-bold mb-4">Kutilayotgan escrow to'lovlar</h2>
+        {% for tx in pending_escrow %}
+        <div class="glass p-4 rounded-xl mb-3 flex flex-wrap justify-between gap-3 items-center">
+            <div>
+                <p class="font-bold">{{ tx.payer.username }} — {{ tx.amount }} UZS</p>
+                <p class="text-xs text-slate-500">{{ tx.project.title }}</p>
+                {% if tx.screenshot %}<a href="{{ tx.screenshot.url }}" target="_blank" class="text-primary-500 text-sm">Screenshot</a>{% endif %}
+            </div>
+            <div class="flex gap-2">
+                <form method="post" action="{% url 'adminpanel:approve_escrow' tx.id %}">{% csrf_token %}<button class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm">Tasdiqlash</button></form>
+                <form method="post" action="{% url 'adminpanel:reject_escrow' tx.id %}">{% csrf_token %}<button class="px-3 py-2 bg-rose-600 text-white rounded-lg text-sm">Rad</button></form>
+            </div>
+        </div>
+        {% empty %}<p class="text-slate-500 text-sm">Kutilayotgan to'lov yo'q</p>{% endfor %}
+    </section>
+
+    <section>
+        <h2 class="font-bold mb-4">Komissiya</h2>
+        <form method="post" action="{% url 'adminpanel:save_commission' %}" class="flex gap-3">
+            {% csrf_token %}
+            <input type="number" name="percentage" step="0.01" value="{% if commissions %}{{ commissions.0.percentage }}{% else %}10{% endif %}" class="px-4 py-2 rounded-lg border">
+            <button class="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold">Saqlash</button>
+        </form>
+    </section>
+
+    <section>
+        <h2 class="font-bold mb-4">Audit log</h2>
+        <div class="max-h-64 overflow-y-auto text-sm space-y-1">
+            {% for log in audit_logs %}
+            <p class="text-slate-500">{{ log.created_at|date:"d.m H:i" }} — {{ log.action }} ({{ log.model_name }}:{{ log.object_id }})</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

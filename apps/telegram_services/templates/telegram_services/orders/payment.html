@@ -1,0 +1,472 @@
+{% extends "telegram_services/base.html" %}
+{% load static %}
+
+{% block title %}To'lov - Telegram Xizmatlari{% endblock %}
+
+{% block telegram_content %}
+<div class="max-w-5xl mx-auto py-4">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs font-bold text-slate-400 mb-6">
+        <a href="{% url 'telegram_services:product_list' %}" class="hover:text-primary-500 transition">Mahsulotlar</a>
+        <span>/</span>
+        <span class="text-slate-200">To'lov sahifasi</span>
+    </div>
+
+    {% if error %}
+        <div class="p-5 tg-glass border-rose-500/20 text-rose-500 rounded-3xl text-sm font-semibold flex items-center gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            {{ error }}
+        </div>
+    {% else %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Payment Instructions -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="p-6 md:p-8 tg-glass space-y-6">
+                    <div class="flex items-center justify-between border-b border-white/5 pb-4">
+                        <h3 class="text-lg font-heading font-black text-slate-100 tracking-tight flex items-center gap-2">
+                            <i data-lucide="info" class="w-5 h-5 text-sky-400"></i> To'lov Yo'riqnomasi
+                        </h3>
+                        <!-- Countdown Timer Badge -->
+                        <div class="flex items-center gap-1.5 px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                            <span class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+                            <span class="text-[10px] font-black text-rose-400 uppercase tracking-widest" id="countdownLabel">00:00</span>
+                        </div>
+                    </div>
+
+                    <!-- Attention Banner -->
+                    <div class="p-4 bg-amber-500/10 border border-amber-500/15 rounded-2xl flex items-start gap-3">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5 animate-pulse"></i>
+                        <div class="text-xs text-amber-400 font-semibold leading-relaxed">
+                            <strong>Diqqat:</strong> Avtomatik tasdiqlash jarayoni to'g'ri ishlashi uchun bank ilovangizda quyidagi <strong>aniq to'lov miqdorini</strong> o'tkazing. Miqdorni o'zgartirmang!
+                        </div>
+                    </div>
+
+                    <!-- Unique Amount Display -->
+                    <div class="p-6 rounded-3xl border border-white/5 bg-[#030712]/50 text-center space-y-3 relative overflow-hidden group hover:border-sky-500/20 transition">
+                        <div class="absolute -right-8 -bottom-8 text-sky-500/5 text-9xl font-heading font-black select-none pointer-events-none">UZS</div>
+                        <span class="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest block">O'tkazilishi lozim bo'lgan miqdor</span>
+                        <div class="flex items-baseline justify-center gap-1.5">
+                            <h2 class="text-4xl font-heading font-black text-sky-400 tracking-tight" id="uniqueAmountText">
+                                {{ order.unique_amount|floatformat:0 }}
+                            </h2>
+                            <span class="text-sm font-bold text-slate-400">UZS</span>
+                        </div>
+                        <div class="pt-2">
+                            <button type="button" class="px-5 py-2.5 bg-sky-500 hover:bg-sky-400 text-slate-950 rounded-xl text-xs font-black transition flex items-center gap-1.5 mx-auto shadow-lg shadow-sky-500/25" onclick="copyToClipboard('{{ order.unique_amount|floatformat:0 }}', this)">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i> Miqdorni nusxalash
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reference Code -->
+                    <div class="p-4 rounded-2xl bg-slate-950/60 border border-white/5 space-y-2">
+                        <label class="block text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Identifikatsiya kodi (Izohga yozishingiz tavsiya etiladi)</label>
+                        <div class="flex gap-2">
+                            <input type="text" class="w-full px-4 py-3 bg-[#030712]/60 border border-white/5 rounded-xl text-sm font-bold text-white focus:outline-none focus:border-sky-500/30" value="{{ order.unique_code }}" readonly>
+                            <button type="button" class="px-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-white transition" onclick="copyToClipboard('{{ order.unique_code }}', this)">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Card Details -->
+                    {% if payment_cards %}
+                        <div class="space-y-3">
+                            <h4 class="text-xs font-extrabold uppercase text-slate-400 tracking-wider">O'tkazma uchun bank kartalari</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {% for card in payment_cards %}
+                                    <div class="p-4 rounded-2xl border border-white/5 bg-[#030712]/40 flex justify-between items-center group hover:border-sky-500/25 transition">
+                                        <div class="space-y-1">
+                                            <span class="text-xs font-black text-slate-100 block">{{ card.bank_name }}</span>
+                                            <span class="text-[10px] text-slate-400 font-bold block">{{ card.card_holder }}</span>
+                                            <code class="text-sm font-black tracking-widest text-sky-400 block mt-1" id="cardNum_{{ forloop.counter }}">{{ card.card_number }}</code>
+                                        </div>
+                                        <button type="button" class="p-3 bg-white/5 hover:bg-sky-500 hover:text-slate-950 rounded-xl text-xs font-bold transition flex items-center text-slate-400" onclick="copyToClipboard('{{ card.card_number }}', this)">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- QR code generator display -->
+                    {% if payment_cards %}
+                        <div class="flex flex-col md:flex-row items-center gap-6 p-6 rounded-3xl border border-white/5 bg-[#030712]/30">
+                            {% with card=payment_cards|first %}
+                            <div class="text-center">
+                                <div class="tg-qr-card">
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&color=000000&data=https://payment.Digsell.uz/pay?card={{ card.card_number|cut:' ' }}%26amount={{ order.unique_amount|floatformat:0 }}%26desc={{ order.unique_code }}" alt="QR Code" class="w-[150px] h-[150px] object-contain">
+                                </div>
+                            </div>
+                            <div class="space-y-2 text-xs">
+                                <h4 class="text-sm font-heading font-black text-slate-100 flex items-center gap-1.5"><i data-lucide="qr-code" class="w-4 h-4 text-sky-400"></i> QR-kod orqali tezkor o'tkazma</h4>
+                                <p class="text-slate-400 leading-relaxed font-semibold">Mobil bank ilovangizni oching, skanerlash bo'limini tanlang va ushbu QR-kodni skanerlang. Kartaning raqami va miqdori avtomatik to'ldiriladi.</p>
+                            </div>
+                            {% endwith %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Screenshot Upload / Form -->
+                    <form id="paymentConfirmForm" class="space-y-4 pt-2">
+                        <h4 class="text-xs font-extrabold uppercase text-slate-400 tracking-wider flex items-center gap-2">
+                            <i data-lucide="upload-cloud" class="w-4 h-4 text-emerald-400"></i> To'lov tasdig'i (ixtiyoriy)
+                        </h4>
+                        
+                        <!-- Screenshot drag/drop area -->
+                        <div id="dropZone" class="p-6 rounded-2xl border border-dashed border-white/10 hover:border-emerald-500/30 bg-[#030712]/20 text-center space-y-2 cursor-pointer transition">
+                            <i data-lucide="image" class="w-8 h-8 text-slate-400 mx-auto"></i>
+                            <div class="text-xs text-slate-300 font-bold" id="uploadStatus">Chek yoki skrinshot faylini sudrab tashlang yoki bu yerga bosing</div>
+                            <input type="file" id="payment_screenshot" name="payment_screenshot" accept="image/*" class="hidden">
+                        </div>
+
+                        <!-- Confirmation note -->
+                        <div class="space-y-1">
+                            <label for="confirmation_note" class="block text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">To'lovchi bo'yicha qo'shimcha ma'lumot (ism, vaqt yoki izoh)</label>
+                            <textarea id="confirmation_note" name="confirmation_note" rows="2" class="w-full px-4 py-3 bg-[#030712]/60 border border-white/5 rounded-xl text-xs font-medium text-white focus:outline-none focus:border-emerald-500/30" placeholder="Masalan: To'lov Click ilovasidan Ali Valiyev nomidan o'tkazildi..."></textarea>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="space-y-6">
+                <!-- Summary Card -->
+                <div class="p-6 rounded-3xl tg-glass space-y-4">
+                    <h3 class="text-base font-heading font-black text-slate-100 tracking-tight border-b border-white/5 pb-3">Buyurtma xulosasi</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider">Mahsulot</span>
+                            <span class="font-extrabold text-slate-200">{{ order.product.name }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider">Telegram profil</span>
+                            <span class="font-extrabold text-sky-400">@{{ order.telegram_username }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider">Asosiy narx</span>
+                            <span class="font-bold text-slate-300">{{ order.base_price|floatformat:0 }} UZS</span>
+                        </div>
+                    </div>
+                    
+                    <hr class="border-white/5">
+
+                    <div class="space-y-1">
+                        <span class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block">Yakuniy o'tkazma summasi</span>
+                        <h4 class="text-2xl font-heading font-black text-sky-400">{{ order.unique_amount|floatformat:0 }} UZS</h4>
+                        <small class="text-emerald-400 font-bold text-[10px] flex items-center gap-1">
+                            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Identifikatsiya kodi qo'shilgan
+                        </small>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="p-3 bg-slate-950/60 border border-white/5 rounded-2xl flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-450 uppercase tracking-wider">Holati</span>
+                        <span class="px-2.5 py-1 text-[10px] font-black rounded-lg uppercase bg-amber-500/10 text-amber-400">
+                            {{ order.get_status_display }}
+                        </span>
+                    </div>
+
+                    <!-- Platform Balance Payment Option -->
+                    {% if user_wallet %}
+                    <div class="p-4 bg-[#030712]/60 border border-white/5 rounded-2xl space-y-3 mb-4">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider">Hamyon balansi:</span>
+                            <span class="font-extrabold text-white">{{ user_wallet.balance|floatformat:0 }} UZS</span>
+                        </div>
+                        
+                        <button type="button" 
+                                class="w-full py-3.5 {% if user_wallet.balance >= order.unique_amount %}bg-gradient-to-r from-sky-500 to-sky-650 hover:from-sky-400 hover:to-sky-550 shadow-sky-500/10 text-slate-950 font-black{% else %}bg-slate-800 text-slate-500 cursor-not-allowed font-bold{% endif %} text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2" 
+                                id="payFromBalanceBtn" 
+                                {% if user_wallet.balance < order.unique_amount %}disabled{% endif %} 
+                                onclick="payFromBalance()">
+                            <i data-lucide="wallet" class="w-4 h-4"></i> O'z hisobimdan va sayt hisobimdan to'lash
+                        </button>
+                        
+                        {% if user_wallet.balance < order.unique_amount %}
+                            <p class="text-[10px] text-rose-450 font-semibold text-center">Balansingiz yetarli emas. To'ldirish uchun <a href="{% url 'payments:wallet' %}" class="text-sky-450 hover:underline">Hamyon</a> bo'limiga o'ting.</p>
+                        {% else %}
+                            <p class="text-[10px] text-emerald-450 font-semibold text-center flex items-center justify-center gap-1">
+                                <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400 animate-pulse"></i> Balansdan tezkor yechish va yetkazish
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex items-center justify-center gap-2 text-slate-500 my-4 text-[10px] font-bold uppercase tracking-widest">
+                        <span class="w-full h-px bg-white/5"></span>
+                        <span>yoki</span>
+                        <span class="w-full h-px bg-white/5"></span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Confirmation Button -->
+                    <button type="button" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-emerald-600/25 transition flex items-center justify-center gap-2" id="confirmPaymentBtn" onclick="submitPaymentConfirmation()">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> To'lov qildim
+                    </button>
+                </div>
+
+                <!-- Simple Progress Timeline -->
+                <div class="p-6 rounded-3xl tg-glass space-y-4">
+                    <h3 class="text-xs font-extrabold uppercase text-slate-400 tracking-wider">Jarayon xaritasi</h3>
+                    <div class="space-y-4 pl-4 border-l-2 border-white/5 relative">
+                        <!-- Step 1 -->
+                        <div class="relative pl-4">
+                            <span class="absolute -left-[23px] top-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950 bg-emerald-500 ring-4 ring-emerald-500/20"></span>
+                            <span class="text-xs font-bold text-slate-100 block">Buyurtma yaratildi</span>
+                        </div>
+                        <!-- Step 2 -->
+                        <div class="relative pl-4">
+                            <span class="absolute -left-[23px] top-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950 bg-sky-400 ring-4 ring-sky-400/25 animate-ping"></span>
+                            <span class="absolute -left-[23px] top-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950 bg-sky-400 ring-4 ring-sky-400/25"></span>
+                            <span class="text-xs font-bold text-slate-100 block">To'lov kutilmoqda</span>
+                        </div>
+                        <!-- Step 3 -->
+                        <div class="relative pl-4">
+                            <span class="absolute -left-[23px] top-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950 bg-slate-700"></span>
+                            <span class="text-xs font-bold text-slate-400 block">Admin tekshiruvi</span>
+                        </div>
+                        <!-- Step 4 -->
+                        <div class="relative pl-4">
+                            <span class="absolute -left-[23px] top-1 w-2.5 h-2.5 rounded-full border-2 border-slate-950 bg-slate-700"></span>
+                            <span class="text-xs font-bold text-slate-400 block">Avtomat yetkazish</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+</div>
+
+<!-- Glassmorphic Confirmation Modal -->
+<div id="balancePaymentModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md transition-all duration-300">
+    <div class="w-full max-w-md p-6 rounded-3xl border border-white/10 bg-[#0b1329]/95 shadow-2xl shadow-sky-500/10 space-y-6 relative overflow-hidden transform scale-95 transition-transform duration-300">
+        <!-- Glow effect -->
+        <div class="absolute -right-20 -top-20 w-40 h-40 rounded-full bg-sky-500/10 blur-3xl pointer-events-none"></div>
+        
+        <!-- Header -->
+        <div class="flex items-center gap-3 border-b border-white/5 pb-4">
+            <div class="p-2 rounded-xl bg-sky-500/10 text-sky-400">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-heading font-black text-slate-100">To'lovni tasdiqlash</h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Sayt hisobidan xarid qilish</p>
+            </div>
+            <button type="button" class="ml-auto text-slate-400 hover:text-white transition" onclick="closePaymentModal()">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Details List -->
+        <div class="space-y-3 bg-slate-950/40 p-4 rounded-2xl border border-white/5 text-xs font-semibold">
+            <div class="flex justify-between items-center py-1">
+                <span class="text-slate-400">Mahsulot:</span>
+                <span class="text-white font-bold">{{ order.product.name }}</span>
+            </div>
+            <div class="flex justify-between items-center py-1">
+                <span class="text-slate-400">Telegram Username:</span>
+                <span class="text-sky-400 font-bold">@{{ order.telegram_username }}</span>
+            </div>
+            <div class="flex justify-between items-center py-1 border-t border-white/5 pt-2">
+                <span class="text-slate-400">To'lov miqdori:</span>
+                <span class="text-emerald-400 font-black text-sm">{{ order.unique_amount|floatformat:0 }} UZS</span>
+            </div>
+            <div class="flex justify-between items-center py-1">
+                <span class="text-slate-400">Sizning balansingiz:</span>
+                <span class="text-slate-300 font-bold">{{ user_wallet.balance|floatformat:0 }} UZS</span>
+            </div>
+        </div>
+
+        <!-- Warning/Disclaimer -->
+        <div class="p-3 bg-amber-500/10 border border-amber-500/15 rounded-xl flex gap-2">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5 animate-pulse"></i>
+            <p class="text-[10px] text-amber-400 leading-normal font-bold">
+                Tasdiqlash tugmasini bosganingizda hamyoningizdan pul yechib olinadi va buyurtma zudlik bilan avtomatik yetkazib beriladi.
+            </p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-2 gap-3 pt-2">
+            <button type="button" class="py-3 bg-white/5 hover:bg-white/10 text-white font-bold text-xs rounded-xl border border-white/5 transition" onclick="closePaymentModal()">
+                Bekor qilish
+            </button>
+            <button type="button" class="py-3 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-550 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-sky-500/15 transition flex items-center justify-center gap-1.5" id="confirmModalPayBtn" onclick="executeBalancePayment()">
+                <i data-lucide="check" class="w-4 h-4"></i> Tasdiqlash
+            </button>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Expiration Countdown logic
+const expiresAt = {{ expires_at_epoch }};
+const countdownLabel = document.getElementById('countdownLabel');
+
+function updateTimer() {
+    const now = Math.floor(Date.now() / 1000);
+    const timeLeft = expiresAt - now;
+    
+    if (timeLeft <= 0) {
+        countdownLabel.textContent = "TIMEOUT";
+        countdownLabel.parentElement.className = "flex items-center gap-1.5 px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-xl";
+        return;
+    }
+    
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    countdownLabel.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+if (expiresAt) {
+    updateTimer();
+    setInterval(updateTimer, 1000);
+}
+
+// Drag & Drop / Click Upload logic
+const dropZone = document.getElementById('dropZone');
+const screenshotInput = document.getElementById('payment_screenshot');
+const uploadStatus = document.getElementById('uploadStatus');
+
+if (dropZone && screenshotInput) {
+    dropZone.addEventListener('click', () => screenshotInput.click());
+    
+    screenshotInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            uploadStatus.textContent = `Tanlangan fayl: ${this.files[0].name}`;
+            uploadStatus.className = "text-xs text-emerald-400 font-bold";
+            dropZone.classList.add('border-emerald-500/35');
+        }
+    });
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-sky-500/30');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-sky-500/30');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-sky-500/30');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            screenshotInput.files = e.dataTransfer.files;
+            uploadStatus.textContent = `Yuklangan fayl: ${e.dataTransfer.files[0].name}`;
+            uploadStatus.className = "text-xs text-emerald-400 font-bold";
+            dropZone.classList.add('border-emerald-500/35');
+        }
+    });
+}
+
+// Submit payment confirmation
+async function submitPaymentConfirmation() {
+    const btn = document.getElementById('confirmPaymentBtn');
+    LoadingState.show(btn);
+    
+    const formData = new FormData();
+    if (screenshotInput.files && screenshotInput.files[0]) {
+        formData.append('payment_screenshot', screenshotInput.files[0]);
+    }
+    formData.append('confirmation_note', document.getElementById('confirmation_note').value);
+    
+    try {
+        const response = await fetch(`/telegram-services/orders/{{ order.id }}/confirm-payment/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken()
+            },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            new Toast(data.message || 'Muvaffaqiyatli topshirildi!', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+        } else {
+            new Toast('❌ ' + (data.message || 'Xatolik yuz berdi'), 'danger');
+        }
+    } catch (error) {
+        new Toast('❌ ' + error.message, 'danger');
+    } finally {
+        LoadingState.hide(btn);
+    }
+}
+
+// Pay using platform balance
+function payFromBalance() {
+    const btn = document.getElementById('payFromBalanceBtn');
+    if (!btn || btn.disabled) return;
+    
+    openPaymentModal();
+}
+
+function openPaymentModal() {
+    const modal = document.getElementById('balancePaymentModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => {
+            modal.firstElementChild.classList.remove('scale-95');
+            modal.firstElementChild.classList.add('scale-100');
+        }, 10);
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+}
+
+function closePaymentModal() {
+    const modal = document.getElementById('balancePaymentModal');
+    if (modal) {
+        modal.firstElementChild.classList.remove('scale-100');
+        modal.firstElementChild.classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }, 150);
+    }
+}
+
+async function executeBalancePayment() {
+    const btn = document.getElementById('confirmModalPayBtn');
+    if (!btn || btn.disabled) return;
+    
+    LoadingState.show(btn);
+    
+    try {
+        const response = await fetch(`/telegram-services/orders/{{ order.id }}/pay-from-balance/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            closePaymentModal();
+            new Toast(data.message || 'To\'lov muvaffaqiyatli amalga oshirildi!', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+        } else {
+            new Toast('❌ ' + (data.message || 'Xatolik yuz berdi'), 'danger');
+        }
+    } catch (error) {
+        new Toast('❌ ' + error.message, 'danger');
+    } finally {
+        LoadingState.hide(btn);
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

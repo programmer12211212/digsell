@@ -1,0 +1,42 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Reklamalar | Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold mb-0"><i class="fas fa-ad me-2 text-primary"></i> Reklama Boshqaruvi</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'adminpanel:banner_create' %}" class="btn btn-outline-primary btn-sm">+ Banner</a>
+        <a href="{% url 'adminpanel:ad_create' %}" class="btn btn-primary btn-sm">+ Reklama</a>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Jami</small><h3>{{ ads|length }}</h3></div></div>
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Faol</small><h3 class="text-success">{{ ads|length }}</h3></div></div>
+    <div class="col-md-4"><div class="card p-3"><small class="text-muted">Bannerlar</small><h3>{{ banners|length }}</h3></div></div>
+</div>
+
+<div class="card p-0 overflow-hidden">
+    <table class="table table-dark table-hover mb-0">
+        <thead><tr><th>#</th><th>Sarlavha</th><th>Turi</th><th>Joylashuv</th><th>Kliklar</th><th>Holat</th><th></th></tr></thead>
+        <tbody>
+        {% for ad in ads %}
+        <tr>
+            <td>{{ ad.order }}</td>
+            <td class="fw-bold">{{ ad.title }}</td>
+            <td><span class="badge bg-info">{{ ad.get_ad_type_display }}</span></td>
+            <td>{{ ad.get_placement_display }}</td>
+            <td>{{ ad.click_count }}</td>
+            <td>{% if ad.is_active %}<span class="badge bg-success">Faol</span>{% else %}<span class="badge bg-secondary">O'chiq</span>{% endif %}</td>
+            <td class="text-end">
+                <a href="{% url 'adminpanel:ad_edit' ad.id %}" class="btn btn-sm btn-outline-light">Tahrir</a>
+                <form method="POST" action="{% url 'adminpanel:ad_toggle' ad.id %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-warning">Toggle</button></form>
+                <form method="POST" action="{% url 'adminpanel:ad_delete' ad.id %}" class="d-inline" onsubmit="return confirm('O\'chirilsinmi?')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">×</button></form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center py-4 text-muted">Reklamalar yo'q</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

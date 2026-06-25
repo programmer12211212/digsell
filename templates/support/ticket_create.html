@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Yangi murojaat{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto">
+    <h1 class="text-2xl font-black mb-6">Yangi murojaat</h1>
+    <form method="POST" class="glass p-6 rounded-3xl space-y-4">
+        {% csrf_token %}
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Mavzu</label>
+        <input name="subject" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl" required></div>
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Muhimlik</label>
+        <select name="priority" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl">
+            <option value="1">Past</option><option value="2">O'rta</option><option value="3">Yuqori</option>
+        </select></div>
+        <div><label class="text-xs font-bold text-slate-400 uppercase">Xabar</label>
+        <textarea name="message" rows="5" class="w-full mt-1 px-4 py-3 bg-slate-900 border border-slate-800 rounded-xl" required></textarea></div>
+        <button type="submit" class="btn-premium btn-primary w-full py-4 rounded-2xl font-bold">Yuborish</button>
+    </form>
+</div>
+{% endblock %}

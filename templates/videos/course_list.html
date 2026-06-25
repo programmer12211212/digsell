@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Video Kurslar | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+            <h1 class="text-4xl font-black font-heading">Video Akademiyasi</h1>
+            <p class="text-slate-400 mt-2">Premium video kurslar va master-klasslar</p>
+        </div>
+        {% if user.is_authenticated %}
+        <a href="{% url 'videos:my_courses' %}" class="btn-premium btn-secondary px-6 py-3 rounded-2xl font-bold text-sm">Mening Kurslarim</a>
+        {% endif %}
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+        <a href="{% url 'videos:course_list' %}" class="px-4 py-2 rounded-xl text-sm font-bold bg-primary-600 text-white">Barchasi</a>
+        {% for cat in categories %}
+        <a href="?category={{ cat.slug }}" class="px-4 py-2 rounded-xl text-sm font-bold bg-slate-800">{{ cat.name }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for course in courses %}
+        <div class="glass rounded-3xl overflow-hidden group">
+            <a href="{% url 'videos:course_detail' course.slug %}">
+                <div class="relative">
+                    <img src="{% if course.thumbnail %}{{ course.thumbnail.url }}{% else %}https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500{% endif %}" class="w-full aspect-video object-cover" alt="{{ course.title }}">
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
+                        <i data-lucide="play-circle" class="w-16 h-16 text-white"></i>
+                    </div>
+                </div>
+            </a>
+            <div class="p-5 space-y-3">
+                <h3 class="font-black">
+                    <a href="{% url 'videos:course_detail' course.slug %}" class="hover:text-primary-400">{{ course.title }}</a>
+                </h3>
+                <p class="text-xs text-slate-500 line-clamp-2">{{ course.description }}</p>
+                <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-400">{{ course.seller.username }}</span>
+                    <span class="font-black text-primary-400">{{ course.price|uzs }}</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-20 text-slate-500">Kurslar topilmadi</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

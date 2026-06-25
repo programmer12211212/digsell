@@ -1,0 +1,13 @@
+<div class="flex {% if msg.sender == request.user %}justify-end{% endif %} mb-1">
+    <div class="max-w-[70%] p-3 rounded-2xl text-sm shadow-sm
+        {% if msg.sender == request.user %}
+            bg-primary-600 text-white rounded-tr-none
+        {% else %}
+            bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none
+        {% endif %}">
+        <p>{{ msg.text }}</p>
+        <span class="text-[9px] {% if msg.sender == request.user %}text-white/50{% else %}text-slate-500{% endif %} mt-1 block">
+            {{ msg.created_at|date:"H:i" }}
+        </span>
+    </div>
+</div>

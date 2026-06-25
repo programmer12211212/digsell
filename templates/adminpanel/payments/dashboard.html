@@ -1,0 +1,121 @@
+{% extends 'adminpanel/base.html' %}
+{% load humanize %}
+
+{% block title %}To'lovlar — Admin{% endblock %}
+{% block page_title %}To'lovlar{% endblock %}
+
+{% block content %}
+{{ chart_labels|json_script:"paymentChartLabels" }}
+{{ chart_payments|json_script:"paymentChartData" }}
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="revenue-card">
+      <div class="text-muted small mb-1">Bugungi tushum</div>
+      <div class="amount">{{ stats.today_revenue|floatformat:0|intcomma }}</div>
+      <div class="text-muted small">UZS</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="revenue-card" style="background:linear-gradient(135deg,rgba(0,217,255,0.06),transparent)">
+      <div class="text-muted small mb-1">Oylik tushum</div>
+      <div class="amount" style="color:var(--secondary)">{{ stats.monthly_revenue|floatformat:0|intcomma }}</div>
+      <div class="text-muted small">UZS</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="revenue-card" style="background:linear-gradient(135deg,rgba(255,184,0,0.06),transparent)">
+      <div class="text-muted small mb-1">Yillik tushum</div>
+      <div class="amount" style="color:var(--warning)">{{ stats.yearly_revenue|floatformat:0|intcomma }}</div>
+      <div class="text-muted small">UZS</div>
+    </div>
+  </div>
+  <div class="col-md-6 col-xl-3">
+    <div class="revenue-card" style="background:linear-gradient(135deg,rgba(255,77,77,0.06),transparent)">
+      <div class="text-muted small mb-1">Kutilayotgan to'lovlar</div>
+      <div class="amount" style="color:var(--danger)">{{ stats.pending_payments|floatformat:0|intcomma }}</div>
+      <div class="text-muted small">{{ stats.pending_count }} ta so'rov</div>
+    </div>
+  </div>
+</div>
+
+<div class="card-neon mb-4">
+  <h5 class="mb-3">Revenue Analytics</h5>
+  <canvas id="revenueChart" height="100"></canvas>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-7">
+    <div class="card-neon">
+      <h5 class="mb-3">Tranzaksiyalar</h5>
+      <table class="table-neon w-100">
+        <thead><tr><th>User</th><th>Summa</th><th>Provider</th><th>Status</th><th>Sana</th></tr></thead>
+        <tbody>
+          {% for tx in transactions %}
+          <tr>
+            <td>{{ tx.user.username }}</td>
+            <td class="fw-bold">{{ tx.amount|floatformat:0 }} UZS</td>
+            <td>{{ tx.provider }}</td>
+            <td><span class="badge-status badge-active">{{ tx.status }}</span></td>
+            <td class="text-muted small">{{ tx.created_at|date:"d.m.Y H:i" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="text-center text-muted py-4">Tranzaksiyalar yo'q</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card-neon">
+      <h5 class="mb-3">Kutilayotgan yechib olishlar</h5>
+      {% for w in withdrawals %}
+      <div class="d-flex justify-content-between align-items-center py-3 border-bottom" style="border-color:var(--card-border)!important">
+        <div>
+          <div class="fw-bold">{{ w.user.username }}</div>
+          <div class="text-muted small">{{ w.amount|floatformat:0 }} UZS · {{ w.created_at|date:"d.m.Y" }}</div>
+        </div>
+        {% if w.status == 'PENDING' %}
+        <div class="d-flex gap-1">
+          <form method="post" action="{% url 'adminpanel:approve_withdrawal' w.id %}">{% csrf_token %}<button class="btn-primary-neon btn-sm">✓</button></form>
+          <form method="post" action="{% url 'adminpanel:reject_withdrawal' w.id %}">{% csrf_token %}<button class="btn-danger-neon btn-sm">✗</button></form>
+        </div>
+        {% else %}
+        <span class="badge-status badge-{{ w.status|lower }}">{{ w.get_status_display }}</span>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="text-muted text-center py-4">So'rovlar yo'q</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const ctx = document.getElementById('revenueChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: JSON.parse(document.getElementById('paymentChartLabels').textContent),
+      datasets: [{
+        label: 'Daromad',
+        data: JSON.parse(document.getElementById('paymentChartData').textContent),
+        backgroundColor: 'rgba(0,255,132,0.5)',
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.5)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: 'rgba(255,255,255,0.5)' } },
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

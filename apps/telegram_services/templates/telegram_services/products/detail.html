@@ -1,0 +1,187 @@
+{% extends "telegram_services/base.html" %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Telegram Xizmatlari{% endblock %}
+
+{% block telegram_content %}
+<div class="max-w-5xl mx-auto py-4">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs font-bold text-slate-400 mb-6">
+        <a href="{% url 'telegram_services:product_list' %}" class="hover:text-primary-500 transition">Mahsulotlar</a>
+        <span>/</span>
+        <span class="text-slate-600 dark:text-slate-200">{{ product.name }}</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Left: Image/Icon -->
+        <div class="p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 flex flex-col justify-center items-center min-h-[400px] shadow-lg">
+            <div class="text-[120px] select-none animate-pulse">{{ product.icon }}</div>
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="max-h-64 object-contain mt-6">
+            {% endif %}
+        </div>
+
+        <!-- Right: Details & Purchase -->
+        <div class="space-y-6">
+            <!-- Header -->
+            <div class="space-y-3">
+                <a href="{% url 'telegram_services:product_list' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-primary-500 transition">
+                    <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Ro'yxatga qaytish
+                </a>
+                <h1 class="text-3xl font-heading font-black text-slate-900 dark:text-white tracking-tight">{{ product.name }}</h1>
+                <div class="flex gap-2">
+                    <span class="px-2.5 py-1 text-[10px] font-black rounded-lg uppercase bg-primary-500/10 text-primary-500">
+                        {{ product.category.display_name }}
+                    </span>
+                    {% if product.is_featured %}
+                        <span class="px-2.5 py-1 text-[10px] font-black rounded-lg uppercase bg-amber-500/10 text-amber-500">
+                            ⭐ Tanlangan
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Description -->
+            <p class="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">{{ product.description }}</p>
+
+            <!-- Attributes Card -->
+            <div class="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/20 text-xs font-medium grid grid-cols-2 gap-4">
+                {% if product.quantity %}
+                    <div>
+                        <span class="text-slate-400 block mb-0.5">Hajmi (Soni)</span>
+                        <span class="font-extrabold text-slate-900 dark:text-white text-sm">{{ product.quantity }} {{ product.unit }}</span>
+                    </div>
+                {% endif %}
+                <div>
+                    <span class="text-slate-400 block mb-0.5">Yetkazib berish</span>
+                    <span class="font-extrabold text-slate-900 dark:text-white text-sm">Avtomatik</span>
+                </div>
+                {% if product.price_usd %}
+                    <div>
+                        <span class="text-slate-400 block mb-0.5">Narxi (USD)</span>
+                        <span class="font-extrabold text-slate-900 dark:text-white text-sm">${{ product.price_usd }}</span>
+                    </div>
+                {% endif %}
+                <div>
+                    <span class="text-slate-400 block mb-0.5">Provayder</span>
+                    <span class="font-extrabold text-slate-900 dark:text-white text-sm">Fragmently API</span>
+                </div>
+            </div>
+
+            <!-- Price & Button Card -->
+            <div class="p-6 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/30 shadow-lg flex justify-between items-center gap-4">
+                <div>
+                    <span class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block">Jami summa</span>
+                    <span class="text-2xl font-black text-primary-500">{{ product.price_uzs|floatformat:0 }} UZS</span>
+                </div>
+                <div class="flex-1 max-w-xs">
+                    {% if product.is_available %}
+                        {% if product.category.name == 'gifts' %}
+                            {% if telegram_settings.gifts_redirect_enabled %}
+                                <button id="buyGiftBtn" class="w-full py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-rose-600/20 transition flex items-center justify-center gap-2">
+                                    🎁 Buy Gift
+                                </button>
+                            {% else %}
+                                <button class="w-full py-3.5 bg-slate-800 text-slate-500 font-bold text-xs rounded-2xl cursor-not-allowed" disabled>
+                                    🎁 Buy Gift (Vaqtincha faolsiz)
+                                </button>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'telegram_services:checkout' product.pk %}" class="w-full py-3.5 bg-primary-600 hover:bg-primary-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-primary-600/20 transition flex items-center justify-center gap-2">
+                                <i data-lucide="shopping-cart" class="w-4 h-4"></i> Sotib olish
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <button class="w-full py-3.5 bg-slate-100 dark:bg-slate-850 text-slate-400 font-bold text-xs rounded-2xl cursor-not-allowed" disabled>
+                            Tugagan
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Perks Card -->
+            <div class="p-5 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/10 space-y-2 text-xs font-semibold">
+                <div class="flex items-center gap-2 text-emerald-500">
+                    <i data-lucide="check" class="w-4 h-4"></i> Tezkor o'tkazish (1-3 daqiqa)
+                </div>
+                {% if product.auto_delivery %}
+                    <div class="flex items-center gap-2 text-emerald-500">
+                        <i data-lucide="check" class="w-4 h-4"></i> Avtomatik provayder integratsiyasi
+                    </div>
+                {% endif %}
+                <div class="flex items-center gap-2 text-emerald-500">
+                    <i data-lucide="check" class="w-4 h-4"></i> Manual to'lov nazorati
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gift Purchase Modal -->
+{% if product.category.name == 'gifts' and telegram_settings.gifts_redirect_enabled %}
+<div id="giftModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 transition-all duration-300 animate-fade-in">
+    <div class="relative w-full max-w-md bg-[#0d1126]/95 border border-white/10 rounded-3xl p-6 md:p-8 space-y-6 shadow-2xl">
+        <h3 class="text-xl font-heading font-black text-slate-100 flex items-center gap-2">
+            🎁 Telegram orqali xarid qilish
+        </h3>
+        
+        <p class="text-xs font-semibold text-slate-400 leading-relaxed">
+            Siz <span class="text-rose-400 font-bold">{{ gifts_telegram_username }}</span> bilan bog'lanasiz.
+        </p>
+
+        <div class="p-4 rounded-2xl border border-white/5 bg-slate-950/40 text-xs font-semibold space-y-3">
+            <div class="flex justify-between">
+                <span class="text-slate-400">Mahsulot:</span>
+                <span class="text-slate-100 font-extrabold">{{ product.name }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-slate-400">Narx:</span>
+                <span class="text-rose-400 font-black">{{ product.price_uzs|floatformat:0 }} so'm</span>
+            </div>
+        </div>
+
+        <div class="flex gap-4 pt-2">
+            <button id="cancelGiftBtn" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs rounded-2xl transition">
+                ❌ Bekor qilish
+            </button>
+            <a id="confirmGiftBtn" href="{{ telegram_gift_url }}" target="_blank" class="flex-1 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-2xl transition flex items-center justify-center gap-2">
+                📨 Telegramda yozish
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    const buyGiftBtn = document.getElementById('buyGiftBtn');
+    const giftModal = document.getElementById('giftModal');
+    const cancelGiftBtn = document.getElementById('cancelGiftBtn');
+    const confirmGiftBtn = document.getElementById('confirmGiftBtn');
+
+    if (buyGiftBtn && giftModal) {
+        buyGiftBtn.addEventListener('click', () => {
+            giftModal.classList.remove('hidden');
+        });
+    }
+
+    if (cancelGiftBtn && giftModal) {
+        cancelGiftBtn.addEventListener('click', () => {
+            giftModal.classList.add('hidden');
+        });
+    }
+
+    if (confirmGiftBtn && giftModal) {
+        confirmGiftBtn.addEventListener('click', () => {
+            giftModal.classList.add('hidden');
+            
+            // Fallback to deep link resolve to open native app
+            const rawUsername = "{{ gifts_telegram_username }}".replace('@', '');
+            const tgLink = `tg://resolve?domain=${rawUsername}&text=` + encodeURIComponent(decodeURIComponent("{{ telegram_gift_url }}".split('?text=')[1] || ""));
+            
+            setTimeout(() => {
+                window.location.href = tgLink;
+            }, 150);
+        });
+    }
+</script>
+{% endblock %}

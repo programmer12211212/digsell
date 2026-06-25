@@ -1,0 +1,177 @@
+{% extends 'adminpanel/base.html' %}
+{% load static humanize %}
+
+{% block title %}Dashboard — Digsell.uz Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+{{ chart.labels|json_script:"chartLabels" }}
+{{ chart.users|json_script:"chartUsers" }}
+{{ chart.listings|json_script:"chartListings" }}
+{{ chart.payments|json_script:"chartPayments" }}
+{{ chart.orders|json_script:"chartOrders" }}
+
+<section class="mb-4">
+  <div class="row g-3">
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">👥</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.total_users }}">0</div>
+            <div class="stat-label">Jami foydalanuvchilar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend {% if stats.trends.users < 0 %}down{% endif %}">{% if stats.trends.users >= 0 %}+{% endif %}{{ stats.trends.users }}%</span>
+          <div class="progress-mini"><span style="width: {{ stats.trends.users|default:0 }}%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">🆕</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.new_users_today }}">0</div>
+            <div class="stat-label">Bugungi yangi foydalanuvchilar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend">+{{ stats.trends.users }}%</span>
+          <div class="progress-mini"><span style="width: 65%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">📢</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.active_listings }}">0</div>
+            <div class="stat-label">Aktiv e'lonlar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend">+{{ stats.trends.listings }}%</span>
+          <div class="progress-mini"><span style="width: 70%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">⏳</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.pending_listings }}">0</div>
+            <div class="stat-label">Tekshiruv kutayotgan e'lonlar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend warn">+{{ stats.trends.listings }}%</span>
+          <div class="progress-mini"><span style="width: 40%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">🧾</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.orders_today }}">0</div>
+            <div class="stat-label">Bugungi buyurtmalar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend">+{{ stats.trends.orders }}%</span>
+          <div class="progress-mini"><span style="width: 55%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">💳</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.total_transactions }}">0</div>
+            <div class="stat-label">Jami tranzaksiyalar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend">+{{ stats.trends.transactions }}%</span>
+          <div class="progress-mini"><span style="width: 80%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">⭐</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.premium_users }}">0</div>
+            <div class="stat-label">Premium foydalanuvchilar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend">+{{ stats.trends.premium }}%</span>
+          <div class="progress-mini"><span style="width: 45%"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-xl-3">
+      <div class="stat-card">
+        <div class="d-flex align-items-center gap-3">
+          <div class="stat-icon">🎫</div>
+          <div>
+            <div class="stat-value" data-counter="{{ stats.open_tickets }}">0</div>
+            <div class="stat-label">Ochilgan support ticketlar</div>
+          </div>
+        </div>
+        <div class="stat-footer">
+          <span class="trend warn">+{{ stats.trends.tickets }}%</span>
+          <div class="progress-mini"><span style="width: 30%"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="row g-4">
+  <div class="col-lg-8">
+    <div class="card-neon">
+      <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <h5 class="mb-0">Analytics</h5>
+        <div class="d-flex gap-1 flex-wrap" id="chartRangeTabs">
+          <button class="tab-btn" data-range="24h">24 soat</button>
+          <button class="tab-btn" data-range="7d">7 kun</button>
+          <button class="tab-btn active" data-range="30d">30 kun</button>
+          <button class="tab-btn" data-range="90d">90 kun</button>
+          <button class="tab-btn" data-range="1y">1 yil</button>
+        </div>
+      </div>
+      <canvas id="mainChart" height="120"></canvas>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card-neon h-100">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <span class="live-dot"></span>
+        <h5 class="mb-0">Recent Activity</h5>
+      </div>
+      <div id="activityStream">
+        {% for a in activities %}
+        <div class="activity-item">
+          <span class="activity-icon">{{ a.icon }}</span>
+          <div>
+            <div>{{ a.text }}</div>
+            <div class="activity-time">{{ a.time|slice:":16" }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-muted small">Faoliyat yo'q</div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

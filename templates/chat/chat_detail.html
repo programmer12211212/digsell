@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}Chat: {{ recipient.username }} | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="flex-1 min-h-0 flex flex-col lg:flex-row gap-6">
+    <!-- Chat Sidebar (Reusable) -->
+    <div class="lg:hidden mb-4">
+        <div class="glass rounded-2xl border-slate-800/50 overflow-hidden">
+            <div class="p-4 border-b border-slate-800/50 bg-slate-900/30">
+                <h2 class="font-bold text-lg">Suhbatlar</h2>
+            </div>
+            <div class="max-h-72 overflow-y-auto divide-y divide-slate-800/50">
+                {% for conv in conversations %}
+                <a href="{% url 'chat:chat_detail' conv.id %}" class="flex items-center gap-4 p-4 hover:bg-slate-800/50 transition-colors {% if conv.id == conversation.id %}bg-primary-500/10 border-l-2 border-primary-500{% endif %}">
+                    <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-primary-400 font-bold border border-slate-700">
+                        {{ conv.recipient.username|first|upper }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-white text-sm truncate">{{ conv.recipient.username }}</p>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="w-80 glass rounded-2xl border-slate-800/50 hidden lg:flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-slate-800/50 bg-slate-900/30">
+            <h2 class="font-bold text-lg">Suhbatlar</h2>
+        </div>
+        <div class="flex-1 overflow-y-auto divide-y divide-slate-800/50">
+            {% for conv in conversations %}
+            <a href="{% url 'chat:chat_detail' conv.id %}" class="flex items-center gap-4 p-4 hover:bg-slate-800/50 transition-colors {% if conv.id == conversation.id %}bg-primary-500/10 border-l-2 border-primary-500{% endif %}">
+                <div class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-primary-400 font-bold border border-slate-700">
+                    {{ conv.recipient.username|first|upper }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-bold text-white text-sm truncate">{{ conv.recipient.username }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Main Chat Window -->
+    <div class="flex-1 glass rounded-2xl border-slate-800/50 flex flex-col min-h-0 overflow-hidden">
+        <!-- Chat Header -->
+        <div class="p-4 border-b border-slate-800/50 bg-slate-900/30 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg shadow-primary-500/20">
+                    {{ recipient.username|first|upper }}
+                </div>
+                <div>
+                    <p class="font-bold text-white">{{ recipient.username }}</p>
+                    <p class="text-[10px] text-emerald-500 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Online
+                    </p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button class="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400"><i data-lucide="phone" class="w-5 h-5"></i></button>
+                <button class="p-2 hover:bg-slate-800 rounded-lg transition-colors text-slate-400"><i data-lucide="video" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+
+        <!-- Messages Area -->
+        <div 
+            class="flex-1 overflow-y-auto p-6 space-y-4 flex flex-col" 
+            id="chat-messages-container"
+            hx-get="{% url 'chat:poll_messages' conversation.id %}"
+            hx-trigger="every 5s"
+            hx-swap="innerHTML"
+        >
+            {% include 'chat/partials/message_list.html' %}
+        </div>
+
+        <!-- Message Input -->
+        <div class="p-4 bg-slate-900/30 border-t border-slate-800/50" x-data="{ text: '' }">
+            <form 
+                hx-post="{% url 'chat:send_message' conversation.id %}" 
+                hx-target="#chat-messages-container" 
+                hx-swap="innerHTML"
+                x-on:htmx:after-request="text = ''"
+                class="flex gap-4"
+            >
+                {% csrf_token %}
+                <input 
+                    type="text" 
+                    name="text" 
+                    x-model="text"
+                    placeholder="Xabar yozing..." 
+                    class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary-500/50 transition-all text-sm"
+                    autocomplete="off"
+                    required
+                >
+                <button 
+                    type="submit" 
+                    class="p-3 bg-primary-500 hover:bg-primary-400 text-white rounded-xl transition-all shadow-lg shadow-primary-500/20"
+                    :disabled="text.trim() === ''"
+                >
+                    <i data-lucide="send" class="w-5 h-5"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+    <script>
+        document.addEventListener('htmx:afterSwap', function(evt) {
+            if (evt.detail && evt.detail.target && evt.detail.target.id === "chat-messages-container") {
+                const container = evt.detail.target;
+                if (container) container.scrollTop = container.scrollHeight;
+            }
+        });
+        // Initial scroll (guarded)
+        (function(){
+            const container = document.getElementById('chat-messages-container');
+            if (container) container.scrollTop = container.scrollHeight;
+        })();
+    </script>
+{% endblock %}

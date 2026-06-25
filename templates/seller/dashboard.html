@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Seller Panel{% endblock %}
+{% block content %}
+<div class="space-y-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-black font-heading">Seller Panel</h1>
+            <p class="text-slate-400">Mahsulot va videolaringizni boshqaring</p>
+        </div>
+        {% if request.user.is_seller_approved or request.user.role == 'SELLER' or request.user.is_staff %}
+        <a href="{% url 'seller:product_create' %}" class="btn-premium btn-primary px-6 py-3 rounded-2xl font-bold">+ Mahsulot qo'shish</a>
+        {% else %}
+        <a href="{% url 'users:seller_apply' %}" class="btn-premium btn-secondary px-6 py-3 rounded-2xl font-bold">Sotuvchi bo'lish uchun murojaat</a>
+        {% endif %}
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="glass p-5 rounded-2xl"><p class="text-xs text-slate-400 uppercase">Mahsulotlar</p><p class="text-3xl font-black">{{ products|length }}</p></div>
+        <div class="glass p-5 rounded-2xl"><p class="text-xs text-slate-400 uppercase">Jami sotuv</p><p class="text-3xl font-black text-emerald-400">{{ total_sales }}</p></div>
+    </div>
+    <div class="glass rounded-3xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-800/50"><tr>
+                <th class="px-6 py-4 text-left">Nomi</th><th class="px-6 py-4 text-left">Turi</th>
+                <th class="px-6 py-4 text-left">Narx</th><th class="px-6 py-4 text-left">Sotuv</th><th class="px-6 py-4"></th>
+            </tr></thead>
+            <tbody>
+            {% for p in products %}
+            <tr class="border-t border-slate-800">
+                <td class="px-6 py-4 font-bold">{{ p.title }}</td>
+                <td class="px-6 py-4 text-slate-400">{{ p.get_product_type_display }}</td>
+                <td class="px-6 py-4">{{ p.price|floatformat:0 }}</td>
+                <td class="px-6 py-4">{{ p.sales_count }}</td>
+                <td class="px-6 py-4 text-right">
+                    <a href="{% url 'seller:product_edit' p.id %}" class="text-primary-400 font-bold text-xs">Tahrir</a>
+                    <a href="{% url 'marketplace:product_detail' p.slug %}" class="text-slate-400 font-bold text-xs ml-3">Ko'rish</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">Mahsulotlar yo'q. Birinchi mahsulotingizni qo'shing!</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

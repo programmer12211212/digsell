@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block title %}Hamyon Tarixi | Digsell.uz{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-8">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-black font-heading">Hamyon Tarixi</h1>
+        <div class="glass px-6 py-3 rounded-2xl">
+            <span class="text-xs text-slate-400 uppercase font-bold">Balans: </span>
+            <span class="font-black text-emerald-400">{{ wallet.balance|floatformat:0 }} so'm</span>
+        </div>
+    </div>
+
+    <div class="glass rounded-3xl overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-800/50">
+                <tr>
+                    <th class="px-6 py-4 text-left font-bold">Sana</th>
+                    <th class="px-6 py-4 text-left font-bold">Sabab</th>
+                    <th class="px-6 py-4 text-right font-bold">Summa</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tx in transactions %}
+                <tr class="border-t border-slate-800">
+                    <td class="px-6 py-4 text-slate-400">{{ tx.created_at|date:"d.m.Y H:i" }}</td>
+                    <td class="px-6 py-4">{{ tx.reason }}</td>
+                    <td class="px-6 py-4 text-right font-black {% if tx.tx_type == 'IN' %}text-emerald-400{% else %}text-rose-400{% endif %}">
+                        {% if tx.tx_type == 'IN' %}+{% else %}-{% endif %}{{ tx.amount|floatformat:0 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="px-6 py-8 text-center text-slate-500">Tranzaksiyalar yo'q</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

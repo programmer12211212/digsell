@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}{{ contest.title }} | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-8">
+    <!-- Breadcrumbs -->
+    <nav class="text-sm text-slate-500 flex items-center gap-2">
+        <a href="{% url 'freelance:contest_list' %}" class="hover:text-primary-500">Tanlovlar</a>
+        <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        <span class="text-slate-900 dark:text-white font-medium truncate">{{ contest.title }}</span>
+    </nav>
+
+    <!-- Contest Header Info -->
+    <header class="glass p-8 rounded-3xl border border-slate-200 dark:border-slate-800 flex flex-col md:flex-row justify-between gap-6">
+        <div class="space-y-4">
+            <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase
+                    {% if contest.status == 'OPEN' %}
+                        bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
+                    {% elif contest.status == 'SELECTING' %}
+                        bg-amber-500/10 text-amber-500
+                    {% else %}
+                        bg-slate-200 dark:bg-slate-800 text-slate-500
+                    {% endif %}">
+                    {{ contest.get_status_display }}
+                </span>
+                {% if contest.category %}
+                <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase bg-primary-500/10 text-primary-500">{{ contest.category.name }}</span>
+                {% endif %}
+            </div>
+            <h1 class="text-3xl font-heading font-bold text-slate-900 dark:text-white">{{ contest.title }}</h1>
+            <p class="text-sm text-slate-500">
+                Mijoz: <span class="font-bold text-slate-700 dark:text-slate-300">{{ contest.client.username }}</span> · 
+                Muddat: <span class="font-bold text-slate-700 dark:text-slate-300">{{ contest.deadline|date:"d M, Y (H:i)" }}</span>
+            </p>
+        </div>
+        <div class="md:text-right shrink-0 bg-primary-500/5 dark:bg-primary-500/10 p-6 rounded-2xl border border-primary-500/10 self-start md:self-center">
+            <span class="text-xs text-slate-400 block uppercase tracking-wider font-bold">Mukofot jamg'armasi</span>
+            <span class="text-3xl font-black text-primary-500">{{ contest.reward|uzs }}</span>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-8">
+            <section class="glass p-8 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="file-text" class="text-primary-500 w-5 h-5"></i>
+                    Batafsil shartlar va topshiriq
+                </h2>
+                <div class="text-slate-600 dark:text-slate-300 space-y-4 leading-relaxed whitespace-pre-wrap">{{ contest.description }}</div>
+            </section>
+
+            <!-- Submissions Showcase -->
+            <section class="space-y-4">
+                <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <i data-lucide="gallery-thumbnails" class="text-primary-500 w-5 h-5"></i>
+                    Topshirilgan ishlar ({{ submissions.count }})
+                </h2>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {% for sub in submissions %}
+                    <div class="glass p-4 rounded-2xl border {% if sub.is_winner %}border-amber-500 ring-2 ring-amber-500/20{% else %}border-slate-200 dark:border-slate-800{% endif %} flex flex-col justify-between relative overflow-hidden">
+                        {% if sub.is_winner %}
+                        <div class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
+                            <i data-lucide="trophy" class="w-3.5 h-3.5"></i> G'olib
+                        </div>
+                        {% endif %}
+                        
+                        <div class="space-y-3">
+                            {% if sub.file %}
+                            <a href="{{ sub.file.url }}" target="_blank" class="block group relative overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                                <img src="{{ sub.file.url }}" alt="Submission" class="w-full h-48 object-contain group-hover:scale-105 transition duration-300">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                                    <span class="text-xs text-white font-bold bg-primary-600 px-3 py-1.5 rounded-lg">Kattalashtirish</span>
+                                </div>
+                            </a>
+                            {% endif %}
+                            
+                            <p class="text-xs text-slate-500">Kimdan: <span class="font-bold text-slate-700 dark:text-slate-300">{{ sub.freelancer.username }}</span></p>
+                            <p class="text-sm text-slate-600 dark:text-slate-400">{{ sub.description }}</p>
+                        </div>
+                        
+                        {% if contest.client == request.user and contest.status == 'OPEN' %}
+                        <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+                            <form method="post" action="{% url 'freelance:contest_select_winner' sub.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="award" class="w-4 h-4"></i> G'olib deb belgilash
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <div class="col-span-full text-center py-12 glass rounded-2xl border-dashed border-slate-300 dark:border-slate-700">
+                        <i data-lucide="image" class="w-10 h-10 text-slate-400 mx-auto mb-2"></i>
+                        <p class="text-sm text-slate-400">Hozircha hech qanday ish topshirilmagan.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+
+        <!-- Sidebar Actions -->
+        <div class="space-y-6">
+            {% if request.user.is_authenticated %}
+                {% if contest.client != request.user %}
+                    {% if contest.status == 'OPEN' %}
+                        <div class="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                                <i data-lucide="upload" class="text-primary-500 w-5 h-5"></i>
+                                Ishingizni topshiring
+                            </h3>
+                            
+                            {% if user_submission %}
+                            <div class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 p-4 rounded-xl text-xs font-bold">
+                                Siz allaqachon ushbu tanlovga ish topshirgansiz. Istasangiz, quyidagi forma orqali yangilashingiz mumkin.
+                            </div>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'freelance:contest_submit' contest.id %}" enctype="multipart/form-data" class="space-y-4">
+                                {% csrf_token %}
+                                <div class="space-y-1">
+                                    {{ form.description.label_tag }}
+                                    {{ form.description }}
+                                </div>
+                                <div class="space-y-1">
+                                    {{ form.file.label_tag }}
+                                    {{ form.file }}
+                                </div>
+                                <button type="submit" class="w-full py-3 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl transition text-sm flex items-center justify-center gap-2">
+                                    <i data-lucide="check" class="w-5 h-5"></i>
+                                    Topshirish
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-2">
+                            <i data-lucide="lock" class="w-8 h-8 text-slate-400 mx-auto"></i>
+                            <h3 class="font-bold text-slate-500">Qabul yopilgan</h3>
+                            <p class="text-xs text-slate-400">Ushbu tanlov yakunlangan yoki faol emas.</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <!-- Owner actions -->
+                    <div class="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 space-y-4">
+                        <h3 class="font-bold text-lg text-slate-900 dark:text-white">Boshqaruv paneli</h3>
+                        <p class="text-xs text-slate-500 leading-relaxed">Siz ushbu tanlov yaratuvchisisiz. Freelancerlar yuborgan ishlarni ko'rib chiqing va eng yaxshisini tanlab g'olib deb belgilang.</p>
+                        <div class="p-4 bg-primary-500/5 rounded-xl border border-primary-500/10">
+                            <span class="text-xs text-slate-400 block font-bold">Escrow to'lovi holati:</span>
+                            <span class="text-sm font-black text-slate-700 dark:text-slate-300">
+                                {% if contest.escrow_transaction %}
+                                    {{ contest.escrow_transaction.get_status_display }}
+                                {% else %}
+                                    To'lanmagan
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
+                    <i data-lucide="user-check" class="w-10 h-10 text-slate-400 mx-auto"></i>
+                    <h3 class="font-bold text-slate-700 dark:text-slate-300">Tizimga kiring</h3>
+                    <p class="text-xs text-slate-500">Tanlovda ishtirok etish yoki g'olibni belgilash uchun avval profilingizga kiring.</p>
+                    <a href="{% url 'users:login' %}?next={{ request.path }}" class="w-full inline-block py-3 bg-primary-600 text-white font-bold rounded-xl text-sm">Kirish</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

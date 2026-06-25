@@ -1,0 +1,16 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Monitoring{% endblock %}
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="fas fa-server text-info me-2"></i> Server Monitoring</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="card p-3"><small>CPU</small><h3>{{ server.cpu_usage }}%</h3><div class="progress mt-2" style="height:4px"><div class="progress-bar bg-primary" style="width:{{ server.cpu_usage }}%"></div></div></div></div>
+    <div class="col-md-3"><div class="card p-3"><small>RAM</small><h3>{{ server.ram_usage }}%</h3><div class="progress mt-2" style="height:4px"><div class="progress-bar bg-warning" style="width:{{ server.ram_usage }}%"></div></div></div></div>
+    <div class="col-md-3"><div class="card p-3"><small>Disk</small><h3>{{ server.disk_usage }}%</h3><div class="progress mt-2" style="height:4px"><div class="progress-bar bg-danger" style="width:{{ server.disk_usage }}%"></div></div></div></div>
+    <div class="col-md-3"><div class="card p-3"><small>OS</small><h5>{{ server.os }}</h5><small class="text-muted">Python {{ server.python_version }}</small></div></div>
+</div>
+<div class="row g-3">
+    <div class="col-md-4"><div class="card p-4 text-center"><h5>Database</h5><span class="badge {% if db_status == 'OK' %}bg-success{% else %}bg-danger{% endif %} fs-6">{{ db_status }}</span></div></div>
+    <div class="col-md-4"><div class="card p-4 text-center"><h5>Redis/Cache</h5><span class="badge {% if redis_status == 'OK' %}bg-success{% else %}bg-warning{% endif %} fs-6">{{ redis_status }}</span></div></div>
+    <div class="col-md-4"><div class="card p-4 text-center"><h5>DEBUG</h5><span class="badge {% if debug_mode %}bg-warning{% else %}bg-success{% endif %} fs-6">{% if debug_mode %}YONIQ{% else %}O'CHIQ{% endif %}</span></div></div>
+</div>
+{% endblock %}

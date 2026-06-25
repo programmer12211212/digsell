@@ -1,0 +1,43 @@
+{% load static %}
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{ video.title }}</title>
+  <link href="https://vjs.zencdn.net/7.20.3/video-js.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <script src="https://vjs.zencdn.net/7.20.3/video.min.js"></script>
+</head>
+<body>
+  <h1>{{ video.title }}</h1>
+  {% if purchased %}
+    <video id="player" class="video-js vjs-default-skin" controls preload="auto" width="800" height="450"></video>
+    <script>
+      (async function(){
+        const resp = await fetch('{% url "videos:token" video.id %}', {credentials: 'include'});
+        if (!resp.ok) { alert('Cannot obtain token'); return; }
+        const data = await resp.json();
+        const token = data.token;
+        const manifest = '{% url "videos:serve_hls" 0 "master.m3u8" %}'.replace('/0/', '/{{ video.id }}/') + '?token=' + encodeURIComponent(token);
+        const video = document.getElementById('player');
+        if (Hls.isSupported()) {
+          const hls = new Hls();
+          hls.loadSource(manifest);
+          hls.attachMedia(video);
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = manifest;
+        } else {
+          alert('Your browser does not support HLS');
+        }
+      })();
+    </script>
+  {% else %}
+    <p>You must purchase this video to watch full content.</p>
+    {% if video.preview and video.preview.file %}
+      <video controls width="640">
+        <source src="{{ video.preview.file.url }}" type="video/mp4">
+      </video>
+    {% endif %}
+  {% endif %}
+</body>
+</html>

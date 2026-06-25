@@ -1,0 +1,39 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Sozlamalar — Admin{% endblock %}
+{% block page_title %}Sozlamalar{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card-neon">
+      <h5 class="mb-3">Platforma sozlamalari</h5>
+      <form method="post" action="{% url 'adminpanel:settings_save' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="text-muted small">Sayt nomi</label>
+          <input class="form-control-neon w-100" name="site_name" value="{{ site_name }}">
+        </div>
+        <div class="mb-3">
+          <label class="text-muted small">Debug rejimi</label>
+          <input class="form-control-neon w-100" value="{% if debug %}Yoqilgan{% else %}O'chirilgan{% endif %}" disabled>
+        </div>
+        <button type="submit" class="btn-primary-neon">Saqlash</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card-neon">
+      <h5 class="mb-3">Xavfsizlik</h5>
+      <ul class="list-unstyled small">
+        <li class="mb-2">✓ CSRF himoyasi</li>
+        <li class="mb-2">✓ XSS himoyasi</li>
+        <li class="mb-2">✓ Rate limiting</li>
+        <li class="mb-2">✓ Audit logs</li>
+        <li class="mb-2">✓ Brute-force himoyasi (django-axes)</li>
+      </ul>
+      <a href="{% url 'adminpanel:security' %}" class="btn-ghost">Security markaz →</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

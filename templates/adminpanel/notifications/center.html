@@ -1,0 +1,26 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Bildirishnomalar — Admin{% endblock %}
+{% block page_title %}Bildirishnomalar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div><span class="live-dot d-inline-block me-2"></span> Real-time bildirishnomalar</div>
+  <button class="btn-ghost" onclick="adminPost('{% url 'adminpanel:api_mark_all_notif' %}', {}).then(() => location.reload())">Hammasini o'qilgan deb belgilash</button>
+</div>
+
+<div class="card-neon">
+  {% for n in notifications %}
+  <div class="notif-item {% if not n.is_read %}unread{% endif %} d-block">
+    <div class="d-flex justify-content-between">
+      <strong class="small">{{ n.title }}</strong>
+      <span class="text-muted small">{{ n.created_at|date:"d.m.Y H:i" }}</span>
+    </div>
+    <div class="text-muted small mt-1">{{ n.message }}</div>
+    <span class="badge-status badge-active mt-2">{{ n.get_notif_type_display }}</span>
+  </div>
+  {% empty %}
+  <div class="text-center text-muted py-5">Bildirishnomalar yo'q</div>
+  {% endfor %}
+</div>
+{% endblock %}

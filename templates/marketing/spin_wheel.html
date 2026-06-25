@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Spin Wheel | Digsell.uz{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto text-center space-y-8">
+    <h1 class="text-4xl font-black font-heading">Spin Wheel</h1>
+
+    {% if error %}
+    <div class="glass p-6 rounded-3xl text-rose-400 border border-rose-500/20">
+        <i data-lucide="alert-circle" class="w-12 h-12 mx-auto mb-4"></i>
+        <p>{{ error }}</p>
+        <a href="{% url 'marketing:bonus_page' %}" class="mt-4 inline-block text-primary-400 font-bold">Orqaga</a>
+    </div>
+    {% elif can_spin %}
+    <div class="relative w-72 h-72 mx-auto">
+        <div class="w-full h-full rounded-full bg-gradient-to-br from-primary-600 via-amber-500 to-rose-500 flex items-center justify-center shadow-2xl animate-pulse">
+            <div class="w-56 h-56 rounded-full bg-slate-900 flex items-center justify-center">
+                <i data-lucide="gift" class="w-20 h-20 text-amber-400"></i>
+            </div>
+        </div>
+    </div>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn-premium btn-primary px-12 py-5 rounded-3xl text-xl font-black">
+            AYLANTIRISH!
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

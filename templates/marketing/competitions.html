@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}Musobaqalar | Digsell.uz{% endblock %}
+{% block content %}
+<div class="space-y-12">
+    <div class="text-center space-y-4">
+        <h1 class="text-4xl font-black font-heading">Haftalik Musobaqalar</h1>
+        <p class="text-slate-400">Top xaridorlar, sotuvchilar va referrallar reytingi</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+        <div class="glass p-6 rounded-3xl space-y-4">
+            <h3 class="text-lg font-black flex items-center gap-2">
+                <i data-lucide="shopping-bag" class="w-5 h-5 text-primary-500"></i> Top Xaridorlar
+            </h3>
+            <div class="space-y-3">
+                {% for item in top_buyers %}
+                <div class="flex justify-between items-center p-3 bg-slate-800/30 rounded-xl">
+                    <span class="font-bold text-sm">{{ item.buyer__username }}</span>
+                    <span class="text-emerald-400 font-black text-sm">{{ item.total|floatformat:0 }}</span>
+                </div>
+                {% empty %}
+                <p class="text-slate-500 text-sm">Hali ma'lumot yo'q</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-3xl space-y-4">
+            <h3 class="text-lg font-black flex items-center gap-2">
+                <i data-lucide="store" class="w-5 h-5 text-amber-500"></i> Top Sotuvchilar
+            </h3>
+            <div class="space-y-3">
+                {% for item in top_sellers %}
+                <div class="flex justify-between items-center p-3 bg-slate-800/30 rounded-xl">
+                    <span class="font-bold text-sm">{{ item.product__seller__username }}</span>
+                    <span class="text-amber-400 font-black text-sm">{{ item.count }} ta</span>
+                </div>
+                {% empty %}
+                <p class="text-slate-500 text-sm">Hali ma'lumot yo'q</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="glass p-6 rounded-3xl space-y-4">
+            <h3 class="text-lg font-black flex items-center gap-2">
+                <i data-lucide="users" class="w-5 h-5 text-rose-500"></i> Top Referrallar
+            </h3>
+            <div class="space-y-3">
+                {% for item in top_referrals %}
+                <div class="flex justify-between items-center p-3 bg-slate-800/30 rounded-xl">
+                    <span class="font-bold text-sm">{{ item.referred_by__username }}</span>
+                    <span class="text-rose-400 font-black text-sm">{{ item.count }} ta</span>
+                </div>
+                {% empty %}
+                <p class="text-slate-500 text-sm">Hali ma'lumot yo'q</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% if rewards %}
+    <section class="space-y-6">
+        <h2 class="text-2xl font-black font-heading">Sovrinlar</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {% for reward in rewards %}
+            <div class="glass p-4 rounded-2xl text-center space-y-2">
+                <p class="font-black text-sm">{{ reward.title }}</p>
+                <p class="text-primary-400 font-bold">{{ reward.prize_amount|floatformat:0 }} so'm</p>
+                <p class="text-xs text-slate-500">{{ reward.competition.title }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

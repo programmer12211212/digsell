@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+{% block title %}Buyurtma #{{ order.id|truncatechars:8 }} | Digsell.uz{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-8">
+    <h1 class="text-3xl font-black font-heading">Buyurtma Kuzatuvi</h1>
+
+    <div class="glass p-6 rounded-3xl space-y-4">
+        <div class="flex justify-between">
+            <span class="text-slate-400">Buyurtma ID</span>
+            <span class="font-mono font-bold">#{{ order.id|truncatechars:13 }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-slate-400">Holat</span>
+            <span class="font-bold px-3 py-1 rounded-lg bg-primary-500/10 text-primary-400">{{ order.get_status_display }}</span>
+        </div>
+        <div class="flex justify-between">
+            <span class="text-slate-400">Summa</span>
+            <span class="font-black text-xl">{{ order.final_amount|uzs }}</span>
+        </div>
+        {% if order.product %}
+        <div class="flex justify-between">
+            <span class="text-slate-400">Mahsulot</span>
+            <span class="font-bold">{{ order.product.title }}</span>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="space-y-3">
+        {% for status_code, status_label in order.Status.choices %}
+        <div class="flex items-center gap-4 p-4 rounded-2xl {% if order.status == status_code %}bg-primary-500/10 border border-primary-500/30{% else %}bg-slate-800/30{% endif %}">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center {% if order.status == status_code %}bg-primary-500 text-white{% else %}bg-slate-700 text-slate-400{% endif %} text-xs font-bold">
+                {{ forloop.counter }}
+            </div>
+            <span class="font-bold">{{ status_label }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if order.status == 'PAID' or order.status == 'COMPLETED' %}
+    <a href="{% url 'core:download_purchase' order.id %}" class="btn-premium btn-primary w-full py-4 rounded-2xl text-center block font-bold">
+        Mahsulotni Yuklab Olish
+    </a>
+    {% endif %}
+</div>
+{% endblock %}

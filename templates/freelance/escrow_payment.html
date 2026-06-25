@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}To'lov | Milestone{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto space-y-6">
+    <div class="glass p-6 rounded-2xl text-center">
+        <h1 class="text-xl font-bold">{{ milestone.title }}</h1>
+        <p class="text-3xl font-bold mt-2">{{ milestone.amount|uzs }}</p>
+    </div>
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+        {% csrf_token %}
+        <div class="space-y-3">
+            <label class="text-xs font-bold text-slate-500 uppercase">Karta tanlang</label>
+            {% for card in company_cards %}
+            <label class="flex items-center gap-4 p-4 glass rounded-xl border cursor-pointer">
+                <input type="radio" name="payment_method" value="{{ card.card_name }}" {% if forloop.first %}checked{% endif %}>
+                <span class="font-mono font-bold">{{ card.card_number }}</span>
+                <span class="text-xs text-slate-500">{{ card.card_holder }}</span>
+            </label>
+            {% endfor %}
+        </div>
+        <div>
+            <label class="block text-sm font-bold mb-2">To'lov skrinshoti</label>
+            {{ form.screenshot }}
+        </div>
+        <button type="submit" class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold">Yuborish</button>
+    </form>
+</div>
+{% endblock %}

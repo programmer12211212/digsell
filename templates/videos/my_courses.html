@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mening Kurslarim - Digsell.uz{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container mt-10">
+        <div class="flex items-center gap-4 mb-12">
+            <div class="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white text-2xl shadow-lg">
+                <i class="fas fa-play"></i>
+            </div>
+            <div>
+                <h1 class="text-4xl font-extrabold">Mening Kurslarim</h1>
+                <p class="text-muted">Siz sotib olgan barcha bilimlar xazinasi</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {% for purchase in purchases %}
+            <div class="card-premium">
+                <div class="relative aspect-video overflow-hidden">
+                    <img src="{{ purchase.course.thumbnail.url }}" class="card-image w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition duration-300">
+                        <a href="{% url 'videos:course_watch' purchase.course.slug %}" class="btn-premium btn-primary py-2 px-6">
+                            Davom etish
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <span class="badge badge-primary mb-2">{{ purchase.course.category.name }}</span>
+                    <h3 class="text-lg font-bold mb-4 line-clamp-2 min-h-[3rem]">{{ purchase.course.title }}</h3>
+                    
+                    <div class="flex items-center gap-2 mb-6">
+                        <img src="https://ui-avatars.com/api/?name={{ purchase.course.author.username }}&background=random" class="w-6 h-6 rounded-full">
+                        <span class="text-xs text-muted">{{ purchase.course.author.username }}</span>
+                    </div>
+
+                    <div class="mt-auto">
+                        <div class="flex justify-between items-center text-xs text-muted mb-2">
+                            <span>O'zlashtirish</span>
+                            <span>{{ purchase.course.lessons.count }} dars</span>
+                        </div>
+                        <div class="w-full bg-border rounded-full h-2 overflow-hidden">
+                            <div class="bg-primary h-full rounded-full" style="width: 35%"></div>
+                        </div>
+                        <a href="{% url 'videos:course_watch' purchase.course.slug %}" class="btn-premium btn-secondary w-full mt-6 py-2">
+                            Kursni ko'rish
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 text-center glass rounded-3xl border border-dashed border-border">
+                <div class="w-24 h-24 bg-border/20 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <i class="fas fa-graduation-cap text-4xl text-muted"></i>
+                </div>
+                <h3 class="text-2xl font-bold mb-4">Sizda hali kurslar yo'q</h3>
+                <p class="text-muted mb-10 max-w-md mx-auto">Bilim olishni bugundan boshlang. Platformamizda minglab foydali video darsliklar mavjud.</p>
+                <a href="/courses/" class="btn-premium btn-primary py-4 px-10">Kurslarni topish</a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Savatcha | Digsell.uz{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <h1 class="text-3xl font-black font-heading">Savatcha</h1>
+
+    {% if items %}
+    <div class="space-y-4">
+        {% for item in items %}
+        <div class="glass p-6 rounded-3xl flex items-center gap-6">
+            {% if item.product.thumbnail %}
+            <img src="{{ item.product.thumbnail.url }}" class="w-20 h-20 rounded-2xl object-cover" alt="">
+            {% endif %}
+            <div class="flex-1">
+                <h3 class="font-black">{{ item.product.title }}</h3>
+                <p class="text-primary-400 font-bold">{{ item.subtotal|floatformat:0 }} so'm</p>
+            </div>
+            <form method="POST" action="{% url 'marketplace:update_cart_item' item.id %}" class="flex items-center gap-2">
+                {% csrf_token %}
+                <input type="number" name="quantity" value="{{ item.quantity }}" min="1" class="w-16 px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-center">
+                <button type="submit" class="text-primary-400 text-sm font-bold">OK</button>
+            </form>
+            <form method="POST" action="{% url 'marketplace:save_for_later' item.id %}">
+                {% csrf_token %}
+                <button type="submit" class="text-xs text-slate-400 hover:text-primary-400">Saqlash</button>
+            </form>
+            <form method="POST" action="{% url 'marketplace:remove_from_cart' item.id %}">
+                {% csrf_token %}
+                <button type="submit" class="text-rose-400 hover:text-rose-300"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="glass p-6 rounded-3xl flex justify-between items-center">
+        <div>
+            <p class="text-slate-400 text-sm">Jami</p>
+            <p class="text-3xl font-black">{{ cart.total|floatformat:0 }} <span class="text-sm">so'm</span></p>
+        </div>
+        <a href="{% url 'marketplace:checkout_cart' %}" class="btn-premium btn-primary px-8 py-4 rounded-2xl font-bold">
+            Buyurtma Berish
+        </a>
+    </div>
+    {% else %}
+    <div class="glass p-12 rounded-3xl text-center space-y-4">
+        <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto text-slate-600"></i>
+        <p class="text-slate-400">Savatchangiz bo'sh</p>
+        <a href="{% url 'marketplace:product_list' %}" class="btn-premium btn-primary px-8 py-3 rounded-2xl font-bold inline-block">Bozorga O'tish</a>
+    </div>
+    {% endif %}
+
+    {% if saved_items %}
+    <section class="space-y-4">
+        <h2 class="text-xl font-black">Keyinroq uchun saqlangan</h2>
+        {% for item in saved_items %}
+        <div class="glass p-4 rounded-2xl flex justify-between items-center opacity-70">
+            <span class="font-bold">{{ item.product.title }}</span>
+            <span class="text-sm text-slate-400">{{ item.subtotal|floatformat:0 }} so'm</span>
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

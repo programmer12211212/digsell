@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Marketplace | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="space-y-12 animate-fade-in">
+    
+    <!-- Hero Section & Search -->
+    <div class="relative overflow-hidden rounded-[2rem] bg-slate-900 p-8 md:p-12 border border-slate-800">
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-500/10 blur-[120px] rounded-full"></div>
+        <div class="relative z-10 flex flex-col lg:flex-row justify-between items-center gap-10">
+            <div class="text-center lg:text-left space-y-4">
+                <h1 class="text-4xl md:text-6xl font-black font-heading tracking-tighter">Digital <span class="text-gradient">Marketplace</span></h1>
+                <p class="text-slate-400 text-lg max-w-lg">Eng sara raqamli mahsulotlar, professional kurslar va frilans xizmatlari bir joyda.</p>
+            </div>
+            <form method="GET" class="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1 lg:w-96">
+                    <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500"></i>
+                    <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Nima qidiryapsiz?" 
+                           class="w-full pl-12 pr-4 py-4 bg-slate-950/50 border-2 border-slate-800 focus:border-primary-500 rounded-2xl outline-none transition-all font-medium">
+                </div>
+                <button type="submit" class="btn-premium btn-primary py-4 px-8 rounded-2xl text-base shadow-xl">
+                    Qidiruv
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <h3 class="text-xl font-black font-heading">Kategoriyalar</h3>
+            <span class="text-xs font-bold text-slate-500 uppercase tracking-widest">{{ products|length }} mahsulot</span>
+        </div>
+        <div class="flex overflow-x-auto pb-4 gap-3 no-scrollbar">
+            <a href="{% url 'marketplace:product_list' %}" 
+               class="whitespace-nowrap px-6 py-3 rounded-2xl text-sm font-bold transition-all border-2
+               {% if not current_category %}bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20{% else %}bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-primary-500/30{% endif %}">
+                Barchasi
+            </a>
+            {% for cat in categories %}
+            <a href="?category={{ cat.slug }}" 
+               class="whitespace-nowrap px-6 py-3 rounded-2xl text-sm font-bold transition-all border-2
+               {% if current_category == cat.slug %}bg-primary-500 border-primary-500 text-white shadow-lg shadow-primary-500/20{% else %}bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-500 hover:border-primary-500/30{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {% for product in products %}
+        <div class="card-premium group">
+            <a href="{% url 'marketplace:product_detail' product.slug %}" class="card-image-wrapper block relative">
+                <img src="{% if product.thumbnail %}{{ product.thumbnail.url }}{% else %}https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=400&q=80{% endif %}" 
+                     class="card-image w-full h-full object-cover" alt="{{ product.title }}">
+                <div class="absolute top-4 left-4">
+                    <span class="badge badge-primary glass text-[10px]">{{ product.category.name|default:"Digital" }}</span>
+                </div>
+            </a>
+            <div class="card-body">
+                <div class="flex-1 space-y-2">
+                    <div class="flex justify-between items-start gap-3">
+                        <h3 class="font-black text-sm md:text-base leading-tight">
+                            <a href="{% url 'marketplace:product_detail' product.slug %}" class="hover:text-primary-500 transition-colors line-clamp-2">
+                                {{ product.title }}
+                            </a>
+                        </h3>
+                    </div>
+                    <p class="text-[11px] text-slate-500 line-clamp-2">{{ product.description }}</p>
+                </div>
+                
+                <div class="pt-4 mt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Narxi</span>
+                        <span class="font-black text-lg text-primary-500">{{ product.price|uzs }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <form method="POST" action="{% url 'marketplace:add_to_cart' product.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-primary-500 hover:text-white transition-all shadow-sm">
+                                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                        <a href="{% url 'marketplace:create_order' product.id %}" 
+                           class="btn-premium btn-primary min-h-0 h-10 px-4 py-0 text-xs shadow-md">
+                            Sotib olish
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full py-32 text-center">
+            <div class="w-24 h-24 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="package-search" class="w-10 h-10 text-slate-300"></i>
+            </div>
+            <h3 class="text-xl font-black font-heading mb-2">Hech narsa topilmadi</h3>
+            <p class="text-slate-500 max-w-xs mx-auto">Siz qidirayotgan mahsulot hozircha bazamizda mavjud emas.</p>
+            <a href="{% url 'marketplace:product_list' %}" class="btn-premium btn-secondary mt-8">Barcha mahsulotlar</a>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center items-center gap-4 mt-12 py-8">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+           class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-500 transition-all text-slate-500 hover:text-primary-500">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i>
+        </a>
+        {% endif %}
+        
+        <div class="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl font-black text-sm">
+            <span class="text-primary-500">{{ page_obj.number }}</span> <span class="mx-1 text-slate-300">/</span> {{ page_obj.paginator.num_pages }}
+        </div>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if current_category %}&category={{ current_category }}{% endif %}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" 
+           class="w-12 h-12 flex items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-primary-500 transition-all text-slate-500 hover:text-primary-500">
+            <i data-lucide="chevron-right" class="w-5 h-5"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

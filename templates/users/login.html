@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+
+{% block title %}Kirish | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center py-12 px-4">
+    <div class="glass max-w-md w-full p-8 rounded-3xl border-slate-800/50 shadow-2xl relative overflow-hidden">
+        <!-- Background Glow -->
+        <div class="absolute -right-20 -top-20 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -left-20 -bottom-20 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl"></div>
+
+        <div class="relative z-10 space-y-8">
+            <div class="text-center space-y-2">
+                <div class="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto shadow-lg shadow-primary-500/20 mb-4">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-white"></i>
+                </div>
+                <h1 class="text-3xl font-heading font-bold text-white">Xush kelibsiz!</h1>
+                <p class="text-slate-400">Tizimga kirish uchun ma'lumotlaringizni kiriting.</p>
+            </div>
+
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="rounded-2xl bg-rose-500/10 border border-rose-500/20 p-3 text-sm text-rose-200">
+                        {{ form.non_field_errors|join:" " }}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                <div class="space-y-2">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">{{ field.label }}</label>
+                    <div class="relative">
+                        {{ field }}
+                    </div>
+                    {% if field.errors %}
+                        <p class="text-rose-500 text-[10px] uppercase font-bold">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="w-full py-4 bg-primary-600 hover:bg-primary-500 rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20 flex items-center justify-center gap-2">
+                    Tizimga kirish
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </form>
+
+            <div class="space-y-4">
+                {% if google_login_enabled %}
+                <a href="{% provider_login_url 'google' process='login' %}" class="w-full inline-flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-slate-900 font-semibold hover:bg-slate-100 transition-all border border-slate-200">
+                    <img src="https://www.google.com/favicon.ico" alt="Google" class="w-5 h-5 rounded-sm">
+                    Google orqali kirish
+                </a>
+                {% endif %}
+                <div class="text-center pt-4">
+                <p class="text-sm text-slate-400">
+                    Hali hisobingiz yo'qmi? 
+                    <a href="{% url 'users:register' %}" class="text-primary-400 font-bold hover:text-primary-300 underline underline-offset-4">Ro'yxatdan o'tish</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    input {
+        width: 100%;
+        background: #0f172a !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 0.75rem !important;
+        padding: 0.875rem 1.25rem !important;
+        color: white !important;
+        outline: none !important;
+        transition: all 0.2s;
+    }
+    input:focus {
+        border-color: #0ea5e9 !important;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1) !important;
+    }
+</style>
+{% endblock %}

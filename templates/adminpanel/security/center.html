@@ -1,0 +1,27 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}Security Markazi{% endblock %}
+{% block content %}
+<h2 class="fw-bold mb-4"><i class="fas fa-shield-alt text-danger me-2"></i> Security Markazi</h2>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card p-3 border-danger"><small>Kritik hodisalar</small><h3 class="text-danger">{{ critical_count }}</h3></div></div>
+    <div class="col-md-4"><div class="card p-3"><small>Bloklangan IP</small><h3>{{ blocked_ips|length }}</h3></div></div>
+</div>
+<div class="card p-4 mb-4">
+    <h5>IP bloklash</h5>
+    <form method="POST" action="{% url 'adminpanel:block_ip' %}" class="row g-2 mt-2">
+        {% csrf_token %}
+        <div class="col-md-4"><input name="ip_address" class="form-control bg-dark text-white" placeholder="IP manzil" required></div>
+        <div class="col-md-6"><input name="reason" class="form-control bg-dark text-white" placeholder="Sabab"></div>
+        <div class="col-md-2"><button class="btn btn-danger w-100">Bloklash</button></div>
+    </form>
+</div>
+<div class="row g-4">
+    <div class="col-md-6"><div class="card p-4"><h5>Bloklangan IP lar</h5>
+        {% for ip in blocked_ips %}<div class="d-flex justify-content-between py-2 border-bottom border-secondary"><span>{{ ip.ip_address }}</span>
+        <form method="POST" action="{% url 'adminpanel:unblock_ip' ip.id %}">{% csrf_token %}<button class="btn btn-sm btn-outline-success">Ochish</button></form></div>{% empty %}<p class="text-muted">Yo'q</p>{% endfor %}
+    </div></div>
+    <div class="col-md-6"><div class="card p-4"><h5>Xavfsizlik jurnali</h5>
+        {% for log in security_logs %}<div class="py-2 border-bottom border-secondary small"><span class="badge {% if log.level == 'CRITICAL' %}bg-danger{% else %}bg-warning{% endif %}">{{ log.level }}</span> {{ log.action }} <span class="text-muted">{{ log.timestamp|date:"d.m H:i" }}</span></div>{% endfor %}
+    </div></div>
+</div>
+{% endblock %}

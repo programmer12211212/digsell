@@ -1,0 +1,22 @@
+{% if user_message %}
+<div class="flex gap-4 max-w-3xl justify-end">
+  <div class="space-y-2 text-right">
+    <div class="bg-primary-600 text-white p-4 rounded-2xl rounded-tr-none shadow-sm inline-block text-left">
+      <p class="leading-relaxed">{{ user_message }}</p>
+    </div>
+    <span class="text-[10px] text-slate-600 font-bold uppercase block">Siz</span>
+  </div>
+</div>
+{% endif %}
+<div class="flex gap-4 max-w-3xl">
+  <div class="w-10 h-10 rounded-xl bg-primary-500 flex-shrink-0 flex items-center justify-center">
+    <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+  </div>
+  <div class="space-y-2">
+    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl rounded-tl-none shadow-sm text-slate-200">
+      <p class="leading-relaxed whitespace-pre-wrap">{{ ai_reply }}</p>
+    </div>
+    <span class="text-[10px] text-slate-600 font-bold uppercase">AI Yordamchi</span>
+  </div>
+</div>
+<script>if (typeof lucide !== 'undefined') lucide.createIcons();</script>

@@ -1,0 +1,40 @@
+{% load humanize %}
+{% for u in users %}
+<tr>
+    <td class="px-4">
+        <div class="d-flex align-items-center">
+            <img src="https://ui-avatars.com/api/?name={{ u.username }}&background=random" class="rounded-circle me-3" width="35">
+            <div>
+                <div class="fw-bold">{{ u.username }}</div>
+                <div class="small text-muted">{{ u.email }}</div>
+            </div>
+        </div>
+    </td>
+    <td>{{ u.get_role_display }}</td>
+    <td>{{ u.wallet.balance|floatformat:0|intcomma|default:"0" }} UZS</td>
+    <td><span class="badge bg-primary">{{ u.get_loyalty_level_display }}</span></td>
+    <td>
+        <span id="status-btn-{{ u.id }}" 
+              class="badge bg-{% if u.is_active %}success{% else %}danger{% endif %} cursor-pointer"
+              onclick="toggleStatus({{ u.id }})">
+            {% if u.is_active %}Faol{% else %}Bloklangan{% endif %}
+        </span>
+    </td>
+    <td>
+        <div class="dropdown">
+            <button class="btn btn-dark btn-sm" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></button>
+            <ul class="dropdown-menu dropdown-menu-dark">
+                <li><a class="dropdown-item" href="#" onclick="openBalanceModal({{ u.id }})"><i class="fas fa-coins me-2"></i> Balans</a></li>
+                <li><a class="dropdown-item" href="#"><i class="fas fa-user-edit me-2"></i> Profil</a></li>
+                <li><a class="dropdown-item" href="#"><i class="fas fa-history me-2"></i> Loglar</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="toggleStatus({{ u.id }})"><i class="fas fa-ban me-2"></i> Bloklash</a></li>
+            </ul>
+        </div>
+    </td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="6" class="text-center py-4">Foydalanuvchilar topilmadi</td>
+</tr>
+{% endfor %}

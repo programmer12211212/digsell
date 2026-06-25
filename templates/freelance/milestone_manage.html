@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Bosqichlar | {{ project.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-8">
+    <h1 class="text-2xl font-bold">{{ project.title }} — Bosqichlar</h1>
+    <div class="space-y-4">
+        {% for m in milestones %}
+        <div class="glass p-5 rounded-xl border border-slate-200 dark:border-slate-800 flex flex-wrap justify-between gap-3">
+            <div>
+                <h3 class="font-bold">{{ m.title }}</h3>
+                <p class="text-sm text-slate-500">{{ m.amount|uzs }} · {% if m.is_paid %}To'langan{% else %}Kutilmoqda{% endif %} · {% if m.is_completed %}Tugallangan{% else %}Jarayonda{% endif %}</p>
+            </div>
+            <div class="flex gap-2">
+                {% if request.user == project.client and not m.is_paid %}
+                <a href="{% url 'freelance:escrow_payment' m.id %}" class="px-3 py-2 bg-primary-600 text-white rounded-lg text-sm font-bold">To'lash</a>
+                {% endif %}
+                {% if request.user == project.assigned_freelancer and not m.is_completed %}
+                <form method="post" action="{% url 'freelance:milestone_complete' m.id %}">{% csrf_token %}<button class="px-3 py-2 border rounded-lg text-sm font-bold">Tugatdim</button></form>
+                {% endif %}
+                {% if request.user == project.client and m.is_completed and not m.is_paid %}
+                <form method="post" action="{% url 'freelance:milestone_approve' m.id %}">{% csrf_token %}<button class="px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold">Tasdiqlash</button></form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if request.user == project.client %}
+    <form method="post" class="glass p-6 rounded-2xl space-y-4">
+        {% csrf_token %}
+        <h2 class="font-bold">Yangi bosqich</h2>
+        {% for field in form %}<div><label class="block text-sm font-bold mb-1">{{ field.label }}</label>{{ field }}</div>{% endfor %}
+        <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg font-bold">Qo'shish</button>
+    </form>
+    {% endif %}
+</div>
+{% endblock %}

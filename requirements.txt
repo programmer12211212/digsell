@@ -1,0 +1,70 @@
+# Core Django
+Django>=5.1,<5.2
+django-environ
+psycopg2-binary
+argon2-cffi
+django-extensions
+
+# API
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+
+# Database & Cache
+redis
+django-redis
+elasticsearch>=8.0.0
+django-elasticsearch-dsl
+
+# Async & Queue
+celery
+django-celery-results
+django-celery-beat
+
+# Authentication & Social
+django-allauth
+dj-rest-auth
+django-two-factor-auth
+django-otp
+django-axes
+
+# Admin UI
+django-jazzmin
+
+# Frontend (TALL Stack equivalents)
+django-htmx
+django-compressor
+libsass
+
+# Realtime
+channels[daphne]
+channels-redis
+
+# Payments
+stripe
+payme-pkg  # Specific package if available or custom implementation
+
+# AI Integration
+openai
+langchain
+tiktoken
+
+# File Storage
+django-storages[boto3]
+whitenoise
+
+# Video & security
+itsdangerous
+django-ratelimit
+
+# Monitoring & Logging
+sentry-sdk
+django-prometheus
+
+# Production
+gunicorn
+uvicorn
+Pillow
+python-magic
+python-dotenv
+psutil

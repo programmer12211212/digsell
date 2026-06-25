@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Yordam | Digsell.uz{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-black font-heading">Yordam Markazi</h1>
+        <a href="{% url 'support:ticket_create' %}" class="btn-premium btn-primary px-6 py-3 rounded-2xl font-bold text-sm">+ Yangi murojaat</a>
+    </div>
+    <div class="space-y-3">
+        {% for ticket in tickets %}
+        <a href="{% url 'support:ticket_detail' ticket.id %}" class="glass block p-5 rounded-2xl hover:border-primary-500/30 border border-transparent transition">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="font-bold">#{{ ticket.id }} — {{ ticket.subject }}</p>
+                    <p class="text-sm text-slate-500 mt-1">{{ ticket.message|truncatechars:80 }}</p>
+                </div>
+                <span class="text-xs font-bold px-3 py-1 rounded-lg bg-primary-500/10 text-primary-400">{{ ticket.get_status_display }}</span>
+            </div>
+            <p class="text-xs text-slate-600 mt-3">{{ ticket.created_at|date:"d.m.Y H:i" }}</p>
+        </a>
+        {% empty %}
+        <div class="glass p-12 rounded-3xl text-center text-slate-500">
+            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+            <p>Murojaatlar yo'q</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

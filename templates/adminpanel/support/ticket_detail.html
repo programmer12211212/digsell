@@ -1,0 +1,68 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Ticket #{{ ticket.id }} — Admin{% endblock %}
+{% block page_title %}Ticket #{{ ticket.id }}{% endblock %}
+
+{% block content %}
+<div class="support-layout">
+  <div class="ticket-list-panel d-none d-lg-flex">
+    <div class="p-3 border-bottom" style="border-color:var(--card-border)!important">
+      <a href="{% url 'adminpanel:ticket_list' %}" class="btn-ghost btn-sm">← Barcha ticketlar</a>
+    </div>
+    <div class="p-3">
+      <strong>{{ ticket.user.username }}</strong>
+      <div class="text-muted small">{{ ticket.subject }}</div>
+    </div>
+  </div>
+  <div class="chat-panel">
+    <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="border-color:var(--card-border)!important">
+      <div>
+        <strong>{{ ticket.subject }}</strong>
+        <div class="text-muted small">{{ ticket.user.username }} · {{ ticket.get_status_display }}</div>
+      </div>
+      <form method="post" action="{% url 'adminpanel:ticket_reply' ticket.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="CLOSED">
+        <input type="hidden" name="message" value="">
+        <button type="submit" class="btn-danger-neon btn-sm" onclick="return confirm('Ticket yopilsinmi?')">Yopish</button>
+      </form>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-bubble user">
+        <div class="text-muted small mb-1">{{ ticket.user.username }}</div>
+        {{ ticket.message }}
+      </div>
+      {% for reply in replies %}
+      <div class="chat-bubble {% if reply.is_staff_reply %}staff{% else %}user{% endif %}">
+        <div class="text-muted small mb-1">{{ reply.author.username }} · {{ reply.created_at|date:"H:i" }}</div>
+        {{ reply.message }}
+      </div>
+      {% endfor %}
+    </div>
+    <form class="chat-input-bar" method="post" action="{% url 'adminpanel:ticket_reply' ticket.id %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="text" name="message" placeholder="Javob yozing..." required autocomplete="off">
+      <input type="file" name="attachment" class="d-none" id="fileInput">
+      <button type="button" class="btn-ghost" onclick="document.getElementById('fileInput').click()">📎</button>
+      <button type="button" class="btn-ghost" onclick="insertEmoji()">😊</button>
+      <select name="status" class="form-control-neon" style="max-width:140px">
+        {% for code, label in ticket.Status.choices %}
+        <option value="{{ code }}" {% if ticket.status == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn-primary-neon">Yuborish</button>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function insertEmoji() {
+  const input = document.querySelector('[name="message"]');
+  input.value += ' 👍';
+  input.focus();
+}
+document.getElementById('chatMessages')?.scrollTo(0, 99999);
+</script>
+{% endblock %}

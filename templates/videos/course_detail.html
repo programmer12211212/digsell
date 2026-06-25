@@ -1,0 +1,248 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} - Digsell.uz{% endblock %}
+
+{% block content %}
+<div x-data="{ 
+    showPreview: false, 
+    inWishlist: {{ in_wishlist|yesno:'true,false' }},
+    toggleWishlist(productId) {
+        fetch(`/marketplace/wishlist/toggle/${productId}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                this.inWishlist = data.added;
+                // Optional: show toast message
+            }
+        });
+    }
+}">
+
+<section class="section">
+    <div class="container mt-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            
+            <!-- Left Column: Course Info -->
+            <div class="lg:col-span-2">
+                <div class="mb-8">
+                    <nav class="flex text-sm text-muted mb-6 gap-2">
+                        <a href="/" class="hover:text-primary">Bosh sahifa</a>
+                        <span>/</span>
+                        <a href="/courses/" class="hover:text-primary">Kurslar</a>
+                        <span>/</span>
+                        <span class="text-main font-semibold">{{ course.category.name }}</span>
+                    </nav>
+                    <h1 class="text-4xl lg:text-5xl font-extrabold mb-6">{{ course.title }}</h1>
+                    <p class="text-lg text-muted mb-8 leading-relaxed">{{ course.description|truncatewords:30 }}</p>
+                    
+                    <div class="flex flex-wrap items-center gap-6 text-sm">
+                        <div class="flex items-center gap-2">
+                            <img src="https://ui-avatars.com/api/?name={{ course.seller.username }}&background=3b82f6&color=fff" class="w-10 h-10 rounded-full border-2 border-primary">
+                            <div>
+                                <p class="text-xs text-muted">Muallif</p>
+                                <p class="font-bold">{{ course.seller.username }}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 rounded-full bg-warning/10 flex items-center justify-center text-warning">
+                                <i class="fas fa-star"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">Reyting</p>
+                                <p class="font-bold">{{ course.avg_rating|floatformat:1 }} ({{ reviews.count }} ta sharh)</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <i class="fas fa-video"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-muted">Darslar</p>
+                                <p class="font-bold">{{ lessons.count }} ta video</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs (Description / Curriculum / Reviews) -->
+                <div x-data="{ tab: 'description' }" class="mt-12">
+                    <div class="flex border-b border-border mb-8 gap-8 overflow-x-auto">
+                        <button @click="tab = 'description'" :class="tab === 'description' ? 'border-primary text-primary' : 'border-transparent text-muted'" class="pb-4 font-bold border-b-2 hover:text-primary transition-all whitespace-nowrap">Tavsif</button>
+                        <button @click="tab = 'curriculum'" :class="tab === 'curriculum' ? 'border-primary text-primary' : 'border-transparent text-muted'" class="pb-4 font-bold border-b-2 hover:text-primary transition-all whitespace-nowrap">O'quv rejasi</button>
+                        <button @click="tab = 'reviews'" :class="tab === 'reviews' ? 'border-primary text-primary' : 'border-transparent text-muted'" class="pb-4 font-bold border-b-2 hover:text-primary transition-all whitespace-nowrap">Sharhlar</button>
+                    </div>
+
+                    <!-- Description Tab -->
+                    <div x-show="tab === 'description'" x-cloak class="animate-fade-up">
+                        <div class="prose dark:prose-invert max-w-none text-muted leading-relaxed">
+                            {{ course.description|linebreaks }}
+                        </div>
+                    </div>
+
+                    <!-- Curriculum Tab -->
+                    <div x-show="tab === 'curriculum'" x-cloak class="animate-fade-up">
+                        <div class="flex flex-col gap-4">
+                            {% for lesson in lessons %}
+                            <div class="glass p-4 rounded-xl flex items-center gap-4 border border-border/50 group">
+                                <div class="w-10 h-10 bg-border/20 rounded-lg flex items-center justify-center font-bold text-muted group-hover:bg-primary/20 group-hover:text-primary transition">
+                                    {{ forloop.counter }}
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-bold">{{ lesson.title }}</h4>
+                                    <p class="text-xs text-muted">{{ lesson.duration|default:"10:00" }} min</p>
+                                </div>
+                                {% if lesson.is_preview or is_purchased or user.is_staff %}
+                                    <i class="fas fa-play-circle text-primary text-2xl"></i>
+                                {% else %}
+                                    <i class="fas fa-lock text-muted text-xl"></i>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Reviews Tab -->
+                    <div x-show="tab === 'reviews'" x-cloak class="animate-fade-up">
+                        {% if is_purchased %}
+                        <div class="glass p-6 rounded-2xl mb-10">
+                            <h4 class="font-bold mb-4">Sharh qoldirish</h4>
+                            <form action="{% url 'videos:add_review' course.id %}" method="POST">
+                                {% csrf_token %}
+                                <div class="mb-4">
+                                    <label class="block text-sm mb-2 text-muted">Baholash</label>
+                                    <select name="rating" class="input-premium">
+                                        <option value="5">5 yulduz</option>
+                                        <option value="4">4 yulduz</option>
+                                        <option value="3">3 yulduz</option>
+                                        <option value="2">2 yulduz</option>
+                                        <option value="1">1 yulduz</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <textarea name="comment" rows="3" placeholder="Fikringizni yozing..." class="input-premium"></textarea>
+                                </div>
+                                <button type="submit" class="btn-premium btn-primary w-full">Sharh yuborish</button>
+                            </form>
+                        </div>
+                        {% endif %}
+
+                        <div class="flex flex-col gap-6">
+                            {% for review in reviews %}
+                            <div class="border-b border-border pb-6">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <img src="https://ui-avatars.com/api/?name={{ review.user.username }}&background=random" class="w-12 h-12 rounded-full">
+                                    <div>
+                                        <p class="font-bold">{{ review.user.username }}</p>
+                                        <div class="flex text-warning text-xs gap-1">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                <i class="fas fa-star"></i>
+                                                {% else %}
+                                                <i class="far fa-star"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <span class="ml-auto text-xs text-muted">{{ review.created_at|date }}</span>
+                                </div>
+                                <p class="text-muted">{{ review.comment }}</p>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted text-center py-10">Hozircha sharhlar yo'q.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Sidebar Sticky -->
+            <div class="lg:col-span-1">
+                <div class="glass p-8 rounded-3xl relative lg:sticky lg:top-24 border-2">
+                    <div class="relative rounded-2xl overflow-hidden mb-8 shadow-xl group">
+                        <img src="{% if course.thumbnail %}{{ course.thumbnail.url }}{% else %}https://placehold.co/600x400/0ea5e9/ffffff?text=Video+Kurs{% endif %}" class="w-full aspect-video object-cover transition duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <button @click="showPreview = true" class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary text-2xl shadow-2xl hover:scale-110 transition cursor-pointer">
+                                <i class="fas fa-play ml-1"></i>
+                            </button>
+                        </div>
+                        <p class="absolute bottom-4 w-full text-center text-white font-bold text-sm">Preview videoni ko'rish</p>
+                    </div>
+
+                    <div class="mb-8">
+                        {% if course.discount_price %}
+                            <p class="text-muted text-lg line-through mb-1">{{ course.price }} UZS</p>
+                            <p class="text-4xl font-extrabold text-main">{{ course.discount_price }} UZS</p>
+                            <span class="badge badge-success mt-2">CHEGIRMA!</span>
+                        {% else %}
+                            <p class="text-4xl font-extrabold text-main">{{ course.price }} UZS</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="flex flex-col gap-4">
+                        {% if is_purchased %}
+                            <a href="{% url 'videos:course_watch' course.slug %}" class="btn-premium btn-primary py-4 text-center text-lg">
+                                <i class="fas fa-play-circle text-xl"></i> O'rganishni davom ettirish
+                            </a>
+                        {% else %}
+                            <a href="{% url 'marketplace:create_order' course.id %}" class="btn-premium btn-primary py-4 w-full text-lg text-center block">
+                                <i class="fas fa-shopping-cart"></i> Kursni sotib olish
+                            </a>
+                            <button 
+                                @click="toggleWishlist({{ course.id }})" 
+                                class="btn-premium btn-secondary py-4 w-full font-bold flex items-center justify-center gap-2"
+                                :class="inWishlist ? 'text-rose-500' : ''"
+                            >
+                                <i :class="inWishlist ? 'fas fa-heart' : 'far fa-heart'"></i> 
+                                <span x-text="inWishlist ? 'Saralangan' : 'Saralanganlarga qo\'shish'"></span>
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-8 pt-8 border-t border-border">
+                        <h4 class="font-bold mb-4">Kurs tarkibida:</h4>
+                        <ul class="list-none space-y-3 text-sm text-muted">
+                            <li class="flex items-center gap-3">
+                                <i class="fas fa-video text-primary w-5"></i> {{ lessons.count }} ta video dars
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fas fa-infinity text-primary w-5"></i> Bir umrlik foydalanish
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fas fa-mobile-alt text-primary w-5"></i> Mobil va PC platformalarida
+                            </li>
+                            <li class="flex items-center gap-3">
+                                <i class="fas fa-certificate text-primary w-5"></i> Yakuniy sertifikat
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<template x-if="showPreview">
+    <div class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 animate-fade-in" @click.self="showPreview = false">
+        <button @click="showPreview = false" class="absolute top-8 right-8 text-white text-4xl">&times;</button>
+        <div class="w-full max-w-4xl aspect-video bg-black rounded-3xl overflow-hidden">
+            {% if course.preview_video %}
+                <video src="{{ course.preview_video.url }}" controls autoplay class="w-full h-full"></video>
+            {% else %}
+                <div class="w-full h-full flex flex-col items-center justify-center text-slate-500 gap-4">
+                    <i class="fas fa-video-slash text-6xl"></i>
+                    <p class="text-xl font-bold">Preview video mavjud emas</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</template>
+
+{% endblock %}

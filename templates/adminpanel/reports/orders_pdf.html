@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <title>Buyurtmalar hisoboti</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    h1 { color: #050B18; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
+    th { background: #071321; color: #00FF84; }
+    @media print { body { padding: 0; } }
+  </style>
+</head>
+<body>
+  <h1>Digsell.uz — Buyurtmalar hisoboti</h1>
+  <table>
+    <thead>
+      <tr><th>Order ID</th><th>Xaridor</th><th>Sotuvchi</th><th>Mahsulot</th><th>Summa</th><th>Status</th><th>Sana</th></tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      {% with item=order.items.first %}
+      <tr>
+        <td>{{ order.id }}</td>
+        <td>{{ order.buyer.username }}</td>
+        <td>{% if item and item.product %}{{ item.product.seller.username }}{% else %}—{% endif %}</td>
+        <td>{% if item and item.product %}{{ item.product.title }}{% else %}—{% endif %}</td>
+        <td>{{ order.final_amount }}</td>
+        <td>{{ order.get_status_display }}</td>
+        <td>{{ order.created_at|date:"d.m.Y H:i" }}</td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+  <script>window.onload = function() { window.print(); }</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}E'lonlar — Admin{% endblock %}
+{% block page_title %}E'lonlar{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="{% url 'adminpanel:listings' %}" class="tab-btn {% if not status_filter %}active{% endif %}">Barchasi</a>
+    <a href="?status=active" class="tab-btn {% if status_filter == 'active' %}active{% endif %}">Aktiv</a>
+    <a href="?status=moderation" class="tab-btn {% if status_filter == 'moderation' %}active{% endif %}">Moderatsiyada</a>
+    <a href="?status=rejected" class="tab-btn {% if status_filter == 'rejected' %}active{% endif %}">Rad etilgan</a>
+    <a href="?status=expired" class="tab-btn {% if status_filter == 'expired' %}active{% endif %}">Tugagan</a>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="?view=table{% if status_filter %}&status={{ status_filter }}{% endif %}" class="tab-btn {% if view_mode == 'table' %}active{% endif %}">Jadval</a>
+    <a href="?view=card{% if status_filter %}&status={{ status_filter }}{% endif %}" class="tab-btn {% if view_mode == 'card' %}active{% endif %}">Kartochka</a>
+  </div>
+</div>
+
+<form class="mb-3" method="get">
+  <input type="hidden" name="view" value="{{ view_mode }}">
+  {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+  <input class="form-control-neon" name="q" value="{{ query }}" placeholder="Qidirish..." style="max-width:320px">
+</form>
+
+{% if view_mode == 'card' %}
+<div class="row g-3">
+  {% for item in items %}
+  <div class="col-md-6 col-xl-4">
+    <div class="listing-card">
+      <div class="listing-thumb">
+        {% if item.image %}<img src="{{ item.image }}" alt="">{% else %}📦{% endif %}
+      </div>
+      <div class="p-3">
+        <div class="d-flex justify-content-between mb-2">
+          <span class="badge-status badge-{{ item.status }}">{{ item.status }}</span>
+          <span class="text-muted small">{{ item.kind }}</span>
+        </div>
+        <h6 class="mb-1">{{ item.title|truncatechars:40 }}</h6>
+        <div class="text-muted small mb-2">{{ item.seller.username }} · {{ item.price|floatformat:0 }} UZS</div>
+        <div class="d-flex gap-2">
+          <button class="btn-primary-neon btn-sm flex-grow-1" onclick="approveListing('{{ item.kind }}', {{ item.obj.id }})">✓ Tasdiqlash</button>
+          <button class="btn-danger-neon btn-sm flex-grow-1" onclick="rejectListing('{{ item.kind }}', {{ item.obj.id }})">✗ Rad</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12 text-center text-muted py-5">E'lonlar topilmadi</div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card-neon">
+  <table id="adminDataTable" class="table-neon w-100">
+    <thead>
+      <tr>
+        <th><input type="checkbox" id="selectAll"></th>
+        <th>Mahsulot</th>
+        <th>Sotuvchi</th>
+        <th>Narx</th>
+        <th>Status</th>
+        <th>Sana</th>
+        <th>Harakat</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td><input type="checkbox" name="ids" value="{{ item.kind }}:{{ item.obj.id }}" form="bulkForm"></td>
+        <td>{{ item.title }}</td>
+        <td>{{ item.seller.username }}</td>
+        <td>{{ item.price|floatformat:0 }} UZS</td>
+        <td><span class="badge-status badge-{{ item.status }}">{{ item.status }}</span></td>
+        <td class="text-muted small">{{ item.created_at|date:"d.m.Y" }}</td>
+        <td>
+          <button class="btn-primary-neon btn-sm" onclick="approveListing('{{ item.kind }}', {{ item.obj.id }})">✓</button>
+          <button class="btn-danger-neon btn-sm" onclick="rejectListing('{{ item.kind }}', {{ item.obj.id }})">✗</button>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<form id="bulkForm" class="mt-3 d-flex gap-2">
+  <button type="button" class="btn-primary-neon" onclick="document.querySelector('#bulkForm [name=action]').value='approve'; bulkListing()">Bulk Approve</button>
+  <button type="button" class="btn-danger-neon" onclick="document.querySelector('#bulkForm [name=action]').value='reject'; bulkListing()">Bulk Reject</button>
+  <input type="hidden" name="action" value="approve">
+</form>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function approveListing(kind, id) {
+  adminPost(`/admin-console/listings/${kind}/${id}/approve/`, {}).then(() => location.reload());
+}
+function rejectListing(kind, id) {
+  adminPost(`/admin-console/listings/${kind}/${id}/reject/`, {}).then(() => location.reload());
+}
+function bulkListing() {
+  bulkAction('bulkForm', '{% url "adminpanel:listing_bulk" %}');
+}
+document.getElementById('selectAll')?.addEventListener('change', function() {
+  document.querySelectorAll('input[name="ids"]').forEach(c => c.checked = this.checked);
+});
+</script>
+{% endblock %}

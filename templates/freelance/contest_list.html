@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Tanlovlar (Contests) | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+            <h1 class="text-3xl font-heading font-bold text-slate-900 dark:text-white">Tanlovlar (Contests)</h1>
+            <p class="text-slate-500 dark:text-slate-400">Topshiriqni bajaring va kafolatlangan pul mukofotlarini qo'lga kiriting!</p>
+        </div>
+        <div class="flex gap-3">
+            {% if request.user.is_authenticated %}
+            <a href="{% url 'freelance:contest_create' %}" class="px-6 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-xl font-bold flex items-center gap-2 transition">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i> Tanlov yaratish
+            </a>
+            {% else %}
+            <a href="{% url 'users:login' %}?next={% url 'freelance:contest_create' %}" class="px-6 py-3 bg-primary-600 text-white rounded-xl font-bold">Tizimga kirish</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {% for contest in contests %}
+        <article class="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-primary-500/30 transition flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="flex items-center justify-between flex-wrap gap-2">
+                    <span class="px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase
+                        {% if contest.status == 'OPEN' %}
+                            bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
+                        {% elif contest.status == 'SELECTING' %}
+                            bg-amber-500/10 text-amber-500
+                        {% else %}
+                            bg-slate-200 dark:bg-slate-800 text-slate-500
+                        {% endif %}">
+                        {{ contest.get_status_display }}
+                    </span>
+                    <span class="text-xs text-slate-400 font-medium flex items-center gap-1">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                        {{ contest.deadline|date:"d M, Y" }} gacha
+                    </span>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="text-xl font-bold text-slate-900 dark:text-white line-clamp-1">
+                        <a href="{% url 'freelance:contest_detail' contest.slug %}" class="hover:text-primary-500 transition">{{ contest.title }}</a>
+                    </h3>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">{{ contest.description }}</p>
+                    {% if contest.category %}
+                    <span class="inline-block text-xs font-bold text-primary-500 bg-primary-500/10 px-2 py-0.5 rounded">{{ contest.category.name }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-400 block">Mukofot</span>
+                    <span class="text-xl font-black text-slate-900 dark:text-white">{{ contest.reward|uzs }}</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-xs text-slate-400 flex items-center gap-1">
+                        <i data-lucide="image" class="w-4 h-4"></i>
+                        {{ contest.submissions.count }} ta ish
+                    </span>
+                    <a href="{% url 'freelance:contest_detail' contest.slug %}" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold rounded-xl transition">Batafsil</a>
+                </div>
+            </div>
+        </article>
+        {% empty %}
+        <div class="col-span-full text-center py-20 glass rounded-3xl border-dashed border-slate-300 dark:border-slate-700">
+            <i data-lucide="trophy" class="w-12 h-12 text-slate-400 mx-auto mb-4"></i>
+            <h3 class="text-xl font-bold text-slate-500">Hozircha tanlovlar yo'q</h3>
+            <p class="text-slate-400 mt-1">Yangi tanlovlar qo'shilishini kuting yoki o'zingiz tanlov yarating.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

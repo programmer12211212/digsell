@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Yangi mahsulot | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="glass p-8 rounded-3xl border-slate-800/50">
+        <h1 class="text-2xl font-heading font-bold mb-6">Yangi mahsulot qo'shish</h1>
+        
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="space-y-2 relative">
+                <div class="flex items-center justify-between">
+                    <label class="text-sm font-bold text-slate-400 uppercase tracking-wider">{{ field.label }}</label>
+                    {% if field.name == 'title' %}
+                    <button type="button" id="ai-seo-btn" class="flex items-center gap-1.5 text-[10px] font-bold text-primary-400 hover:text-primary-300 transition-colors uppercase tracking-widest bg-primary-500/10 px-2 py-1 rounded-lg border border-primary-500/20">
+                        <i data-lucide="sparkles" class="w-3 h-3"></i>
+                        AI orqali to'ldirish
+                    </button>
+                    {% endif %}
+                </div>
+                {{ field }}
+                {% if field.errors %}
+                    <p class="text-rose-500 text-xs">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <!-- Custom File Input for Product Archive -->
+            <div class="space-y-2">
+                <label class="text-sm font-bold text-slate-400 uppercase tracking-wider">Asosiy mahsulot fayli</label>
+                <input type="file" name="product_file" required class="w-full">
+                <p class="text-slate-500 text-xs mt-1">Barcha fayl turlari qo'llab-quvvatlanadi: txt, png, zip, mp3, mp4, mov va boshqalar.</p>
+            </div>
+
+            <div class="pt-6">
+                <button type="submit" class="w-full py-4 bg-primary-600 hover:bg-primary-500 rounded-xl font-bold transition-all shadow-lg shadow-primary-500/20">
+                    Mahsulotni saqlash
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('ai-seo-btn')?.addEventListener('click', async function() {
+    const title = document.querySelector('[name="title"]').value;
+    const description = document.querySelector('[name="description"]').value;
+    const productType = document.querySelector('[name="product_type"]').value;
+
+    if (!title) {
+        alert("Iltimos, avval mahsulot nomini kiriting.");
+        return;
+    }
+
+    const btn = this;
+    const originalContent = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Tayyorlanmoqda...';
+    lucide.createIcons();
+
+    try {
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('description', description);
+        formData.append('product_type', productType);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        const response = await fetch("{% url 'marketplace:ai_generate_seo' %}", {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json();
+
+        if (result.success) {
+            if (result.data.seo_title) document.querySelector('[name="title"]').value = result.data.seo_title;
+            if (result.data.seo_description && !description) document.querySelector('[name="description"]').value = result.data.seo_description;
+            if (result.data.tags) document.querySelector('[name="tags"]').value = result.data.tags.join(', ');
+            alert("AI muvaffaqiyatli to'ldirdi!");
+        } else {
+            alert("Xatolik: " + result.message);
+        }
+    } catch (e) {
+        alert("Xatolik yuz berdi. Iltimos qayta urinib ko'ring.");
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalContent;
+        lucide.createIcons();
+    }
+});
+</script>
+
+<style>
+    input, select, textarea {
+        width: 100%;
+        background: #0f172a !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 0.75rem !important;
+        padding: 0.75rem 1rem !important;
+        color: white !important;
+        outline: none !important;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: #0ea5e9 !important;
+        box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.2) !important;
+    }
+</style>
+{% endblock %}

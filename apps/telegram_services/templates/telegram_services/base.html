@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Telegram Xizmatlari - Digsell.uz{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'telegram_services/css/animations.css' %}">
+<link rel="stylesheet" href="{% static 'telegram_services/css/style.css' %}">
+
+<div class="telegram-services-active space-y-6 text-slate-200">
+    <!-- Premium Gradients and Glassmorphic Background -->
+    <div class="relative rounded-[32px] overflow-hidden border border-white/5 bg-[#090b16]/75 backdrop-blur-3xl shadow-2xl p-6 md:p-8 transition-all duration-300"
+         style="background: radial-gradient(circle at top right, rgba(0, 240, 255, 0.08), transparent 60%), radial-gradient(circle at bottom left, rgba(139, 92, 246, 0.05), transparent 50%);">
+        
+        <!-- Header Banner -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 dark:border-slate-800/80 pb-6 mb-6">
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <span class="p-2.5 bg-sky-500/10 text-sky-500 dark:text-sky-400 rounded-2xl border border-sky-500/20 shadow-inner">
+                        <i class="fab fa-telegram text-2xl animate-pulse"></i>
+                    </span>
+                    <div>
+                        <h1 class="text-3xl font-heading font-black tracking-tight bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 dark:from-sky-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
+                            Telegram Xizmatlari
+                        </h1>
+                        <div class="text-[10px] text-sky-500 font-extrabold uppercase tracking-widest mt-0.5">Premium Marketplace</div>
+                    </div>
+                </div>
+                <p class="text-slate-500 dark:text-slate-400 text-sm max-w-xl font-medium">
+                    Telegram Stars, Premium obunalari va cheksiz sovg'alarni tezkor va kafolatlangan yetkazib berish bilan xarid qiling.
+                </p>
+            </div>
+            <div class="flex items-center gap-3 flex-wrap">
+                <a href="{% url 'telegram_services:home' %}" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/50 dark:hover:border-slate-700 rounded-2xl text-xs font-black transition flex items-center gap-2 text-slate-700 dark:text-white">
+                    <i data-lucide="home" class="w-4 h-4"></i> Bosh sahifa
+                </a>
+                <a href="{% url 'telegram_services:product_list' %}" class="px-5 py-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/60 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/50 dark:hover:border-slate-700 rounded-2xl text-xs font-black transition flex items-center gap-2 text-slate-700 dark:text-white">
+                    <i data-lucide="shopping-bag" class="w-4 h-4"></i> Mahsulotlar
+                </a>
+                {% if user.is_authenticated %}
+                <a href="{% url 'telegram_services:my_orders' %}" class="px-5 py-3 bg-primary-600 hover:bg-primary-500 text-white rounded-2xl text-xs font-black transition flex items-center gap-2 shadow-lg shadow-primary-600/20">
+                    <i data-lucide="package" class="w-4 h-4"></i> Haridlarim
+                    <span class="bg-white/20 text-white px-2 py-0.5 rounded-lg text-[10px]">{{ user.telegram_orders.count }}</span>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Render Content Sub-block -->
+        <div class="text-slate-700 dark:text-slate-300">
+            {% block telegram_content %}{% endblock %}
+        </div>
+    </div>
+    
+    <!-- Glassmorphic Product Detail Modal -->
+    <div id="productDetailModal" class="tg-modal-overlay" onclick="closeProductModalOnOutsideClick(event)">
+        <div class="tg-modal-container" onclick="event.stopPropagation()">
+            <!-- Header -->
+            <div class="tg-modal-header">
+                <div class="flex items-center gap-2">
+                    <span id="modalCategoryIcon" class="text-xl">⭐</span>
+                    <h4 id="modalCategoryName" class="text-xs uppercase font-extrabold tracking-wider text-slate-400">Telegram Stars</h4>
+                </div>
+                <button type="button" class="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white transition" onclick="closeProductModal()">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <!-- Body -->
+            <div class="tg-modal-body space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <!-- Image / Icon Display -->
+                    <div class="p-6 rounded-2xl bg-slate-950/60 border border-white/5 flex flex-col items-center justify-center min-h-[220px] relative overflow-hidden group">
+                        <div class="absolute inset-0 bg-radial-gradient from-sky-500/5 to-transparent pointer-events-none"></div>
+                        <div id="modalProductIcon" class="text-7xl select-none animate-pulse">⭐</div>
+                        <img id="modalProductImage" src="" alt="" class="max-h-48 object-contain hidden rounded-lg border border-white/10 shadow-lg">
+                    </div>
+                    <!-- Info Detail -->
+                    <div class="space-y-4">
+                        <h3 id="modalProductName" class="text-2xl font-heading font-black text-slate-100 leading-tight">100 Stars</h3>
+                        <div class="space-y-2">
+                           <div class="flex items-center justify-between text-xs py-1.5 border-b border-white/5">
+                               <span class="text-slate-450 font-bold">Yetkazib berish:</span>
+                               <span id="modalProductDelivery" class="text-slate-200 font-extrabold">Avtomatik</span>
+                           </div>
+                           <div class="flex items-center justify-between text-xs py-1.5 border-b border-white/5">
+                               <span class="text-slate-450 font-bold">Holati:</span>
+                               <span id="modalProductAvailability" class="text-emerald-400 font-extrabold">Sotuvda bor</span>
+                           </div>
+                           <div class="flex items-center justify-between text-xs py-1.5">
+                               <span class="text-slate-450 font-bold">Turi:</span>
+                               <span id="modalProductCategoryDisplay" class="text-sky-400 font-extrabold">Stars</span>
+                           </div>
+                        </div>
+                        <div class="p-4 rounded-xl bg-slate-950/60 border border-white/5 flex justify-between items-center">
+                           <span class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Jami narx</span>
+                           <span id="modalProductPrice" class="text-xl font-heading font-black text-sky-400">12,000 UZS</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Description -->
+                <div class="space-y-2 pt-2 border-t border-white/5">
+                   <h5 class="text-xs font-black uppercase text-slate-500 tracking-wider">Batafsil ma'lumot</h5>
+                   <p id="modalProductDescription" class="text-xs text-slate-400 leading-relaxed font-semibold">Tavsif yo'q.</p>
+                </div>
+            </div>
+            <!-- Footer -->
+            <div class="tg-modal-footer">
+                <button type="button" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition" onclick="closeProductModal()">
+                    Yopish
+                </button>
+                <a id="modalBuyBtn" href="#" class="flex-1 py-3.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl transition flex items-center justify-center gap-1.5 hover:scale-[1.02] shadow-lg shadow-sky-500/20">
+                    🛒 Sotib olish
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+   function openProductModal(productId) {
+       // Find the card element by product id
+       const card = document.querySelector(`.tg-card-fintech[data-id="${productId}"]`);
+       if (!card) return;
+       
+       // Extract data attributes
+       const name = card.getAttribute('data-name');
+       const description = card.getAttribute('data-description') || 'Tavsif yo\'q.';
+       const price = card.getAttribute('data-price');
+       const icon = card.getAttribute('data-icon');
+       const categoryDisplay = card.getAttribute('data-category-display');
+       const categoryName = card.getAttribute('data-category-name');
+       const availability = card.getAttribute('data-availability');
+       const deliveryType = card.getAttribute('data-delivery-type');
+       const image = card.getAttribute('data-image');
+       const checkoutUrl = card.getAttribute('data-checkout-url');
+       
+       // Populate modal elements
+       document.getElementById('modalCategoryName').textContent = categoryDisplay;
+       document.getElementById('modalCategoryIcon').textContent = icon;
+       document.getElementById('modalProductIcon').textContent = icon;
+       document.getElementById('modalProductName').textContent = name;
+       document.getElementById('modalProductDelivery').textContent = deliveryType;
+       document.getElementById('modalProductAvailability').textContent = availability;
+       document.getElementById('modalProductCategoryDisplay').textContent = categoryDisplay;
+       document.getElementById('modalProductPrice').textContent = price;
+       document.getElementById('modalProductDescription').textContent = description;
+       
+       // Buy button class and color based on category
+       const buyBtn = document.getElementById('modalBuyBtn');
+       buyBtn.href = checkoutUrl;
+       
+       if (categoryName === 'gifts') {
+           buyBtn.innerHTML = '🎁 Yuborish';
+           buyBtn.className = 'flex-1 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-xl transition flex items-center justify-center gap-1.5 hover:scale-[1.02] shadow-lg shadow-rose-600/20';
+       } else if (categoryName === 'premium') {
+           buyBtn.innerHTML = '🛒 Sotib olish';
+           buyBtn.className = 'flex-1 py-3.5 bg-purple-600 hover:bg-purple-500 text-white font-black text-xs rounded-xl transition flex items-center justify-center gap-1.5 hover:scale-[1.02] shadow-lg shadow-purple-600/20';
+       } else {
+           buyBtn.innerHTML = '🛒 Sotib olish';
+           buyBtn.className = 'flex-1 py-3.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-xs rounded-xl transition flex items-center justify-center gap-1.5 hover:scale-[1.02] shadow-lg shadow-sky-500/20';
+       }
+       
+       // Image display handling
+       const modalIcon = document.getElementById('modalProductIcon');
+       const modalImage = document.getElementById('modalProductImage');
+       if (image) {
+           modalImage.src = image;
+           modalImage.classList.remove('hidden');
+           modalIcon.classList.add('hidden');
+       } else {
+           modalImage.src = '';
+           modalImage.classList.add('hidden');
+           modalIcon.classList.remove('hidden');
+       }
+       
+       // Open modal
+       const modalOverlay = document.getElementById('productDetailModal');
+       modalOverlay.classList.add('active');
+       
+       // Re-trigger Lucide icons inside modal if needed
+       if (window.lucide) {
+           lucide.createIcons();
+       }
+   }
+
+   function closeProductModal() {
+       const modalOverlay = document.getElementById('productDetailModal');
+       if (modalOverlay) {
+           modalOverlay.classList.remove('active');
+       }
+   }
+
+   function closeProductModalOnOutsideClick(event) {
+       const modalOverlay = document.getElementById('productDetailModal');
+       if (event.target === modalOverlay) {
+           closeProductModal();
+       }
+   }
+   
+   // Escape key listener for closing product modal
+   document.addEventListener('keydown', function(event) {
+       if (event.key === 'Escape') {
+           closeProductModal();
+       }
+   });
+
+   function updateCustomStarsPrice(inputVal) {
+       const qty = parseInt(inputVal) || 0;
+       let rate = 240;
+       if (qty < 100) rate = 240;
+       else if (qty < 250) rate = 220;
+       else if (qty < 500) rate = 208;
+       else if (qty < 1000) rate = 200;
+       else if (qty < 5000) rate = 190;
+       else rate = 180;
+       
+       const price = qty * rate;
+       const formattedPrice = new Intl.NumberFormat('uz-UZ').format(price) + ' UZS';
+       
+       // Update price on the custom card
+       const priceValue = document.getElementById('customStarsPriceValue');
+       if (priceValue) {
+           priceValue.textContent = formattedPrice;
+       }
+       
+       // Update metadata attributes on custom card
+       const customCard = document.getElementById('customStarsCard');
+       if (customCard) {
+           customCard.setAttribute('data-price', formattedPrice);
+           customCard.setAttribute('data-description', `Siz xohlagan miqdorda Telegram Stars: ${qty} Stars.`);
+           customCard.setAttribute('data-name', `${qty} Telegram Stars`);
+           
+           const baseUrl = customCard.getAttribute('data-checkout-base-url');
+           customCard.setAttribute('data-checkout-url', `${baseUrl}?quantity=${qty}`);
+       }
+       
+       // Update buy button href on the custom card
+       const customBuyBtn = document.getElementById('customStarsBuyBtn');
+       if (customBuyBtn && customCard) {
+           customBuyBtn.href = customCard.getAttribute('data-checkout-url');
+       }
+   }
+
+   document.addEventListener('DOMContentLoaded', function() {
+       const customInput = document.getElementById('customStarsInput');
+       if (customInput) {
+           updateCustomStarsPrice(customInput.value);
+       }
+   });
+</script>
+<script src="{% static 'telegram_services/js/main.js' %}"></script>
+{% endblock %}

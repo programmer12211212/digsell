@@ -1,0 +1,207 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}To'lov | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="py-8 px-4 flex items-center justify-center">
+    <div class="w-full max-w-xl space-y-8">
+
+        <!-- Header -->
+        <div class="text-center space-y-4">
+            <div class="w-20 h-20 bg-primary-500/10 rounded-3xl flex items-center justify-center mx-auto border border-primary-500/20 shadow-xl shadow-primary-500/5">
+                <i data-lucide="shield-check" class="w-10 h-10 text-primary-400"></i>
+            </div>
+            <h1 class="text-3xl font-heading font-black text-white tracking-tight">Xavfsiz To'lov</h1>
+            <p class="text-slate-400 text-sm max-w-sm mx-auto">Buyurtmani yakunlash uchun o'zingizga qulay to'lov usulini tanlang va chekni yuklang.</p>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="glass p-5 rounded-2xl border-slate-800/50">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-primary-400">
+                    <i data-lucide="package" class="w-6 h-6"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-white">
+                        {% if order.product %}{{ order.product.title }}{% else %}Freelance Loyiha{% endif %}
+                    </p>
+                    <p class="text-xs text-slate-500">Buyurtma #{{ order.id|stringformat:"05d" }}</p>
+                </div>
+                <p class="text-2xl font-bold text-white">{{ order.amount|uzs }}</p>
+            </div>
+        </div>
+
+        <!-- Promo Code Section -->
+        <div class="glass p-4 rounded-xl border-slate-800/50 space-y-3">
+            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Promo kod mavjudmi?</label>
+            <form id="coupon-form" class="flex gap-2">
+                {% csrf_token %}
+                <input 
+                    type="text" 
+                    name="coupon_code" 
+                    id="coupon_code"
+                    placeholder="Promo kodni kiriting"
+                    class="flex-1 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-500"
+                    maxlength="50"
+                />
+                <button type="button" id="apply-coupon-btn" class="px-6 py-2 bg-primary-600 hover:bg-primary-500 rounded-lg font-bold text-white text-sm transition-all">
+                    Qo'llash
+                </button>
+            </form>
+            <div id="coupon-message" class="text-sm rounded px-3 py-2 hidden"></div>
+        </div>
+
+        <!-- Payment Form -->
+        <form method="POST" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            <!-- Company Cards Selection -->
+            <div class="space-y-3">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">To'lov uchun kartani tanlang</label>
+
+                {% for card in company_cards %}
+                <label class="flex flex-col p-4 glass rounded-xl border-slate-800/50 hover:border-primary-500/30 cursor-pointer transition-all group has-[:checked]:border-primary-500/50 has-[:checked]:bg-primary-500/5 relative overflow-hidden">
+                    <input type="radio" name="payment_method" value="{{ card.card_name }}" class="absolute opacity-0 w-0 h-0" {% if forloop.first %}checked{% endif %}>
+                    
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-8 bg-gradient-to-tr from-slate-800 to-slate-700 rounded flex items-center justify-center font-black text-white text-xs shadow-inner">
+                            {{ card.card_name }}
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-mono text-lg font-bold tracking-widest text-white">{{ card.card_number }}</p>
+                            <p class="text-xs text-slate-400 uppercase font-bold">{{ card.card_holder }}</p>
+                        </div>
+                        <div class="w-6 h-6 rounded-full border-2 border-slate-700 flex items-center justify-center group-has-[:checked]:border-primary-500 transition-colors">
+                            <div class="w-2.5 h-2.5 rounded-full bg-primary-500 opacity-0 group-has-[:checked]:opacity-100 transition-opacity"></div>
+                        </div>
+                    </div>
+                </label>
+                {% empty %}
+                <div class="p-4 text-center text-rose-400 border border-rose-500/20 glass rounded-xl text-sm">
+                    Kechirasiz, hozircha to'lov uchun kartalar mavjud emas. Admin bilan bog'laning.
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if wallet.balance >= order.amount %}
+            <!-- Pay from Balance Option -->
+            <div class="glass p-4 rounded-xl border-emerald-500/30 bg-emerald-500/5 mt-4">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-sm font-bold text-white">Hisobingiz:</span>
+                    <span class="text-sm font-bold text-emerald-400">{{ wallet.balance|uzs }}</span>
+                </div>
+                <button type="submit" name="pay_from_balance" value="1" class="w-full py-3 bg-emerald-600/90 hover:bg-emerald-500 rounded-xl font-bold text-white text-sm transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="wallet" class="w-4 h-4"></i>
+                    Balansdan to'lash (Chek talab qilinmaydi)
+                </button>
+            </div>
+            
+            <div class="text-center text-xs text-slate-500 mt-2 mb-2">— YOKI —</div>
+            {% endif %}
+
+            <!-- Receipt Upload -->
+            <div class="space-y-3 pt-2">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">To'lov chekini yuklang</label>
+                <div class="glass p-4 rounded-xl border-slate-800/50 border-dashed hover:border-primary-500/50 transition-colors relative">
+                    <input type="file" name="receipt_image" accept="image/*" {% if wallet.balance < order.amount %}required{% endif %} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="document.getElementById('file-name').textContent = this.files[0].name" />
+                    <div class="flex flex-col items-center justify-center space-y-2 text-slate-400 pointer-events-none">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 text-primary-500/80"></i>
+                        <p class="text-sm font-bold"><span class="text-primary-400">Rasm tanlash</span> yoki faylni tashlang</p>
+                        <p id="file-name" class="text-xs text-slate-500 max-w-full truncate px-4">*.jpg, *.png (Max: 5MB)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="glass p-4 rounded-xl border-slate-800/50 space-y-2 text-sm">
+                <div class="flex justify-between text-slate-400">
+                    <span>Mahsulot narxi</span>
+                    <span>{{ order.amount|uzs }}</span>
+                </div>
+                <div class="flex justify-between text-slate-400">
+                    <span>Xizmat haqqi (10%)</span>
+                    <span class="text-rose-400">-{{ order.commission|uzs }}</span>
+                </div>
+                {% if order.coupon_code %}
+                <div class="flex justify-between text-emerald-400 font-bold">
+                    <span>Promo kod ({{ order.coupon_code }})</span>
+                    <span>-{{ order.discount_amount|uzs }}</span>
+                </div>
+                {% endif %}
+                <div class="flex justify-between font-bold text-white pt-2 border-t border-slate-800">
+                    <span>Jami to'lov</span>
+                    <span class="text-lg">
+                        {% if order.final_amount %}
+                            {{ order.final_amount|uzs }}
+                        {% else %}
+                            {{ order.amount|uzs }}
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Security Note -->
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+                <span>Barcha to'lovlar SSL orqali xavfsiz amalga oshiriladi</span>
+            </div>
+
+            <!-- Pay Button -->
+            <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-bold text-white text-lg transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 mt-4">
+                <i data-lucide="upload" class="w-5 h-5"></i>
+                To'ladim va chekni yuborish
+            </button>
+
+            <a href="{% url 'marketplace:product_list' %}" class="block text-center text-sm text-slate-500 hover:text-slate-300 transition-colors">
+                Bekor qilish
+            </a>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('apply-coupon-btn').addEventListener('click', async function(e) {
+    e.preventDefault();
+    const couponCode = document.getElementById('coupon_code').value.trim();
+    const messageDiv = document.getElementById('coupon-message');
+    
+    if (!couponCode) {
+        messageDiv.textContent = 'Iltimos, promo kodni kiriting.';
+        messageDiv.classList.add('bg-rose-500/20', 'text-rose-400', 'border', 'border-rose-500/50');
+        messageDiv.classList.remove('hidden');
+        return;
+    }
+
+    try {
+        const response = await fetch('{% url "marketplace:apply_coupon" order.id %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'coupon_code=' + encodeURIComponent(couponCode),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            messageDiv.textContent = data.message;
+            messageDiv.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border', 'border-emerald-500/50');
+            messageDiv.classList.remove('hidden', 'bg-rose-500/20', 'text-rose-400', 'border-rose-500/50');
+            
+            // Update the price breakdown
+            location.reload();
+        } else {
+            messageDiv.textContent = data.message || 'Xatolik yuz berdi.';
+            messageDiv.classList.add('bg-rose-500/20', 'text-rose-400', 'border', 'border-rose-500/50');
+            messageDiv.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/50');
+        }
+    } catch (error) {
+        messageDiv.textContent = 'Xatolik yuz berdi. Iltimos, qayta urinib ko\'ring.';
+        messageDiv.classList.add('bg-rose-500/20', 'text-rose-400', 'border', 'border-rose-500/50');
+        messageDiv.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/50');
+    }
+});
+</script>
+{% endblock %}

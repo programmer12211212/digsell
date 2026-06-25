@@ -1,0 +1,66 @@
+{% load currency_tags %}
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    {% for product in products %}
+    <div class="card-premium group">
+        <div class="card-image-wrapper">
+            {% if product.preview_image %}
+                <img src="{{ product.preview_image.url }}" alt="{{ product.title }}" class="card-image">
+            {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-slate-900 text-slate-700">
+                    <i data-lucide="image" class="w-12 h-12"></i>
+                </div>
+            {% endif %}
+            
+            <div class="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                <span class="badge badge-primary glass backdrop-blur-md">
+                    {{ product.get_product_type_display }}
+                </span>
+            </div>
+            
+            <div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-slate-950 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                <a href="{% url 'marketplace:create_order' product.id %}" class="btn-premium btn-primary w-full text-sm">
+                    Sotib olish
+                </a>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            <div class="flex justify-between items-start mb-3 gap-4">
+                <h3 class="font-bold text-lg leading-tight group-hover:text-primary transition-colors">
+                    <a href="{% url 'marketplace:product_detail' product.slug %}">{{ product.title }}</a>
+                </h3>
+                <span class="font-black text-xl text-primary whitespace-nowrap">{{ product.price|uzs }}</span>
+            </div>
+            
+            <p class="text-sm text-text-muted mb-6 flex-1 line-clamp-2">{{ product.description }}</p>
+            
+            <div class="pt-4 border-t border-border flex items-center justify-between mt-auto">
+                <div class="flex items-center gap-3">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ product.seller.username }}" alt="{{ product.seller.username }}" class="w-8 h-8 rounded-full border border-border">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold">{{ product.seller.username }}</span>
+                        <span class="text-[10px] text-text-muted">{{ product.view_count|default:0 }} ko'rish</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-1 text-warning">
+                    <i data-lucide="star" class="w-3.5 h-3.5 fill-current"></i>
+                    <span class="text-sm font-black">{{ product.rating|default:"0.0" }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full py-20 text-center">
+        <div class="w-20 h-20 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-800">
+            <i data-lucide="search-x" class="w-10 h-10 text-slate-500"></i>
+        </div>
+        <h3 class="text-xl font-bold text-slate-300">Mahsulot topilmadi</h3>
+        <p class="text-slate-500">Qidiruv parametrlarini o'zgartirib ko'ring.</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    lucide.createIcons();
+</script>

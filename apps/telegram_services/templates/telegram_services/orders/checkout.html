@@ -1,0 +1,187 @@
+{% extends "telegram_services/base.html" %}
+{% load static %}
+
+{% block title %}Checkout - {{ product.name }} - Telegram Xizmatlari{% endblock %}
+
+{% block telegram_content %}
+<div class="max-w-4xl mx-auto py-4">
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs font-bold text-slate-400 mb-6">
+        <a href="{% url 'telegram_services:product_list' %}" class="hover:text-primary-500 transition">Mahsulotlar</a>
+        <span>/</span>
+        <span class="text-slate-200">Buyurtmani rasmiylashtirish</span>
+    </div>
+
+    {% if error %}
+        <div class="p-5 tg-glass border-rose-500/20 text-rose-500 rounded-3xl text-sm font-semibold flex items-center gap-3">
+            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            {{ error }}
+        </div>
+    {% else %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Checkout Settings Form -->
+            <div class="lg:col-span-2 space-y-6">
+                <div class="p-6 md:p-8 tg-glass space-y-6">
+                    <h3 class="text-lg font-heading font-black text-slate-100 tracking-tight flex items-center gap-2">
+                        <i data-lucide="user" class="w-5 h-5 text-sky-400 animate-pulse"></i> Foydalanuvchi ma'lumotlari
+                    </h3>
+                    
+                    <!-- Username Form -->
+                    <form id="checkoutForm" class="space-y-6">
+                        {% csrf_token %}
+                        
+                        <div class="space-y-2">
+                            <label for="telegram_username" class="block text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Telegram Foydalanuvchi Nomi (Username)</label>
+                            <div class="relative flex items-center">
+                                <span class="absolute left-4 text-slate-400 font-extrabold text-sm">@</span>
+                                <input
+                                    type="text"
+                                    id="telegram_username"
+                                    name="telegram_username"
+                                    class="w-full pl-9 pr-4 py-3.5 tg-input text-sm focus:outline-none"
+                                    placeholder="username"
+                                    required
+                                    pattern="^\w{5,32}$"
+                                >
+                            </div>
+                            <small class="text-[10px] text-slate-450 font-semibold block">
+                                Telegram username-ni @ belgisiz kiriting (kamida 5 ta belgi, faqat harflar, raqamlar va tagchiziqlar)
+                            </small>
+                        </div>
+
+                        <!-- User Info Card Preview -->
+                        <div id="userInfoPreview" class="hidden p-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 animate-fade-in">
+                            <div class="flex items-center gap-3">
+                                <img id="userAvatar" src="" alt="Avatar" class="w-12 h-12 rounded-xl object-cover border border-sky-500/30">
+                                <div>
+                                    <div class="text-sm font-black text-slate-100" id="userName">Ism</div>
+                                    <div class="text-xs text-sky-450 font-bold" id="userId">ID: 000000</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Buttons -->
+                        <div class="flex items-center justify-between gap-4 pt-4 border-t border-white/5">
+                            <a href="{% url 'telegram_services:product_list' %}" class="px-5 py-3.5 tg-btn tg-btn-glass rounded-2xl text-xs font-black transition flex items-center gap-2">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i> Orqaga
+                            </a>
+                            <button type="submit" class="px-6 py-3.5 tg-btn tg-btn-sky rounded-2xl shadow-lg transition flex items-center gap-2" id="submitBtn">
+                                <i data-lucide="credit-card" class="w-4 h-4"></i> To'lovga o'tish
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Summary Sidebar -->
+            <div class="space-y-6">
+                <div class="p-6 rounded-3xl tg-glass space-y-4">
+                    <h3 class="text-base font-heading font-black text-slate-100 tracking-tight border-b border-white/5 pb-3">Buyurtma tafsilotlari</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider">Xizmat turi</span>
+                            <span class="font-extrabold text-slate-200">{{ product.category.display_name }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider">Paket</span>
+                            <span class="font-extrabold text-slate-200">
+                                {% if product.sku == 'custom_stars' %}
+                                    {{ request.GET.quantity }} Stars (Batafsil)
+                                {% else %}
+                                    {{ product.name }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-xs">
+                            <span class="text-slate-400 font-bold uppercase tracking-wider">Yetkazish</span>
+                            <span class="font-extrabold text-emerald-400 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> Tezkor (Instant)
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-white/5 pt-4 flex justify-between items-center">
+                        <span class="text-slate-400 font-extrabold text-xs uppercase tracking-wider">Jami to'lov</span>
+                        <span class="text-xl font-heading font-black text-sky-400">
+                            {% if product.sku == 'custom_stars' %}
+                                <span id="checkoutCustomStarsPrice">0 UZS</span>
+                            {% else %}
+                                {{ product.price_uzs|floatformat:0 }} UZS
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Safe & Secure Info -->
+                <div class="p-5 rounded-3xl border border-white/5 bg-slate-900/10 flex gap-4 items-start">
+                    <span class="p-2.5 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/25">
+                        <i class="fas fa-shield-alt text-lg"></i>
+                    </span>
+                    <div class="space-y-1">
+                        <h4 class="text-xs font-black text-slate-200 uppercase tracking-wider">Xavfsiz Xizmat</h4>
+                        <p class="text-[11px] text-slate-400 leading-relaxed font-semibold">Sizning Telegram profilingiz mutlaqo xavfsiz. Tizim yetkazishda faqat ochiq API protokollaridan foydalanadi.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('telegram_username').addEventListener('blur', async function() {
+    const username = this.value.trim().replace(/^@/, '');
+    
+    if (!/^\w{5,32}$/.test(username)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/telegram-services/api/user-info/?username=${username}`);
+        const data = await response.json();
+        
+        if (data.id) {
+            document.getElementById('userAvatar').src = data.photo || 'https://ui-avatars.com/api/?name=' + username + '&background=0ea5e9&color=fff';
+            document.getElementById('userName').textContent = (data.first_name || '') + ' ' + (data.last_name || '') || data.username;
+            document.getElementById('userId').textContent = `ID: ${data.id}`;
+            document.getElementById('userInfoPreview').classList.remove('hidden');
+        } else {
+            document.getElementById('userInfoPreview').classList.add('hidden');
+        }
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+        document.getElementById('userInfoPreview').classList.add('hidden');
+    }
+});
+
+document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    let username = document.getElementById('telegram_username').value.trim();
+    if (!username.startsWith('@')) {
+        username = '@' + username;
+    }
+    const customQty = '{{ request.GET.quantity|default:"" }}';
+    await createOrder('{{ product.pk }}', username, document.getElementById('submitBtn'), customQty);
+});
+
+{% if product.sku == 'custom_stars' %}
+document.addEventListener('DOMContentLoaded', function() {
+    const qty = parseInt('{{ request.GET.quantity|default:100 }}') || 100;
+    let rate = 240;
+    if (qty < 100) rate = 240;
+    else if (qty < 250) rate = 220;
+    else if (qty < 500) rate = 208;
+    else if (qty < 1000) rate = 200;
+    else if (qty < 5000) rate = 190;
+    else rate = 180;
+    
+    const price = qty * rate;
+    document.getElementById('checkoutCustomStarsPrice').textContent = new Intl.NumberFormat('uz-UZ').format(price) + ' UZS';
+});
+{% endif %}
+</script>
+{% endblock %}
+{% endblock %}

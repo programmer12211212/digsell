@@ -1,0 +1,41 @@
+{% load static i18n %}
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}{% trans 'Log in' %}{% endblock %} — Digsell.uz Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/admin_custom.css' %}">
+</head>
+<body style="margin:0;background:#000;overflow-x:hidden;">
+  <div class="admin-login-wrap">
+    <div class="admin-login-container">
+      <div class="admin-login-brand">
+        <div class="admin-login-title">Digsell.uz</div>
+        <div class="admin-login-subtitle">{% trans "Boshqaruv paneliga xush kelibsiz" %}</div>
+      </div>
+      <form method="post" action="{% url 'admin:login' %}" class="admin-login-form">
+        {% csrf_token %}
+        {% if form.errors %}
+          <div class="admin-login-error">{% trans "Login yoki parol noto'g'ri. Qayta urinib ko'ring." %}</div>
+        {% endif %}
+        <div>
+          <label for="id_username">{% trans "Username" %}</label>
+          {{ form.username }}
+        </div>
+        <div style="margin-top:14px">
+          <label for="id_password">{% trans "Password" %}</label>
+          {{ form.password }}
+        </div>
+        <div style="margin-top:22px">
+          <button class="admin-login-btn" type="submit">{% trans "Kirish" %}</button>
+        </div>
+        <div class="admin-footer">🔒 {% trans "Faqat vakolatli xodimlar uchun." %}</div>
+      </form>
+    </div>
+  </div>
+  <script src="{% static 'js/admin_effects.js' %}"></script>
+</body>
+</html>

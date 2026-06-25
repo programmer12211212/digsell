@@ -1,0 +1,39 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Murojaatlar — Admin{% endblock %}
+{% block page_title %}Support — Murojaatlar{% endblock %}
+
+{% block content %}
+<div class="support-layout">
+  <div class="ticket-list-panel">
+    <div class="p-3 border-bottom" style="border-color:var(--card-border)!important">
+      <div class="d-flex gap-2 flex-wrap mb-2">
+        <a href="{% url 'adminpanel:ticket_list' %}" class="tab-btn btn-sm {% if not status_filter %}active{% endif %}">Barchasi</a>
+        <a href="?status=OPEN" class="tab-btn btn-sm {% if status_filter == 'OPEN' %}active{% endif %}">Ochiq</a>
+        <a href="?status=IN_PROGRESS" class="tab-btn btn-sm {% if status_filter == 'IN_PROGRESS' %}active{% endif %}">Jarayonda</a>
+        <a href="?status=RESOLVED" class="tab-btn btn-sm {% if status_filter == 'RESOLVED' %}active{% endif %}">Hal qilindi</a>
+      </div>
+      <input class="form-control-neon w-100" placeholder="Ticket qidirish..." id="ticketSearch">
+    </div>
+    <div class="flex-grow-1 overflow-auto" id="ticketList">
+      {% for t in tickets %}
+      <a href="{% url 'adminpanel:ticket_detail' t.id %}" class="ticket-item {% if request.resolver_match.kwargs.ticket_id == t.id %}active{% endif %}">
+        <div class="d-flex justify-content-between">
+          <strong class="small">#{{ t.id }} {{ t.subject|truncatechars:28 }}</strong>
+          <span class="badge-status badge-{% if t.status == 'OPEN' %}moderation{% else %}active{% endif %}">{{ t.get_status_display }}</span>
+        </div>
+        <div class="text-muted small mt-1">{{ t.user.username }} · {{ t.created_at|date:"d.m H:i" }}</div>
+      </a>
+      {% empty %}
+      <div class="text-center text-muted py-5">Ticketlar yo'q</div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="chat-panel d-flex align-items-center justify-content-center text-muted">
+    <div class="text-center p-4">
+      <div style="font-size:3rem">💬</div>
+      <p>Chat uchun ticket tanlang</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

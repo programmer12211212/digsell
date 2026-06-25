@@ -1,0 +1,45 @@
+{% extends 'adminpanel/base.html' %}
+
+{% block title %}Administratorlar — Admin{% endblock %}
+{% block page_title %}Administratorlar{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card-neon">
+      <h5 class="mb-3">➕ Admin qo'shish</h5>
+      <form method="post" action="{% url 'adminpanel:admin_create' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <input class="form-control-neon w-100" name="username" placeholder="Username" required>
+        </div>
+        <div class="mb-3">
+          <input class="form-control-neon w-100" name="email" type="email" placeholder="Email">
+        </div>
+        <div class="mb-3">
+          <input class="form-control-neon w-100" name="password" type="password" placeholder="Parol" required>
+        </div>
+        <button type="submit" class="btn-primary-neon w-100">Admin yaratish</button>
+      </form>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card-neon">
+      <h5 class="mb-3">Administratorlar ro'yxati</h5>
+      <table class="table-neon w-100">
+        <thead><tr><th>Username</th><th>Email</th><th>Rol</th><th>Qo'shilgan</th></tr></thead>
+        <tbody>
+          {% for admin in admins %}
+          <tr>
+            <td class="fw-bold">{{ admin.username }}</td>
+            <td>{{ admin.email|default:"—" }}</td>
+            <td><span class="badge-status badge-active">{{ admin.get_role_display }}</span></td>
+            <td class="text-muted small">{{ admin.date_joined|date:"d.m.Y" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

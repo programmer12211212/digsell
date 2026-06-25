@@ -1,0 +1,49 @@
+{% extends 'adminpanel/base.html' %}
+{% load humanize %}
+
+{% block title %}Premiumlar — Admin{% endblock %}
+{% block page_title %}Premiumlar{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card text-center">
+      <div class="stat-value" data-counter="{{ active_count }}">0</div>
+      <div class="stat-label">Aktiv premium foydalanuvchilar</div>
+    </div>
+  </div>
+  {% for plan in plans %}
+  <div class="col-md-4">
+    <div class="card-neon">
+      <h5 class="text-primary mb-1">⭐ {{ plan.name }}</h5>
+      <div class="h4 mb-2">{{ plan.price|floatformat:0|intcomma }} UZS</div>
+      <ul class="small text-muted mb-0">
+        <li>AI limit: {{ plan.ai_limit }}</li>
+        <li>Upload: {{ plan.upload_limit_gb }} GB</li>
+        {% if plan.premium_badge %}<li>Premium badge ✓</li>{% endif %}
+      </ul>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card-neon">
+  <h5 class="mb-3">Premium obunalar</h5>
+  <table class="table-neon w-100">
+    <thead><tr><th>Foydalanuvchi</th><th>Plan</th><th>Boshlanish</th><th>Tugash</th><th>Holat</th></tr></thead>
+    <tbody>
+      {% for sub in subscriptions %}
+      <tr>
+        <td>{{ sub.user.username }}</td>
+        <td>{{ sub.plan.name }}</td>
+        <td>{{ sub.start_date|date:"d.m.Y" }}</td>
+        <td>{{ sub.end_date|date:"d.m.Y" }}</td>
+        <td><span class="badge-status {% if sub.is_active %}badge-active{% else %}badge-expired{% endif %}">{% if sub.is_active %}Aktiv{% else %}Tugagan{% endif %}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="text-center text-muted py-4">Obunalar yo'q</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

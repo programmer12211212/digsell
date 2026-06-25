@@ -1,0 +1,182 @@
+<div class="p-6 flex items-center gap-3">
+    <div class="w-10 h-10 bg-primary-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-primary-500/30">
+        <i data-lucide="layout-grid" class="w-6 h-6"></i>
+    </div>
+    <h1 class="text-2xl font-black tracking-tighter font-heading text-primary-600 dark:text-primary-500">DIGSELL<span class="text-slate-400">.UZ</span></h1>
+</div>
+
+<nav class="flex-1 overflow-y-auto px-4 py-4 space-y-2 custom-scrollbar">
+    {% if not user.is_authenticated %}
+    <a href="{% url 'users:login' %}" class="flex items-center gap-3 px-4 py-4 mb-4 rounded-2xl bg-primary-600 text-white shadow-lg shadow-primary-500/30 hover:bg-primary-700 transition transform hover:-translate-y-0.5">
+        <i data-lucide="log-in" class="w-5 h-5"></i>
+        <span class="font-black text-sm uppercase tracking-wider">Tizimga Kirish</span>
+    </a>
+    {% endif %}
+
+    <p class="px-4 text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Mening Ofisim</p>
+    
+    <a href="/dashboard/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group {% if request.path == '/dashboard/' %}bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-500/20{% endif %}">
+        <i data-lucide="pie-chart" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Dashboard</span>
+    </a>
+    
+    {% if user.is_staff %}
+    <a href="/admin/" target="_blank" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition group">
+        <i data-lucide="shield-check" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Admin Panel</span>
+    </a>
+    {% endif %}
+
+    <a href="{% url 'core:purchases' %}" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group {% if request.path == '/purchases/' %}bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-500/20{% endif %}">
+        <i data-lucide="package" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Ombor (Haridlarim)</span>
+    </a>
+    
+    <a href="/marketplace/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Bozor (Market)</span>
+    </a>
+
+    <a href="/courses/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="video" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Video Akademiyasi</span>
+    </a>
+
+    <a href="/marketplace/cart/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Savatcha</span>
+    </a>
+
+    <!-- Telegram Xizmatlari Dropdown Menu -->
+    <div x-data="{ open: {% if '/telegram-services/' in request.path %}true{% else %}false{% endif %} }" class="space-y-1">
+        <button @click="open = !open" 
+                class="w-full flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group {% if '/telegram-services/' in request.path %}bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-500/20{% endif %}">
+            <div class="flex items-center gap-3">
+                <i data-lucide="send" class="w-5 h-5 text-sky-500"></i>
+                <span class="font-bold text-sm">Telegram Xizmatlari</span>
+            </div>
+            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-200" :class="{ 'rotate-180': open }"></i>
+        </button>
+        <div x-show="open" x-cloak x-transition class="pl-8 space-y-1">
+            <a href="{% url 'telegram_services:product_list' %}?category=stars" 
+               class="flex items-center gap-2 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-primary-500 transition {% if '/telegram-services/products/' in request.path and request.GET.category == 'stars' %}text-primary-500 dark:text-primary-400{% endif %}">
+                <span>⭐</span> Telegram Stars
+            </a>
+            <a href="{% url 'telegram_services:product_list' %}?category=premium" 
+               class="flex items-center gap-2 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-primary-500 transition {% if '/telegram-services/products/' in request.path and request.GET.category == 'premium' %}text-primary-500 dark:text-primary-400{% endif %}">
+                <span>💎</span> Telegram Premium
+            </a>
+            <a href="{% url 'telegram_services:product_list' %}?category=gifts" 
+               class="flex items-center gap-2 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-primary-500 transition {% if '/telegram-services/products/' in request.path and request.GET.category == 'gifts' %}text-primary-500 dark:text-primary-400{% endif %}">
+                <span>🎁</span> Telegram Gifts
+            </a>
+        </div>
+    </div>
+
+    <a href="/marketing/bonus/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="gift" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Bonus & Spin</span>
+    </a>
+
+    <a href="{% url 'chat:chat_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="messages-square" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Xabarlar</span>
+    </a>
+
+    <a href="{% url 'freelance:project_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group {% if '/freelance/' in request.path and '/contests/' not in request.path and '/top-freelancers/' not in request.path %}bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-500/20{% endif %}">
+        <i data-lucide="briefcase" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Frilans</span>
+    </a>
+
+    <a href="{% url 'freelance:contest_list' %}" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group {% if '/contests/' in request.path %}bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-500/20{% endif %}">
+        <i data-lucide="trophy" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Tanlovlar (Contests)</span>
+    </a>
+
+    <a href="{% url 'freelance:top_freelancers' %}" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group {% if '/top-freelancers/' in request.path %}bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border border-primary-500/20{% endif %}">
+        <i data-lucide="award" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Top Frilanserlar</span>
+    </a>
+
+    {% if user.is_authenticated %}
+    <a href="{% url 'freelance:freelancer_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="user-check" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Frilanser paneli</span>
+    </a>
+    <a href="{% url 'freelance:client_dashboard' %}" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="folder-kanban" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Mening Loyihalarim</span>
+    </a>
+    {% endif %}
+
+    <p class="px-4 pt-6 text-[10px] font-black uppercase text-slate-400 tracking-widest mb-4">Moliya & Bonus</p>
+
+    <a href="/payments/wallet/" class="flex items-center justify-between px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <div class="flex items-center gap-3">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+            <span class="font-bold text-sm">Hamyon</span>
+        </div>
+        {% if user.is_authenticated %}
+        <span class="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded-lg font-black">{% if user.wallet %}{{ user.wallet.balance|floatformat:0 }}{% else %}0{% endif %}</span>
+        {% endif %}
+    </a>
+
+    <a href="/marketing/competitions/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="trophy" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Musobaqalar</span>
+    </a>
+
+    <a href="/referrals/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Referral Tizimi</span>
+    </a>
+
+    {% if user.is_authenticated %}
+    <a href="/seller/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="store" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Sotuvchi paneli</span>
+    </a>
+    {% endif %}
+
+    <a href="/support/" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition group">
+        <i data-lucide="headphones" class="w-5 h-5"></i>
+        <span class="font-bold text-sm">Yordam</span>
+    </a>
+
+    {% if ad_cards %}
+    <p class="px-4 pt-4 text-[10px] font-black uppercase text-slate-400 tracking-widest">Reklama</p>
+    {% for ad in ad_cards %}
+    <a href="{% url 'marketing:track_ad_click' ad.id %}" target="_blank" rel="noopener"
+       class="mx-3 mb-2 block rounded-2xl overflow-hidden border border-slate-700/50 hover:border-primary-500/30 transition"
+       style="background: linear-gradient(135deg, {{ ad.bg_color }}22, transparent);">
+        {% if ad.image %}
+        <img src="{{ ad.image.url }}" class="w-full h-20 object-cover" alt="{{ ad.title }}" loading="lazy">
+        {% endif %}
+        <div class="p-3">
+            <p class="text-xs font-black leading-tight" style="color: {{ ad.text_color|default:'#38bdf8' }}">{{ ad.title }}</p>
+            {% if ad.description %}<p class="text-[10px] text-slate-500 mt-1 line-clamp-2">{{ ad.description }}</p>{% endif %}
+        </div>
+    </a>
+    {% endfor %}
+    {% endif %}
+</nav>
+
+<div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+    {% if user.is_authenticated %}
+    <div class="flex items-center gap-3 p-3 glass rounded-2xl">
+        <a href="{% url 'core:profile' %}" class="flex items-center gap-3 flex-1 min-w-0">
+            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=0ea5e9&color=fff" class="w-10 h-10 rounded-xl" alt="Me">
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-black truncate">{{ user.username }}</p>
+                <p class="text-[10px] text-primary-500 font-bold uppercase">{{ user.loyalty_level }} LEVEL</p>
+            </div>
+        </a>
+        <form action="{% url 'users:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="p-2 hover:text-red-500 transition" aria-label="Chiqish">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+            </button>
+        </form>
+    </div>
+    {% endif %}
+</div>

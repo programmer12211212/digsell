@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Tabriklaymiz! | Digsell.uz{% endblock %}
+{% block content %}
+<div class="max-w-lg mx-auto text-center space-y-8 py-12">
+    <div class="w-24 h-24 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto">
+        <i data-lucide="trophy" class="w-12 h-12 text-amber-500"></i>
+    </div>
+    <h1 class="text-4xl font-black font-heading">Tabriklaymiz!</h1>
+    <div class="glass p-8 rounded-3xl space-y-4">
+        <p class="text-2xl font-black text-primary-400">{{ prize.name }}</p>
+        <p class="text-slate-400">{{ prize.get_prize_type_display }}</p>
+        {% if prize.value %}<p class="text-3xl font-black">{{ prize.value|floatformat:0 }} so'm</p>{% endif %}
+    </div>
+    <a href="{% url 'marketing:bonus_page' %}" class="btn-premium btn-primary px-8 py-4 rounded-2xl font-bold inline-block">
+        Bonus Markaziga Qaytish
+    </a>
+</div>
+{% endblock %}

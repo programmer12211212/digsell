@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+
+{% block title %}Top Frilanserlar | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div>
+        <h1 class="text-3xl font-heading font-bold text-slate-900 dark:text-white">TOP Frilanserlar reytingi</h1>
+        <p class="text-slate-500 dark:text-slate-400">Eng yaxshi natijalarga erishgan va mijozlar tomonidan yuqori baholangan professional mutaxassislarimiz.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for profile in freelancers %}
+        <article class="glass p-6 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-primary-500/30 transition flex flex-col justify-between">
+            <div>
+                <div class="flex items-start gap-4">
+                    <img src="https://ui-avatars.com/api/?name={{ profile.user.username }}&size=64&background=0284c7&color=fff" alt="" class="w-16 h-16 rounded-2xl shrink-0" loading="lazy">
+                    <div class="space-y-1 min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <h3 class="font-bold text-lg text-slate-900 dark:text-white truncate">
+                                <a href="{% url 'freelance:freelancer_profile' profile.user.username %}" class="hover:text-primary-500 transition">{{ profile.user.username }}</a>
+                            </h3>
+                            {% if profile.verified_at %}
+                            <span class="inline-flex items-center justify-center w-5 h-5 bg-emerald-500/20 text-emerald-500 rounded-full" title="Tasdiqlangan Frilanser">
+                                <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                            </span>
+                            {% endif %}
+                            {% if profile.is_top_rated %}
+                            <span class="px-2 py-0.5 bg-amber-500/10 text-amber-500 text-[10px] font-bold rounded-full">Top Rated</span>
+                            {% endif %}
+                        </div>
+                        <p class="text-xs text-primary-500 font-semibold">{{ profile.title|default:"Mutaxassislik kiritilmagan" }}</p>
+                        <div class="flex items-center gap-1 text-slate-500 text-xs">
+                            <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400 fill-amber-400"></i>
+                            <span class="font-bold text-slate-700 dark:text-slate-300">{{ profile.user.rating }}</span>
+                            <span>({{ profile.completed_projects }} loyiha)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <p class="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">{{ profile.bio|default:"Ushbu frilanser o'z biografiyasini kiritmagan." }}</p>
+                </div>
+
+                <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-800 flex flex-wrap gap-2">
+                    {% for skill in profile.skills.all|slice:":4" %}
+                    <span class="px-2.5 py-1 bg-slate-100 dark:bg-slate-800/60 rounded-lg text-xs font-medium text-slate-600 dark:text-slate-300">{{ skill.skill.name }}</span>
+                    {% empty %}
+                    <span class="text-xs text-slate-400">Ko'nikmalar belgilanmagan</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                    <span class="text-xs text-slate-400 block">Soatbay stavka</span>
+                    <span class="text-base font-bold text-slate-900 dark:text-white">{{ profile.hourly_rate|uzs }}/soat</span>
+                </div>
+                <a href="{% url 'freelance:freelancer_profile' profile.user.username %}" class="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white text-xs font-bold rounded-xl transition">Profilni ko'rish</a>
+            </div>
+        </article>
+        {% empty %}
+        <div class="col-span-full text-center py-20 glass rounded-3xl border-dashed border-slate-300 dark:border-slate-700">
+            <i data-lucide="users" class="w-12 h-12 text-slate-400 mx-auto mb-4"></i>
+            <h3 class="text-xl font-bold text-slate-500">Frilanserlar mavjud emas</h3>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

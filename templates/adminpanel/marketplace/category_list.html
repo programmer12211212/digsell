@@ -1,0 +1,30 @@
+{% extends 'adminpanel/base_admin.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">Kategoriyalar</h2>
+    <div class="d-flex gap-2">
+        <a href="/admin/marketplace/category/add/" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1"></i> Yangi Kategoriya</a>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="row">
+            {% for c in categories %}
+            <div class="col-md-4 mb-3">
+                <div class="p-3 border border-secondary rounded d-flex justify-content-between align-items-center bg-dark">
+                    <span class="fw-bold">{{ c.name }}</span>
+                    <div class="btn-group">
+                        <a href="/admin/marketplace/category/{{ c.id }}/change/" class="btn btn-sm btn-outline-info"><i class="fas fa-edit"></i></a>
+                        <a href="/admin/marketplace/category/{{ c.id }}/delete/" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center text-muted">Kategoriyalar mavjud emas</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

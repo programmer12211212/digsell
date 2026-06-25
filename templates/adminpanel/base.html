@@ -1,0 +1,189 @@
+{% load static %}
+<!doctype html>
+<html lang="uz" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>{% block title %}Digsell.uz — Admin{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'adminpanel/css/design-system.css' %}">
+  {% block extra_css %}{% endblock %}
+  <script src="https://unpkg.com/htmx.org@1.9.4"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+</head>
+<body class="admin-app" x-data="adminApp()" x-init="init()">
+  <div class="admin-layout">
+    <aside class="sidebar" :class="{'open': sidebarOpen}">
+      <div class="logo">Digsell.uz</div>
+      <nav class="sidebar-nav">
+        {% with nm=request.resolver_match.url_name|default:'' %}
+        <a class="nav-link {% if nm == 'dashboard' %}active{% endif %}" href="{% url 'adminpanel:dashboard' %}">📊 Dashboard</a>
+        <a class="nav-link {% if 'order' in nm %}active{% endif %}" href="{% url 'adminpanel:order_list' %}">🛒 Buyurtmalar</a>
+        <a class="nav-link {% if nm == 'listings' %}active{% endif %}" href="{% url 'adminpanel:listings' %}">📢 E'lonlar</a>
+        <a class="nav-link {% if 'user' in nm %}active{% endif %}" href="{% url 'adminpanel:user_list' %}">👥 Foydalanuvchilar</a>
+        <a class="nav-link {% if nm == 'payments' %}active{% endif %}" href="{% url 'adminpanel:payments' %}">💳 To'lovlar</a>
+        <a class="nav-link {% if 'freelance' in nm %}active{% endif %}" href="{% url 'adminpanel:freelance_dashboard' %}">💼 Freelance</a>
+        <a class="nav-link {% if nm == 'premium' %}active{% endif %}" href="{% url 'adminpanel:premium' %}">⭐ Premiumlar</a>
+        <a class="nav-link {% if 'ticket' in nm %}active{% endif %}" href="{% url 'adminpanel:ticket_list' %}">💬 Murojaatlar</a>
+        <a class="nav-link {% if nm == 'statistics' or nm == 'analytics' %}active{% endif %}" href="{% url 'adminpanel:statistics' %}">📈 Statistika</a>
+        <a class="nav-link {% if nm == 'notifications' %}active{% endif %}" href="{% url 'adminpanel:notifications' %}">🔔 Bildirishnomalar</a>
+        <a class="nav-link {% if nm == 'settings' %}active{% endif %}" href="{% url 'adminpanel:settings' %}">⚙️ Sozlamalar</a>
+        <a class="nav-link {% if nm == 'admins' %}active{% endif %}" href="{% url 'adminpanel:admins' %}">🛡 Administratorlar</a>
+        <a class="nav-link {% if nm == 'logs' %}active{% endif %}" href="{% url 'adminpanel:logs' %}">📄 Loglar</a>
+        {% endwith %}
+      </nav>
+    </aside>
+
+    <div class="main-content">
+      <header class="top-header">
+        <div class="d-flex align-items-center gap-3">
+          <button class="mobile-toggle" @click="sidebarOpen = !sidebarOpen">☰</button>
+          <div>
+            <div class="text-muted small mb-0">Enterprise Admin</div>
+            <h1 class="h5 mb-0 text-white">{% block page_title %}Digsell.uz Dashboard{% endblock %}</h1>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <div class="quick-actions d-none d-lg-flex">
+            <a class="btn-ghost" href="{% url 'adminpanel:listings' %}">➕ E'lon qo'shish</a>
+            <a class="btn-ghost" href="{% url 'adminpanel:admins' %}">➕ Admin qo'shish</a>
+            <a class="btn-ghost" href="{% url 'adminpanel:ad_create' %}">📢 Reklama qo'shish</a>
+            <a class="btn-ghost" href="{% url 'adminpanel:payments' %}">💳 To'lov tasdiqlash</a>
+            <a class="btn-ghost" href="{% url 'adminpanel:ticket_list' %}">📩 Ticketlarga o'tish</a>
+          </div>
+          <div class="position-relative" @click.outside="notifOpen = false">
+            <button class="notif-bell" @click="notifOpen = !notifOpen">🔔
+              <span class="notif-badge" x-show="unreadCount > 0" x-text="unreadCount"></span>
+            </button>
+            <div class="notif-dropdown" x-show="notifOpen" x-transition>
+              <div class="p-3 border-bottom d-flex justify-content-between align-items-center" style="border-color: var(--card-border)!important">
+                <strong>Bildirishnomalar</strong>
+                <button class="btn btn-sm btn-link text-decoration-none" style="color: var(--secondary)" @click="markAllRead()">Hammasini o'qish</button>
+              </div>
+              <template x-for="n in notifications" :key="n.id">
+                <div class="notif-item" :class="{'unread': !n.is_read}" @click="markRead(n.id)">
+                  <div class="fw-semibold small" x-text="n.title"></div>
+                  <div class="text-muted small" x-text="n.message"></div>
+                </div>
+              </template>
+              <div class="p-3 text-center text-muted small" x-show="!notifications.length">Bildirishnomalar yo'q</div>
+            </div>
+          </div>
+          <span class="text-muted small d-none d-md-inline">{{ request.user.username }}</span>
+        </div>
+      </header>
+
+      <main class="page-body">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mb-3" role="alert">{{ message }}</div>
+        {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  <script>
+    function adminApp() {
+      return {
+        sidebarOpen: false,
+        notifOpen: false,
+        unreadCount: 0,
+        notifications: [],
+        activitySocket: null,
+        notifSocket: null,
+        init() {
+          this.connectWebSockets();
+          this.fetchNotifications();
+          this.animateCounters();
+        },
+        getCsrf() {
+          return document.querySelector('meta[name="csrf-token"]')?.content || '';
+        },
+        connectWebSockets() {
+          const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+          try {
+            this.activitySocket = new WebSocket(`${proto}://${location.host}/ws/admin/activity/`);
+            this.activitySocket.onmessage = (e) => {
+              const data = JSON.parse(e.data);
+              if (data.type === 'activity_snapshot') {
+                window.dispatchEvent(new CustomEvent('activity-update', { detail: data.items }));
+              } else if (data.type === 'activity_item') {
+                window.dispatchEvent(new CustomEvent('activity-item', { detail: data }));
+              }
+            };
+          } catch (e) { console.warn('Activity WS:', e); }
+          try {
+            this.notifSocket = new WebSocket(`${proto}://${location.host}/ws/admin/notifications/`);
+            this.notifSocket.onmessage = (e) => {
+              const data = JSON.parse(e.data);
+              if (data.type === 'notification_snapshot') {
+                this.notifications = data.items || [];
+                this.unreadCount = data.unread_count || 0;
+              } else if (data.type === 'notification_item') {
+                this.notifications.unshift(data.item);
+                this.unreadCount++;
+              }
+            };
+          } catch (e) { console.warn('Notif WS:', e); }
+        },
+        async fetchNotifications() {
+          try {
+            const r = await fetch('{% url "adminpanel:api_notifications" %}');
+            const data = await r.json();
+            this.notifications = data.items || [];
+            this.unreadCount = data.unread_count || 0;
+          } catch (e) {}
+        },
+        async markRead(id) {
+          await fetch(`{% url 'adminpanel:api_mark_notif' notif_id=0 %}`.replace('/0/', `/${id}/`), {
+            method: 'POST', headers: { 'X-CSRFToken': this.getCsrf() }
+          });
+          this.notifications = this.notifications.map(n => n.id === id ? {...n, is_read: true} : n);
+          this.unreadCount = Math.max(0, this.unreadCount - 1);
+        },
+        async markAllRead() {
+          await fetch('{% url "adminpanel:api_mark_all_notif" %}', {
+            method: 'POST', headers: { 'X-CSRFToken': this.getCsrf() }
+          });
+          this.notifications = this.notifications.map(n => ({...n, is_read: true}));
+          this.unreadCount = 0;
+        },
+        animateCounters() {
+          document.querySelectorAll('[data-counter]').forEach(el => {
+            const target = parseFloat(el.dataset.counter) || 0;
+            const duration = 1200;
+            const start = performance.now();
+            const step = (now) => {
+              const p = Math.min((now - start) / duration, 1);
+              const eased = 1 - Math.pow(1 - p, 3);
+              el.textContent = Math.floor(target * eased).toLocaleString('uz-UZ');
+              if (p < 1) requestAnimationFrame(step);
+              else el.textContent = target.toLocaleString('uz-UZ');
+            };
+            requestAnimationFrame(step);
+          });
+        }
+      };
+    }
+  </script>
+  <script src="{% static 'adminpanel/js/dashboard.js' %}"></script>
+  <script src="{% static 'adminpanel/js/admin.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

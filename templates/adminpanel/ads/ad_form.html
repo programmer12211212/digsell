@@ -1,0 +1,38 @@
+{% extends 'adminpanel/base_admin.html' %}
+{% block title %}{% if ad %}Tahrir{% else %}Yangi reklama{% endif %}{% endblock %}
+{% block content %}
+<h2 class="fw-bold mb-4">{% if ad %}Reklamani tahrirlash{% else %}Yangi reklama{% endif %}</h2>
+<form method="POST" enctype="multipart/form-data" class="card p-4">
+    {% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Sarlavha *</label><input name="title" class="form-control bg-dark text-white border-secondary" value="{{ ad.title|default:'' }}" required></div>
+        <div class="col-md-3"><label class="form-label">Turi</label>
+            <select name="ad_type" class="form-select bg-dark text-white border-secondary">
+                <option value="CARD" {% if ad.ad_type == 'CARD' %}selected{% endif %}>Karta (sidebar)</option>
+                <option value="BANNER" {% if ad.ad_type == 'BANNER' %}selected{% endif %}>Banner</option>
+                <option value="POPUP" {% if ad.ad_type == 'POPUP' %}selected{% endif %}>Popup</option>
+            </select>
+        </div>
+        <div class="col-md-3"><label class="form-label">Joylashuv</label>
+            <select name="placement" class="form-select bg-dark text-white border-secondary">
+                <option value="GLOBAL">Barcha sahifalar</option>
+                <option value="SIDEBAR" {% if ad.placement == 'SIDEBAR' %}selected{% endif %}>Yon panel</option>
+                <option value="HOME" {% if ad.placement == 'HOME' %}selected{% endif %}>Bosh sahifa</option>
+                <option value="MARKETPLACE" {% if ad.placement == 'MARKETPLACE' %}selected{% endif %}>Marketplace</option>
+                <option value="COURSES" {% if ad.placement == 'COURSES' %}selected{% endif %}>Kurslar</option>
+            </select>
+        </div>
+        <div class="col-12"><label class="form-label">Tavsif</label><input name="description" class="form-control bg-dark text-white border-secondary" value="{{ ad.description|default:'' }}"></div>
+        <div class="col-md-8"><label class="form-label">Havola URL</label><input name="link_url" class="form-control bg-dark text-white border-secondary" value="{{ ad.link_url|default:'' }}" placeholder="https://..."></div>
+        <div class="col-md-2"><label class="form-label">Tartib</label><input name="order" type="number" class="form-control bg-dark text-white border-secondary" value="{{ ad.order|default:0 }}"></div>
+        <div class="col-md-2"><label class="form-label">Faol</label><div class="form-check mt-2"><input type="checkbox" name="is_active" class="form-check-input" {% if ad.is_active or not ad %}checked{% endif %}></div></div>
+        <div class="col-md-3"><label class="form-label">Fon rangi</label><input name="bg_color" type="color" class="form-control form-control-color" value="{{ ad.bg_color|default:'#0ea5e9' }}"></div>
+        <div class="col-md-3"><label class="form-label">Matn rangi</label><input name="text_color" type="color" class="form-control form-control-color" value="{{ ad.text_color|default:'#ffffff' }}"></div>
+        <div class="col-md-6"><label class="form-label">Rasm</label><input name="image" type="file" class="form-control bg-dark text-white border-secondary" accept="image/*"></div>
+    </div>
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Saqlash</button>
+        <a href="{% url 'adminpanel:ad_list' %}" class="btn btn-outline-secondary">Bekor</a>
+    </div>
+</form>
+{% endblock %}

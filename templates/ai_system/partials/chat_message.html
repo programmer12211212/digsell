@@ -1,0 +1,25 @@
+<!-- User Message -->
+<div class="flex justify-end mb-4">
+    <div class="max-w-[80%] p-4 bg-primary-600 rounded-2xl rounded-tr-none text-white shadow-lg">
+        <p class="text-sm">{{ user_message }}</p>
+        <span class="text-[10px] text-white/50 mt-1 block text-right">SIZ • HOZIR</span>
+    </div>
+</div>
+
+<!-- AI Response -->
+<div class="flex gap-4 mb-4" id="ai-response-{{ now|date:'U' }}">
+    <div class="w-10 h-10 rounded-xl bg-primary-500 flex-shrink-0 flex items-center justify-center text-white shadow-lg shadow-primary-500/20">
+        <i data-lucide="bot" class="w-6 h-6"></i>
+    </div>
+    <div class="max-w-[80%] p-4 glass rounded-2xl rounded-tl-none border-slate-800 shadow-xl">
+        <p class="text-sm text-slate-200 leading-relaxed">{{ message }}</p>
+        <span class="text-[10px] text-slate-500 mt-2 block uppercase tracking-widest font-bold">AI YORDAMCHI • HOZIR</span>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+    // Scroll to bottom
+    const container = document.getElementById('chat-messages');
+    container.scrollTop = container.scrollHeight;
+</script>
