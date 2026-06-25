@@ -4,49 +4,78 @@
 {% block title %}Haridlarim | Digsell.uz{% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto space-y-6">
-    <div class="glass p-8 rounded-3xl border-slate-800/50">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-            <div>
-                <h1 class="text-3xl font-heading font-bold text-white">Haridlarim</h1>
-                <p class="text-slate-400 mt-2">Bu yerda sotib olgan barcha mahsulotlaringiz va ularni yuklab olish havolalari ko'rsatiladi.</p>
+<div class="max-w-5xl mx-auto space-y-12 anim-slide-up">
+    
+    <!-- Page Header -->
+    <div class="glass-premium p-10 md:p-14 rounded-[3rem] relative overflow-hidden group">
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-500/10 blur-[120px] rounded-full group-hover:bg-primary-500/20 transition-all duration-1000"></div>
+        <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="text-center md:text-left space-y-3">
+                <h1 class="text-4xl md:text-5xl font-black font-heading tracking-tighter text-white uppercase italic">
+                    My <span class="text-primary-500">Purchases</span>
+                </h1>
+                <p class="text-slate-400 font-medium max-w-md">Barcha xaridlar va raqamli aktivlaringiz boshqaruv markazi.</p>
             </div>
-            <a href="{% url 'marketplace:product_list' %}" class="inline-flex items-center gap-2 px-5 py-3 bg-primary-600 hover:bg-primary-500 rounded-2xl text-white font-bold transition-all">
-                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+            <a href="{% url 'marketplace:product_list' %}" class="btn-vibrant btn-vibrant-primary px-10 py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl">
                 Bozorni ko'rish
             </a>
         </div>
     </div>
 
+    <!-- Purchases List -->
     {% if orders %}
-    <div class="grid gap-6">
+    <div class="grid gap-8">
         {% for order in orders %}
-        <div class="glass p-6 rounded-3xl border-slate-800/50">
-            <div class="lg:flex lg:items-center lg:justify-between gap-6">
-                <div class="space-y-3">
-                    <p class="text-sm text-slate-400">Buyurtma #{{ order.id|stringformat:"05d" }}</p>
-                    <h2 class="text-xl font-bold text-white">{{ order.product.title }}</h2>
-                    <p class="text-sm text-slate-400">Sotuvchi: {{ order.product.seller.username }}</p>
-                    <p class="text-sm text-slate-400">Holat: <span class="font-semibold text-white">{{ order.get_status_display }}</span></p>
-                    <p class="text-sm text-slate-400">To'lov: {{ order.amount|uzs }}</p>
+        <div class="glass-premium p-8 rounded-[2.5rem] border border-white/5 relative overflow-hidden group hover:border-primary-500/20 transition-all">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-10">
+                
+                <div class="flex items-start gap-6">
+                    <div class="w-20 h-20 rounded-3xl bg-slate-900 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:scale-105 transition-transform">
+                        {% if order.product.thumbnail %}
+                        <img src="{{ order.product.thumbnail.url }}" class="w-full h-full object-cover rounded-3xl">
+                        {% else %}
+                        <i data-lucide="package" class="w-8 h-8 text-slate-600"></i>
+                        {% endif %}
+                    </div>
+                    <div class="space-y-4">
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Order #{{ order.id|stringformat:"05d" }} • {{ order.created_at|date:"Y-m-d" }}</p>
+                            <h2 class="text-2xl font-black text-white italic tracking-tight group-hover:text-primary-500 transition-colors uppercase">{{ order.product.title }}</h2>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <div class="flex items-center gap-2 px-3 py-1 bg-slate-900 rounded-full border border-white/5">
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Seller:</span>
+                                <span class="text-[10px] font-black text-white uppercase">{{ order.product.seller.username }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 px-3 py-1 bg-slate-900 rounded-full border border-white/5">
+                                <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Price:</span>
+                                <span class="text-[10px] font-black text-emerald-500 uppercase tracking-tighter">{{ order.amount|uzs }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-1.5 h-1.5 rounded-full {% if order.status == 'PAID' or order.status == 'COMPLETED' %}bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]{% else %}bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]{% endif %}"></div>
+                                <span class="text-[10px] font-black uppercase tracking-widest {% if order.status == 'PAID' or order.status == 'COMPLETED' %}text-emerald-500{% else %}text-amber-500{% endif %}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex flex-col gap-3 sm:flex-row items-start sm:items-center">
-                    <a href="{% url 'core:order_tracking' order.id %}" class="px-4 py-3 rounded-2xl bg-primary-600/10 text-primary-400 border border-primary-500/20 hover:bg-primary-500/20 transition-all font-semibold flex items-center gap-2">
-                        <i data-lucide="map-pin" class="w-4 h-4"></i>
-                        Kuzatish
+                <div class="flex flex-wrap items-center gap-3 lg:justify-end">
+                    <a href="{% url 'core:order_tracking' order.id %}" class="flex-1 lg:flex-none p-4 rounded-xl bg-slate-900 border border-white/5 text-slate-400 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="crosshair" class="w-4 h-4"></i>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Kuzatish</span>
                     </a>
-                    <a href="{% url 'marketplace:product_detail' order.product.slug %}" class="px-4 py-3 rounded-2xl bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 transition-all font-semibold">
-                        Mahsulotga
-                    </a>
+                    
                     {% if order.status == 'PAID' or order.status == 'COMPLETED' or order.status == 'DELIVERED' %}
-                        <a href="{% url 'core:download_purchase' order.id %}" class="px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white transition-all font-semibold flex items-center gap-2">
-                            <i data-lucide="download" class="w-4 h-4"></i>
-                            Yuklab olish
+                        <a href="{% url 'core:download_purchase' order.id %}" class="flex-1 lg:flex-none btn-vibrant btn-vibrant-emerald px-8 py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10">
+                            <i data-lucide="download-cloud" class="w-4 h-4"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Yuklab Olish</span>
                         </a>
                     {% elif order.status == 'PENDING' %}
-                        <a href="{% url 'marketplace:payment_page' order.id %}" class="px-4 py-3 rounded-2xl bg-amber-600 hover:bg-amber-500 text-white transition-all font-semibold">
-                            To'lov qilish
+                        <a href="{% url 'marketplace:payment_page' order.id %}" class="flex-1 lg:flex-none btn-vibrant btn-vibrant-primary px-8 py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary-500/10">
+                            <i data-lucide="credit-card" class="w-4 h-4"></i>
+                            <span class="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">To'lov</span>
                         </a>
                     {% endif %}
                 </div>
@@ -55,14 +84,33 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="glass p-8 rounded-3xl border-slate-800/50 text-center">
-        <p class="text-lg font-semibold text-slate-200">Sizda hozircha hech qanday tasdiqlangan haridlar yo'q.</p>
-        <p class="text-slate-400 mt-2">Marketplace bo'limiga o'tib yangi mahsulotlarni xarid qiling.</p>
+    <div class="glass-premium p-24 rounded-[3.5rem] border border-white/5 text-center space-y-8">
+        <div class="w-24 h-24 bg-slate-950/50 rounded-[2.5rem] flex items-center justify-center mx-auto border border-white/5">
+            <i data-lucide="shopping-cart" class="w-10 h-10 text-slate-700"></i>
+        </div>
+        <div class="space-y-2">
+            <h3 class="text-3xl font-black text-white uppercase italic tracking-tight">Hali xaridlar yo'q</h3>
+            <p class="text-slate-500 font-medium max-w-sm mx-auto">Marketplace'da sizni qiziqtirgan premium mahsulotlarni toping.</p>
+        </div>
+        <a href="{% url 'marketplace:product_list' %}" class="btn-vibrant btn-vibrant-primary py-5 px-12 inline-flex">Explore Store</a>
     </div>
     {% endif %}
 
-    <div class="glass p-6 rounded-3xl border-slate-800/50 text-slate-400 text-sm">
-        <p><strong>Ma'lumot:</strong> Faqat admin tomonidan tasdiqlangan buyurtmalar uchun yuklab olish mumkin.</p>
+    <!-- Info Footer -->
+    <div class="glass-premium p-8 rounded-[2rem] border border-white/5 bg-slate-950/20">
+        <div class="flex items-center gap-4 text-slate-500">
+            <i data-lucide="info" class="w-5 h-5 text-primary-500"></i>
+            <p class="text-[10px] font-black uppercase tracking-widest leading-relaxed">
+                <strong class="text-white">Note:</strong> Yuklab olish havolalari faqat buyurtma to'lovi tasdiqlanganidan so'ng faollashadi. Odatda bu 5-15 daqiqa vaqt oladi.
+            </p>
+        </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        if (window.lucide) window.lucide.createIcons();
+    });
+</script>
 {% endblock %}
+

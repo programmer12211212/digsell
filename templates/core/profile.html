@@ -3,108 +3,125 @@
 {% block title %}Profil Sozlamalari | Digsell.uz{% endblock %}
 
 {% block content %}
-<div class="animate-fade-in max-w-4xl mx-auto space-y-8">
+<div class="anim-slide-up max-w-5xl mx-auto space-y-10">
     
     <!-- Profile Hero -->
-    <div class="card-premium h-auto p-8 relative overflow-hidden">
-        <div class="absolute -top-12 -right-12 w-64 h-64 bg-primary-500/10 blur-[80px] rounded-full"></div>
-        <div class="relative z-10 flex flex-col md:flex-row items-center gap-8 text-center md:text-left">
-            <div class="relative group">
+    <div class="glass-premium p-8 md:p-14 relative overflow-hidden rounded-[3rem] group">
+        <div class="absolute -top-24 -right-24 w-96 h-96 bg-primary-500/10 blur-[120px] rounded-full group-hover:bg-primary-500/20 transition-all duration-1000"></div>
+        <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-vibrant-violet/5 blur-[120px] rounded-full"></div>
+        
+        <div class="relative z-10 flex flex-col md:flex-row items-center gap-10 text-center md:text-left">
+            <div class="relative">
+                <div class="absolute inset-0 bg-gradient-to-tr from-primary-500 to-vibrant-violet rounded-[3rem] blur-xl opacity-30 animate-pulse"></div>
                 {% if user_obj.avatar %}
-                <img src="{{ user_obj.avatar.url }}" class="w-32 h-32 rounded-[2rem] object-cover shadow-2xl border-4 border-white dark:border-slate-800" alt="Avatar">
+                <img src="{{ user_obj.avatar.url }}" class="relative w-40 h-40 rounded-[3rem] object-cover shadow-2xl border-4 border-white/10" alt="Avatar">
                 {% else %}
-                <img src="https://ui-avatars.com/api/?name={{ user_obj.username }}&background=0ea5e9&color=fff&size=128" 
-                     class="w-32 h-32 rounded-[2rem] shadow-2xl border-4 border-white dark:border-slate-800" alt="Avatar">
+                <img src="https://ui-avatars.com/api/?name={{ user_obj.username }}&background=0ea5e9&color=fff&size=256" 
+                     class="relative w-40 h-40 rounded-[3rem] shadow-2xl border-4 border-white/10" alt="Avatar">
                 {% endif %}
-                <div class="absolute -bottom-2 -right-2 w-10 h-10 bg-success rounded-xl border-4 border-white dark:border-slate-900 flex items-center justify-center text-white shadow-lg">
-                    <i data-lucide="check" class="w-4 h-4"></i>
+                <div class="absolute -bottom-2 -right-2 w-12 h-12 bg-emerald-500 rounded-2xl border-4 border-slate-950 flex items-center justify-center text-white shadow-xl">
+                    <i data-lucide="check-check" class="w-6 h-6"></i>
                 </div>
             </div>
-            <div class="space-y-1">
-                <h1 class="text-3xl font-black font-heading">{{ user_obj.username }}</h1>
-                <p class="text-slate-400 font-medium">Platforma a'zosi • {{ user_obj.date_joined|date:"Y-m-d" }}</p>
-                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
-                    <span class="badge badge-primary bg-primary-500/10 text-primary-500">LEVEL {{ user_obj.loyalty_level }}</span>
+            
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <h1 class="text-4xl md:text-5xl font-black font-heading tracking-tighter text-white uppercase italic">
+                        {{ user_obj.username }}
+                    </h1>
+                    <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Platforma a'zosi • {{ user_obj.date_joined|date:"Y-m-d" }}</p>
+                </div>
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-4">
+                    <div class="px-4 py-1.5 rounded-full bg-primary-500 text-slate-950 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary-500/20">
+                        LEVEL {{ user_obj.loyalty_level }}
+                    </div>
                     {% if user_obj.role == 'SELLER' %}
-                    <span class="badge badge-success bg-emerald-500/10 text-emerald-500">VERIFIED SELLER</span>
+                    <div class="px-4 py-1.5 rounded-full bg-slate-900 border border-emerald-500/30 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
+                        VERIFIED SELLER
+                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="glass p-6 rounded-3xl text-center space-y-1 border border-slate-100 dark:border-slate-800">
-            <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Reyting</p>
-            <p class="text-2xl font-black text-amber-500">{{ user_obj.rating|default:"5.0" }}</p>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div class="glass-premium p-6 rounded-[2rem] text-center space-y-2 border border-white/5 group hover:border-amber-500/30 transition-all">
+            <p class="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Reyting</p>
+            <p class="text-3xl font-black text-amber-500 tracking-tighter group-hover:scale-110 transition-transform">{{ user_obj.rating|default:"5.0" }}</p>
         </div>
-        <div class="glass p-6 rounded-3xl text-center space-y-1 border border-slate-100 dark:border-slate-800">
-            <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Haridlar</p>
-            <p class="text-2xl font-black">{{ purchases_count }}</p>
+        <div class="glass-premium p-6 rounded-[2rem] text-center space-y-2 border border-white/5 group hover:border-primary-500/30 transition-all">
+            <p class="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Haridlar</p>
+            <p class="text-3xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform">{{ purchases_count|default:"0" }}</p>
         </div>
-        <div class="glass p-6 rounded-3xl text-center space-y-1 border border-slate-100 dark:border-slate-800">
-            <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Sotuvlar</p>
-            <p class="text-2xl font-black">{{ sales_count }}</p>
+        <div class="glass-premium p-6 rounded-[2rem] text-center space-y-2 border border-white/5 group hover:border-emerald-500/30 transition-all">
+            <p class="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Sotuvlar</p>
+            <p class="text-3xl font-black text-white tracking-tighter group-hover:scale-110 transition-transform">{{ sales_count|default:"0" }}</p>
         </div>
-        <div class="glass p-6 rounded-3xl text-center space-y-1 border border-slate-100 dark:border-slate-800">
-            <p class="text-[10px] text-slate-400 uppercase font-black tracking-widest">Hamyon</p>
-            <p class="text-2xl font-black text-primary-500">{{ wallet.balance|floatformat:0 }}</p>
+        <div class="glass-premium p-6 rounded-[2rem] text-center space-y-2 border border-white/5 group hover:border-vibrant-violet/30 transition-all">
+            <p class="text-[9px] text-slate-500 uppercase font-black tracking-[0.2em]">Hamyon</p>
+            <p class="text-3xl font-black text-primary-500 tracking-tighter group-hover:scale-110 transition-transform">{{ wallet.balance|floatformat:0 }}</p>
         </div>
     </div>
 
     <!-- Settings Form -->
-    <div class="card-premium h-auto p-6 md:p-10 space-y-10">
-        <div class="flex items-center gap-3 pb-6 border-b border-slate-100 dark:border-slate-800">
-            <div class="w-10 h-10 bg-primary-500/10 text-primary-500 rounded-xl flex items-center justify-center">
-                <i data-lucide="settings" class="w-5 h-5"></i>
+    <div class="glass-premium p-8 md:p-14 rounded-[3rem] space-y-12">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 bg-primary-500/10 text-primary-500 rounded-2xl flex items-center justify-center border border-primary-500/20">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
             </div>
-            <h2 class="text-xl font-black font-heading">Shaxsiy ma'lumotlar</h2>
+            <div>
+                <h2 class="text-2xl font-black font-heading uppercase italic tracking-tight">Shaxsiy <span class="text-primary-500">Ma'lumotlar</span></h2>
+                <p class="text-slate-500 text-xs font-bold uppercase tracking-widest mt-1">Hisobingiz xavfsizligi va sozlamalari</p>
+            </div>
         </div>
 
-        <form method="POST" enctype="multipart/form-data" class="space-y-8">
+        <form method="POST" enctype="multipart/form-data" class="space-y-10">
             {% csrf_token %}
             
-            <div class="space-y-2">
-                <label class="text-xs font-black uppercase text-slate-400 tracking-widest px-1">Avatar rasmi</label>
-                <div class="flex items-center gap-4">
+            <div class="flex flex-col md:flex-row md:items-center gap-6 p-6 rounded-3xl bg-slate-900/40 border border-white/5">
+                <div class="flex-1 space-y-1">
+                    <h4 class="text-sm font-black text-white uppercase tracking-tight">Avatar tasvirini yangilash</h4>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Max: 2MB, JPG yoki PNG formatda</p>
+                </div>
+                <div class="flex shrink-0">
                     <input type="file" name="avatar" id="avatar-input" class="hidden" accept="image/*">
-                    <label for="avatar-input" class="btn-premium btn-secondary px-6 cursor-pointer">
-                        <i data-lucide="image" class="w-4 h-4 mr-2"></i> Rasmni o'zgartirish
+                    <label for="avatar-input" class="btn-vibrant btn-vibrant-secondary px-8 py-4 rounded-xl cursor-pointer text-[10px] font-black uppercase tracking-widest">
+                        Tanlash
                     </label>
-                    <span class="text-[10px] text-slate-500 font-bold">Max: 2MB, JPG/PNG</span>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="space-y-2">
-                    <label class="text-xs font-black uppercase text-slate-400 tracking-widest px-1">Ism / Inisial</label>
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] px-1">To'liq ism</label>
                     <input type="text" name="first_name" value="{{ user_obj.first_name }}" placeholder="Ismingizni kiriting" 
-                           class="input-premium">
+                           class="w-full px-6 py-5 rounded-2xl bg-slate-950/50 border-2 border-white/5 focus:border-primary-500 outline-none transition-all font-bold text-white text-sm">
                 </div>
-                <div class="space-y-2 opacity-60">
-                    <label class="text-xs font-black uppercase text-slate-400 tracking-widest px-1">Foydalanuvchi nomi</label>
+                <div class="space-y-2 group">
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] px-1">Foydalanuvchi nomi <span class="text-[9px] text-slate-700 italic">(O'zgartirib bo'lmaydi)</span></label>
                     <input type="text" value="{{ user_obj.username }}" disabled 
-                           class="input-premium cursor-not-allowed bg-slate-50 dark:bg-slate-900 border-dashed">
+                           class="w-full px-6 py-5 rounded-2xl bg-slate-900/20 border-2 border-dashed border-white/10 text-slate-600 font-bold text-sm cursor-not-allowed">
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-black uppercase text-slate-400 tracking-widest px-1">Elektron pochta</label>
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] px-1">Elektron pochta</label>
                     <input type="email" name="email" value="{{ user_obj.email }}" placeholder="example@mail.com" 
-                           class="input-premium">
+                           class="w-full px-6 py-5 rounded-2xl bg-slate-950/50 border-2 border-white/5 focus:border-primary-500 outline-none transition-all font-bold text-white text-sm">
                 </div>
                 <div class="space-y-2">
-                    <label class="text-xs font-black uppercase text-slate-400 tracking-widest px-1">Telefon raqam</label>
+                    <label class="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] px-1">Telefon raqami</label>
                     <div class="relative">
-                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">+998</span>
+                        <span class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-500 font-black text-sm">+998</span>
                         <input type="text" name="phone" value="{{ user_obj.phone }}" placeholder="90 123 45 67" 
-                               class="input-premium pl-14">
+                               class="w-full px-16 py-5 rounded-2xl bg-slate-950/50 border-2 border-white/5 focus:border-primary-500 outline-none transition-all font-bold text-white text-sm">
                     </div>
                 </div>
             </div>
 
-            <div class="pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                <button type="submit" class="btn-premium btn-primary px-12 py-4 text-base shadow-xl">
-                    O'zgarishlarni saqlash
+            <div class="pt-8 border-t border-white/5 flex justify-end">
+                <button type="submit" class="btn-vibrant btn-vibrant-primary px-14 py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] shadow-2xl">
+                    Saqlash
                 </button>
             </div>
         </form>
@@ -113,7 +130,8 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        lucide.createIcons();
+        if (window.lucide) window.lucide.createIcons();
     });
 </script>
 {% endblock %}
+

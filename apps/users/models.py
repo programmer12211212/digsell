@@ -146,5 +146,26 @@ class SellerApplication(models.Model):
         verbose_name = 'Seller Application'
         verbose_name_plural = 'Seller Applications'
 
-    def __str__(self):
-        return f"{self.user.username} - {self.get_status_display()}"
+    def save(self, *args, **kwargs):
+        is_approved = self.status == self.Status.APPROVED
+        
+        # If the application is already in the database
+        if self.pk:
+            old_instance = SellerApplication.objects.get(pk=self.pk)
+            # If status successfully changed to APPROVED
+            if old_instance.status != self.Status.APPROVED and is_approved:
+                user = self.user
+                user.role = User.Role.SELLER
+                user.is_verified = True
+                user.is_seller_approved = True
+                user.save(update_fields=['role', 'is_verified', 'is_seller_approved'])
+        
+        # If it's a new instance created as APPROVED
+        elif is_approved:
+            user = self.user
+            user.role = User.Role.SELLER
+            user.is_verified = True
+            user.is_seller_approved = True
+            user.save(update_fields=['role', 'is_verified', 'is_seller_approved'])
+
+        super().save(*args, **kwargs)

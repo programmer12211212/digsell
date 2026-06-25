@@ -196,7 +196,6 @@ class Command(BaseCommand):
         # 6. Create default settings
         self.stdout.write('\nCreating default settings...')
         settings, created = TelegramSettings.objects.get_or_create(
-            instance=None,
             defaults={
                 'service_enabled': True,
                 'min_order_amount': Decimal('1000.00'),

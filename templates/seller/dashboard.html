@@ -1,45 +1,161 @@
 {% extends 'base.html' %}
-{% block title %}Seller Panel{% endblock %}
+{% block title %}Sotuvchi Paneli | Digsell.uz{% endblock %}
+
 {% block content %}
-<div class="space-y-8">
-    <div class="flex justify-between items-center">
-        <div>
-            <h1 class="text-3xl font-black font-heading">Seller Panel</h1>
-            <p class="text-slate-400">Mahsulot va videolaringizni boshqaring</p>
+<div class="space-y-10 anim-slide-up">
+    
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="space-y-2">
+            <h1 class="text-4xl font-black font-heading tracking-tight text-white uppercase italic">Seller <span class="text-primary-500">Dashboard</span></h1>
+            <p class="text-slate-400 font-medium">Mahsulot va videolaringizni professional boshqaruv markazi.</p>
         </div>
-        {% if request.user.is_seller_approved or request.user.role == 'SELLER' or request.user.is_staff %}
-        <a href="{% url 'seller:product_create' %}" class="btn-premium btn-primary px-6 py-3 rounded-2xl font-bold">+ Mahsulot qo'shish</a>
-        {% else %}
-        <a href="{% url 'users:seller_apply' %}" class="btn-premium btn-secondary px-6 py-3 rounded-2xl font-bold">Sotuvchi bo'lish uchun murojaat</a>
-        {% endif %}
+        
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            {% if request.user.is_seller_approved or request.user.role == 'SELLER' or request.user.is_staff %}
+            <a href="{% url 'seller:product_create' %}" class="flex-1 md:flex-none btn-vibrant btn-vibrant-primary px-8 py-4 rounded-2xl flex items-center justify-center gap-2">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                <span class="font-black uppercase tracking-wider text-xs">Yangi Mahsulot</span>
+            </a>
+            {% else %}
+            <a href="{% url 'users:seller_apply' %}" class="flex-1 md:flex-none btn-vibrant btn-vibrant-secondary px-8 py-4 rounded-2xl flex items-center justify-center gap-2">
+                <i data-lucide="user-check" class="w-5 h-5"></i>
+                <span class="font-black uppercase tracking-wider text-xs">Sotuvchi bo'lish</span>
+            </a>
+            {% endif %}
+        </div>
     </div>
-    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div class="glass p-5 rounded-2xl"><p class="text-xs text-slate-400 uppercase">Mahsulotlar</p><p class="text-3xl font-black">{{ products|length }}</p></div>
-        <div class="glass p-5 rounded-2xl"><p class="text-xs text-slate-400 uppercase">Jami sotuv</p><p class="text-3xl font-black text-emerald-400">{{ total_sales }}</p></div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="glass-premium p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-primary-500/30 transition-all">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-primary-500/10 rounded-full blur-3xl group-hover:bg-primary-500/20 transition-all"></div>
+            <div class="flex items-center gap-5 transition-transform group-hover:translate-x-1">
+                <div class="w-14 h-14 rounded-2xl bg-primary-500/10 flex items-center justify-center text-primary-500 border border-primary-500/20">
+                    <i data-lucide="package" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Mahsulotlar</p>
+                    <p class="text-3xl font-black text-white tracking-tighter">{{ products|length }} <span class="text-xs text-slate-600">dona</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-premium p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-emerald-500/30 transition-all">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all"></div>
+            <div class="flex items-center gap-5 transition-transform group-hover:translate-x-1">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
+                    <i data-lucide="trending-up" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Jami Sotuvlar</p>
+                    <p class="text-3xl font-black text-emerald-400 tracking-tighter">{{ total_sales|default:"0" }} <span class="text-xs text-slate-600">marta</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-premium p-8 rounded-[2.5rem] relative overflow-hidden group hover:border-vibrant-violet/30 transition-all">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-vibrant-violet/10 rounded-full blur-3xl group-hover:bg-vibrant-violet/20 transition-all"></div>
+            <div class="flex items-center gap-5 transition-transform group-hover:translate-x-1">
+                <div class="w-14 h-14 rounded-2xl bg-vibrant-violet/10 flex items-center justify-center text-vibrant-violet border border-vibrant-violet/20">
+                    <i data-lucide="award" class="w-7 h-7"></i>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Reyting</p>
+                    <p class="text-3xl font-black text-white tracking-tighter">4.9 <span class="text-xs text-slate-600">yulduz</span></p>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="glass rounded-3xl overflow-hidden">
-        <table class="w-full text-sm">
-            <thead class="bg-slate-800/50"><tr>
-                <th class="px-6 py-4 text-left">Nomi</th><th class="px-6 py-4 text-left">Turi</th>
-                <th class="px-6 py-4 text-left">Narx</th><th class="px-6 py-4 text-left">Sotuv</th><th class="px-6 py-4"></th>
-            </tr></thead>
-            <tbody>
-            {% for p in products %}
-            <tr class="border-t border-slate-800">
-                <td class="px-6 py-4 font-bold">{{ p.title }}</td>
-                <td class="px-6 py-4 text-slate-400">{{ p.get_product_type_display }}</td>
-                <td class="px-6 py-4">{{ p.price|floatformat:0 }}</td>
-                <td class="px-6 py-4">{{ p.sales_count }}</td>
-                <td class="px-6 py-4 text-right">
-                    <a href="{% url 'seller:product_edit' p.id %}" class="text-primary-400 font-bold text-xs">Tahrir</a>
-                    <a href="{% url 'marketplace:product_detail' p.slug %}" class="text-slate-400 font-bold text-xs ml-3">Ko'rish</a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="px-6 py-12 text-center text-slate-500">Mahsulotlar yo'q. Birinchi mahsulotingizni qo'shing!</td></tr>
-            {% endfor %}
-            </tbody>
-        </table>
+
+    <!-- Products Table -->
+    <div class="space-y-6">
+        <div class="flex items-center justify-between px-2">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center text-primary-500">
+                    <i data-lucide="list" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-xl font-black font-heading uppercase italic tracking-tight">Mahsulotlar <span class="text-primary-500">Ro'yxati</span></h3>
+            </div>
+        </div>
+
+        <div class="glass-premium rounded-[2rem] overflow-hidden border border-white/5 shadow-2xl">
+            <div class="table-responsive">
+                <table class="glass-table table-stack">
+                    <thead>
+                        <tr>
+                            <th class="italic">Mahsulot Nomi</th>
+                            <th class="italic">Kategoriya</th>
+                            <th class="italic">Narxi</th>
+                            <th class="italic">Sotuv</th>
+                            <th class="italic">Holati</th>
+                            <th class="text-right italic">Amallar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in products %}
+                        <tr class="group">
+                            <td data-label="Mahsulot">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-lg bg-slate-900 border border-white/5 overflow-hidden flex-shrink-0">
+                                        {% if p.thumbnail %}
+                                        <img src="{{ p.thumbnail.url }}" class="w-full h-full object-cover">
+                                        {% else %}
+                                        <div class="w-full h-full flex items-center justify-center bg-slate-800">
+                                            <i data-lucide="image" class="w-4 h-4 text-slate-600"></i>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <span class="font-black text-white transition-colors group-hover:text-primary-500">{{ p.title }}</span>
+                                </div>
+                            </td>
+                            <td data-label="Turi">
+                                <span class="px-3 py-1 rounded-full bg-slate-900 border border-white/5 text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                                    {{ p.get_product_type_display|default:"Digital" }}
+                                </span>
+                            </td>
+                            <td data-label="Narxi">
+                                <span class="font-black text-primary-500 tracking-tighter">{{ p.price|floatformat:0 }} <span class="text-[10px] text-slate-600">UZS</span></span>
+                            </td>
+                            <td data-label="Sotuv">
+                                <span class="font-black text-white">{{ p.sales_count|default:"0" }}</span>
+                            </td>
+                            <td data-label="Holati">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full {% if p.is_active %}bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]{% else %}bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]{% endif %} animate-pulse"></span>
+                                    <span class="text-[10px] font-black uppercase tracking-widest {% if p.is_active %}text-emerald-500{% else %}text-rose-500{% endif %}">
+                                        {{ p.is_active|yesno:"Faol,Passiv" }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td data-label="Amallar" class="text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{% url 'seller:product_edit' p.id %}" class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center text-slate-400 hover:bg-primary-500 hover:text-white transition-all shadow-lg active:scale-95">
+                                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                    </a>
+                                    <a href="{% url 'marketplace:product_detail' p.slug %}" class="w-10 h-10 rounded-xl bg-slate-900 border border-white/5 flex items-center justify-center text-slate-400 hover:bg-sky-500 hover:text-white transition-all shadow-lg active:scale-95">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="py-24 text-center">
+                                <div class="w-20 h-20 bg-slate-900/50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+                                    <i data-lucide="folder-open" class="w-8 h-8 text-slate-600"></i>
+                                </div>
+                                <h4 class="text-xl font-black uppercase text-white italic tracking-tight">Hali mahsulot yo'q</h4>
+                                <p class="text-slate-500 text-sm mt-2">Sotuvlarni boshlash uchun mahsulot qo'shing!</p>
+                                <a href="{% url 'seller:product_create' %}" class="btn-vibrant btn-vibrant-primary mt-8 inline-flex px-10">Mahsulot yaratish</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
+
