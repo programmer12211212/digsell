@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load currency_tags %}
+{% load currency_tags humanize %}
 
 {% block title %}{{ product.title }} | Digsell.uz Premium{% endblock %}
 
@@ -248,9 +248,9 @@
                     </div>
                     <h4 class="text-sm font-black text-white uppercase tracking-tight">Yordam kerakmi?</h4>
                 </div>
-                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed mb-6">Ushbu mahsulot bo'yicha savollaringiz bormi? Mutaxassis bilan bog'laning.</p>
-                <a href="https://t.me/Digsell_Help" target="_blank" class="text-xs font-black text-primary-500 flex items-center gap-2 hover:translate-x-2 transition-transform">
-                    Telegram Support <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed mb-6">Ushbu mahsulot bo'yicha savollaringiz bormi? Biz bilan bog'laning.</p>
+                <a href="/contact/" title="Bog'lanish sahifasiga o'tish" aria-label="Bog'lanish sahifasiga o'tish" class="text-xs font-black text-primary-500 flex items-center gap-2 hover:translate-x-2 transition-transform">
+                    Yordam markazi <i data-lucide="arrow-right" class="w-4 h-4"></i>
                 </a>
             </div>
         </div>

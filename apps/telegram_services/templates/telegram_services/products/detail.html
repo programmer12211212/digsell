@@ -77,15 +77,16 @@
                 <div class="flex-1 max-w-xs">
                     {% if product.is_available %}
                         {% if product.category.name == 'gifts' %}
-                            {% if telegram_settings.gifts_redirect_enabled %}
-                                <button id="buyGiftBtn" class="w-full py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-rose-600/20 transition flex items-center justify-center gap-2">
-                                    🎁 Buy Gift
-                                </button>
-                            {% else %}
-                                <button class="w-full py-3.5 bg-slate-800 text-slate-500 font-bold text-xs rounded-2xl cursor-not-allowed" disabled>
-                                    🎁 Buy Gift (Vaqtincha faolsiz)
-                                </button>
-                            {% endif %}
+                            <div class="grid grid-cols-1 gap-3">
+                                <a href="{% url 'telegram_services:checkout' product.pk %}" class="w-full py-3.5 bg-primary-600 hover:bg-primary-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-primary-600/20 transition flex items-center justify-center gap-2">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Sotib olish
+                                </a>
+                                {% if telegram_settings.gifts_redirect_enabled %}
+                                    <a href="{{ telegram_gift_url }}" target="_blank" class="w-full py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-rose-600/20 transition flex items-center justify-center gap-2">
+                                        📨 Telegramda yozish
+                                    </a>
+                                {% endif %}
+                            </div>
                         {% else %}
                             <a href="{% url 'telegram_services:checkout' product.pk %}" class="w-full py-3.5 bg-primary-600 hover:bg-primary-500 text-white font-black text-xs rounded-2xl shadow-lg shadow-primary-600/20 transition flex items-center justify-center gap-2">
                                 <i data-lucide="shopping-cart" class="w-4 h-4"></i> Sotib olish
@@ -144,44 +145,7 @@
             <button id="cancelGiftBtn" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-black text-xs rounded-2xl transition">
                 ❌ Bekor qilish
             </button>
-            <a id="confirmGiftBtn" href="{{ telegram_gift_url }}" target="_blank" class="flex-1 py-3.5 bg-rose-600 hover:bg-rose-500 text-white font-black text-xs rounded-2xl transition flex items-center justify-center gap-2">
-                📨 Telegramda yozish
-            </a>
-        </div>
+        {% endif %}
     </div>
 </div>
-{% endif %}
-
-<script>
-    const buyGiftBtn = document.getElementById('buyGiftBtn');
-    const giftModal = document.getElementById('giftModal');
-    const cancelGiftBtn = document.getElementById('cancelGiftBtn');
-    const confirmGiftBtn = document.getElementById('confirmGiftBtn');
-
-    if (buyGiftBtn && giftModal) {
-        buyGiftBtn.addEventListener('click', () => {
-            giftModal.classList.remove('hidden');
-        });
-    }
-
-    if (cancelGiftBtn && giftModal) {
-        cancelGiftBtn.addEventListener('click', () => {
-            giftModal.classList.add('hidden');
-        });
-    }
-
-    if (confirmGiftBtn && giftModal) {
-        confirmGiftBtn.addEventListener('click', () => {
-            giftModal.classList.add('hidden');
-            
-            // Fallback to deep link resolve to open native app
-            const rawUsername = "{{ gifts_telegram_username }}".replace('@', '');
-            const tgLink = `tg://resolve?domain=${rawUsername}&text=` + encodeURIComponent(decodeURIComponent("{{ telegram_gift_url }}".split('?text=')[1] || ""));
-            
-            setTimeout(() => {
-                window.location.href = tgLink;
-            }, 150);
-        });
-    }
-</script>
 {% endblock %}

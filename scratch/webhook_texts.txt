@@ -1,0 +1,39 @@
+--- Webhook/status/karta related texts ---
+?t===Nu?!1:(Nu=t,!0):(Nu=null,!1)}var Ym=typeof setTimeout==
+?setTimeout:void 0,Ox=typeof clearTimeout==
+?clearTimeout:void 0,km=typeof Promise==
+?function(t){return km.resolve(null).then(t).catch(Bx)}:Ym;function Bx(t){setTimeout(function(){throw t})}function kn(t){return t===
+})}function e(){s!==null&&(s(),s=null),i||setTimeout(n,20)}function n(){if(!i&&!navigation.transition){var u=navigation.currentEntry;u&&u.url!=null&&navigation.navigate(u.url,{state:u.getState(),info:
+,e),setTimeout(n,100),function(){i=!0,navigation.removeEventListener(
+z karta xabarnotlarini ulashtiring.",color:"from-indigo-500 to-blue-600",glow:"shadow-indigo-500/30",details:["HUMO uchun @HumoCardBot","UZCARD uchun @CardXabarBot","Bir nechta karta qo
+zbekistondagi barcha asosiy karta tizimlari qo
+lov tasdiqlanganda darhol webhook orqali xabar oling va botingizni avtomatlang.",color:"from-amber-500/20 to-yellow-500/20",border:"border-amber-500/30",iconColor:"text-amber-400",iconBg:"bg-amber-500/10"},{icon:m.jsx(Vc,{className:"w-6 h-6"}),title:"To
+💳 Karta xabarnomasi aniqlandi: UZCARD
+lov tasdiqlandi! (${Math.floor(Math.random()*20+5)}s)`,"success"),b("Webhook yuborildi: status=paid","info")):(r("expired"),b("⏰ To
+status
+status
+status
+},{status:
+lov tasdiqlandi"},{status:"expired",color:"text-red-400",bg:"bg-red-500/10",border:"border-red-500/20",icon:"❌",desc:"Muddati o
+,{className:`text-sm font-bold ${d.color}`,children:d.status}),m.jsx(
+,children:d.desc})]})]},d.status))})]})]})]})]})}const TA=[{q:
+lov tizimini ulash imkonini beruvchi API platforma. U HUMO va UZCARD kartalariga tushgan to
+>Hamyon API orqali HUMO va UZCARD kartalariga tushgan to'lovlarni <span class=
+>Karta tizimi</p></div><div class=
+>status:</span> <span class=
+>status:</span> <span class=
+>Karta botlarini ulash</span><span class=
+>Karta botlarini ulang</h3><p class=
+>@HumoCardBot (HUMO uchun) yoki @CardXabarBot (UZCARD uchun) orqali o'z karta xabarnotlarini ulashtiring.</p><div class=
+>Bir nechta karta qo'llash</span></div></div></div><div class=
+>Mijoz to'lovni amalga oshirgach, 5–30 soniya ichida to'lov holati 'paid' ga o'zgaradi va webhook keladi.</p><div class=
+>Webhook xabarnoma</span><span class=
+>Status: paid</span></div></div></div></div></div></div></section><section id=
+>Sizning login va karta ma'lumotlaringiz faqat sizga ko'rinadi. Mablag' o'zgarmaydi.</p></div><div class=
+>2 ta karta tizimi</h3><p class=
+>HUMO va UZCARD — O'zbekistondagi barcha asosiy karta tizimlari qo'llab-quvvatlanadi.</p></div><div class=
+>Webhook xabarnomalar</h3><p class=
+>To'lov tasdiqlanganda darhol webhook orqali xabar oling va botingizni avtomatlang.</p></div><div class=
+>Qo'llab-quvvatlanadigan karta tizimlari</p><div class=
+>Qaysi kartalar qo'llab-quvvatlanadi?</span><div class=
+>Kartalar</h4><div class=

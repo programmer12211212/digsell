@@ -12,26 +12,31 @@
             <h1 class="text-3xl md:text-4xl font-black font-heading tracking-tight">Xush kelibsiz, <span class="text-primary-500">{{ user.username }}</span></h1>
             <p class="text-slate-400 mt-1 text-sm md:text-base">Bugungi ko'rsatkichlaringiz va platforma yangiliklari.</p>
         </div>
-        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-            <button class="flex-1 lg:flex-none btn-premium btn-secondary">
-                <i data-lucide="download" class="w-4 h-4"></i> Hisobot
-            </button>
-            {% if user.role == 'SELLER' or user.is_staff %}
-            <a href="{% url 'seller:product_create' %}" class="flex-1 lg:flex-none btn-premium btn-primary">
-                <i data-lucide="plus" class="w-4 h-4"></i> Qo'shish
-            </a>
-            {% else %}
-            <a href="{% url 'users:seller_apply' %}" class="flex-1 lg:flex-none btn-premium btn-primary">
-                Sotuvchi bo'lish
-            </a>
-            {% endif %}
+        <div class="w-full lg:w-auto">
+            <div class="flex flex-wrap items-center justify-center gap-3 p-4 rounded-[28px] border border-sky-500/20 bg-slate-950/70 shadow-[0_30px_80px_-40px_rgba(56,189,248,0.8)]">
+                <button class="min-w-[140px] flex-1 sm:flex-none btn-premium btn-secondary text-sm font-black py-3 rounded-2xl flex items-center justify-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Hisobot</span>
+                </button>
+                {% if user.is_seller_approved or user.is_staff %}
+                <a href="{% url 'seller:product_create' %}" class="min-w-[140px] flex-1 sm:flex-none btn-premium btn-primary text-sm font-black py-3 rounded-2xl flex items-center justify-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Qo'shish</span>
+                </a>
+                {% else %}
+                <a href="{% url 'users:seller_apply' %}" class="min-w-[140px] flex-1 sm:flex-none btn-premium btn-primary text-sm font-black py-3 rounded-2xl flex items-center justify-center gap-2">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Sotuvchi bo'lish</span>
+                </a>
+                {% endif %}
+            </div>
         </div>
     </div>
 
     <!-- Quick Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         
-        <div class="card-premium p-6 dashboard-stat-card">
+        <div class="card-premium p-6 dashboard-stat-card border border-slate-800/70 bg-slate-950/80 shadow-xl shadow-slate-950/25 rounded-[28px]">
             <div class="w-12 h-12 bg-primary-500/10 rounded-2xl flex items-center justify-center text-primary-500 mb-4">
                 <i data-lucide="wallet" class="w-6 h-6"></i>
             </div>
@@ -39,7 +44,7 @@
             <h3 class="text-2xl font-black mt-1">{% if user.wallet %}{{ user.wallet.balance|floatformat:0 }}{% else %}0{% endif %} <span class="text-xs text-slate-400">UZS</span></h3>
         </div>
 
-        <div class="card-premium p-6 dashboard-stat-card">
+        <div class="card-premium p-6 dashboard-stat-card border border-slate-800/70 bg-slate-950/80 shadow-xl shadow-slate-950/25 rounded-[28px]">
             <div class="w-12 h-12 bg-warning/10 rounded-2xl flex items-center justify-center text-warning mb-4">
                 <i data-lucide="star" class="w-6 h-6"></i>
             </div>
@@ -47,7 +52,7 @@
             <h3 class="text-2xl font-black mt-1">{{ user.wallet.bonus_points|default:"0" }} <span class="text-xs text-slate-400">Pts</span></h3>
         </div>
 
-        <div class="card-premium p-6 dashboard-stat-card">
+        <div class="card-premium p-6 dashboard-stat-card border border-slate-800/70 bg-slate-950/80 shadow-xl shadow-slate-950/25 rounded-[28px]">
             <div class="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-500 mb-4">
                 <i data-lucide="shopping-cart" class="w-6 h-6"></i>
             </div>
@@ -55,7 +60,7 @@
             <h3 class="text-2xl font-black mt-1">{{ user.orders.count|default:"0" }} <span class="text-xs text-slate-400">ta</span></h3>
         </div>
 
-        <div class="card-premium p-6 dashboard-stat-card">
+        <div class="card-premium p-6 dashboard-stat-card border border-slate-800/70 bg-slate-950/80 shadow-xl shadow-slate-950/25 rounded-[28px]">
             <div class="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-500 mb-4">
                 <i data-lucide="users" class="w-6 h-6"></i>
             </div>

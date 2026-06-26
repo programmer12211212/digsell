@@ -1,0 +1,362 @@
+{% extends "telegram_services/base.html" %}
+{% load static %}
+
+{% block title %}Sovrin Yo'li — Telegram Xizmatlari{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reward-track-container {
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+    }
+    .reward-track-line {
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 9999px;
+        height: 0.4rem;
+        position: relative;
+    }
+    .reward-track-fill {
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+        box-shadow: inset 0 0 18px rgba(34, 197, 94, 0.35);
+        border-radius: 9999px;
+    }
+    .reward-stage-marker {
+        width: 1.1rem;
+        height: 1.1rem;
+        border-radius: 9999px;
+        border: 2px solid rgba(148, 163, 184, 0.4);
+        background: #111827;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+    .reward-stage-marker.unlocked {
+        background: #22c55e;
+        border-color: rgba(34, 197, 94, 0.9);
+        box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+    }
+    .reward-stage-marker.unlocked::after {
+        content: '';
+        position: absolute;
+        inset: -0.25rem;
+        border-radius: 9999px;
+        box-shadow: 0 0 24px rgba(34, 197, 94, 0.18);
+    }
+    .reward-stage-label {
+        min-width: 160px;
+        max-width: 180px;
+    }
+    .reward-stage-label .stage-title {
+        color: #f8fafc;
+    }
+    .reward-stage-label .stage-target {
+        color: #94a3b8;
+    }
+    .reward-stage-label .stage-icon {
+        width: 2.4rem;
+        height: 2.4rem;
+        display: grid;
+        place-items: center;
+        border-radius: 9999px;
+        background: rgba(30, 41, 59, 0.85);
+        color: #22c55e;
+        font-size: 1.1rem;
+    }
+    .reward-stage-label .stage-card {
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        border-radius: 1.5rem;
+        padding: 1rem;
+        min-height: 11rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .reward-stage-label .stage-card.unlocked {
+        border-color: rgba(34, 197, 94, 0.35);
+        background: rgba(16, 185, 129, 0.08);
+    }
+    .reward-stage-label .stage-card.locked {
+        opacity: 0.92;
+    }
+    .reward-stage-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        border-radius: 9999px;
+        padding: 0.55rem 0.9rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        border: 1px solid transparent;
+    }
+    .reward-stage-badge.locked {
+        background: rgba(148, 163, 184, 0.08);
+        color: #cbd5e1;
+        border-color: rgba(148, 163, 184, 0.18);
+    }
+    .reward-stage-badge.unlocked {
+        background: rgba(34, 197, 94, 0.12);
+        color: #d1fae5;
+        border-color: rgba(34, 197, 94, 0.25);
+    }
+    .reward-stage-badge.claimable {
+        background: rgba(16, 185, 129, 0.12);
+        color: #ecfccb;
+        border-color: rgba(16, 185, 129, 0.25);
+    }
+    .reward-stage-badge .badge-icon {
+        font-size: 0.95rem;
+        line-height: 1;
+    }
+</style>
+{% endblock %}
+
+{% block telegram_content %}
+{% csrf_token %}
+<div class="space-y-10">
+    <div class="grid gap-6 xl:grid-cols-[1.4fr_0.8fr]">
+        <div class="rounded-[2.5rem] border border-white/10 bg-slate-950/90 p-8 shadow-2xl overflow-hidden">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div class="space-y-4">
+                    <p class="text-sm uppercase tracking-[0.35em] font-black text-sky-400">Sovrin Yo'li</p>
+                    <h2 class="text-4xl md:text-5xl font-black tracking-tight text-white">Telegram Stars & Premium uchun sodiqlik yo'li</h2>
+                    <p class="text-slate-400 max-w-2xl">Telegram xizmatlaridagi sotib olishlaringizdan ko'proq qiymat oling. Har bir muvaffaqiyatli sotib olish sizni navbatdagi sovrin bosqichiga yaqinlashtiradi.</p>
+                </div>
+                <div class="rounded-[2rem] bg-slate-900/80 border border-white/10 p-6 shadow-xl">
+                    <p class="text-[10px] uppercase tracking-[0.35em] text-slate-400 font-black">Kampaniya holati</p>
+                    {% if campaign %}
+                        <div class="mt-4 text-white font-black text-2xl">{{ campaign.name }}</div>
+                        <p class="text-slate-500 text-sm mt-2">{{ campaign.highlight_text|default:'Faol kampaniya. Bosqichlaringizni to‘ldiring va sovrinlarni talab qiling.' }}</p>
+                        <div class="mt-5 space-y-2 text-[12px] text-slate-400">
+                            {% if campaign.start_date %}<div>Boshlangan: {{ campaign.start_date|date:'d M Y' }}</div>{% endif %}
+                            {% if campaign.end_date %}<div>Tugash: {{ campaign.end_date|date:'d M Y' }}</div>{% endif %}
+                        </div>
+                    {% else %}
+                        <div class="mt-4 text-white font-black text-2xl">Kampaniya topilmadi</div>
+                        <p class="text-slate-500 text-sm mt-2">Hozircha faol sovrin yo'li yo'q. Iltimos, keyinroq tekshiring.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="grid gap-4">
+            <div class="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 shadow-xl">
+                <p class="text-[10px] uppercase tracking-[0.35em] text-slate-400 font-black">Telegramga sarflangan jami</p>
+                <div class="mt-4 text-3xl font-black text-white">{{ stats.total_spent|floatformat:0 }} UZS</div>
+                <p class="text-slate-500 text-sm mt-2">Stars va Premium xaridlari bo'yicha hisoblanadi.</p>
+            </div>
+            <div class="rounded-[2rem] border border-white/10 bg-slate-950/80 p-6 shadow-xl">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="rounded-3xl bg-slate-900/70 p-4">
+                        <p class="text-xs uppercase tracking-[0.35em] text-slate-400">Stars</p>
+                        <div class="mt-3 text-2xl font-black text-white">{{ stats.stars_purchased }}</div>
+                    </div>
+                    <div class="rounded-3xl bg-slate-900/70 p-4">
+                        <p class="text-xs uppercase tracking-[0.35em] text-slate-400">Premium oylari</p>
+                        <div class="mt-3 text-2xl font-black text-white">{{ stats.premium_months }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if campaign %}
+    <div class="space-y-6">
+        <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+                <p class="text-[10px] uppercase tracking-[0.35em] text-sky-400 font-black">Sovrin yo'li</p>
+                <h3 class="text-2xl font-black text-white">Yo'lingizni ko'ring va sovrinlarni egallang</h3>
+            </div>
+            <div class="rounded-3xl bg-slate-900/80 border border-white/10 p-4 text-right">
+                <div class="text-[10px] uppercase tracking-[0.35em] text-slate-400 font-black">Jami progress</div>
+                <div class="mt-2 text-4xl font-black text-white">{{ campaign_progress }}%</div>
+                <div class="text-slate-500 text-sm mt-1">Telegram sarfi: {{ stats.total_spent|floatformat:0 }} UZS</div>
+            </div>
+        </div>
+
+        <div class="rounded-[2.5rem] border border-white/10 bg-slate-950/80 p-8 shadow-2xl overflow-hidden">
+            <div class="mb-6 flex items-center justify-between gap-3">
+                <div>
+                    <p class="text-[10px] uppercase tracking-[0.35em] text-slate-400 font-black">Sovgalar</p>
+                    <h4 class="mt-2 text-lg font-black text-white">Yo'lingizni ko'ring va bepul sovrinni qo'lga kiriting</h4>
+                </div>
+                <div class="rounded-3xl bg-slate-900/80 border border-white/10 px-4 py-3 text-right">
+                    <div class="text-[10px] uppercase tracking-[0.35em] text-slate-400 font-black">Jami progress</div>
+                    <div class="mt-2 text-3xl font-black text-white">{{ campaign_progress }}%</div>
+                </div>
+            </div>
+            <div class="reward-track-container overflow-x-auto pb-8">
+                <div class="min-w-[860px]">
+                    <div class="flex items-center justify-between text-slate-400 text-xs uppercase tracking-[0.35em] font-black mb-3">
+                        <span>Sovgalar</span>
+                        <span class="text-right">{{ stats.total_spent|floatformat:0 }} UZS sarflandi</span>
+                    </div>
+                    <div class="relative reward-track-line">
+                        <div class="absolute inset-y-0 left-0 rounded-full reward-track-fill transition-all duration-700 ease-out" style="width: {{ campaign_progress }}%;"></div>
+                        {% for stage in stages %}
+                            <div class="absolute top-1/2 -translate-y-1/2" style="left: calc({{ stage.position_pct }}% - 0.55rem);">
+                                <div class="relative">
+                                    <div class="reward-stage-marker {% if stage.unlocked %}unlocked{% endif %}"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-8 flex items-start gap-4">
+                        {% for stage in stages %}
+                            <div class="reward-stage-label flex-shrink-0 text-center" data-stage-id="{{ stage.id }}" data-stage-title="{{ stage.title }}" data-stage-reward="{{ stage.reward_label }}" data-stage-target="{{ stage.target_label }}" style="min-width: 170px;">
+                                <div class="stage-card {% if stage.unlocked %}unlocked{% else %}locked{% endif %}">
+                                    <div class="stage-icon mx-auto">
+                                        {% if stage.reward_type == 'cashback' %}💵{% elif stage.reward_type == 'bonus_points' %}✨{% elif stage.reward_type == 'discount_code' %}🏷️{% elif stage.reward_type == 'manual_reward' %}🎁{% else %}🏅{% endif %}
+                                    </div>
+                                    <div class="mt-4 text-sm font-black stage-title">{{ stage.title }}</div>
+                                    <div class="mt-2 text-[11px] uppercase tracking-[0.35em] stage-target">{{ stage.target_label }}</div>
+                                    <div class="mt-4">
+                                        <span class="reward-stage-badge {% if stage.unlocked %}unlocked{% elif stage.can_claim %}claimable{% else %}locked{% endif %}">
+                                            <span class="badge-icon">
+                                                {% if stage.reward_type == 'cashback' %}💰{% elif stage.reward_type == 'bonus_points' %}⭐{% elif stage.reward_type == 'discount_code' %}🏷️{% elif stage.reward_type == 'manual_reward' %}🎉{% else %}🏅{% endif %}
+                                            </span>
+                                            {{ stage.reward_label }}
+                                        </span>
+                                    </div>
+                                    <div class="mt-4" id="reward-stage-status-{{ stage.id }}">
+                                        {% if stage.claimed %}
+                                            <span class="inline-flex items-center justify-center rounded-full bg-emerald-500/15 px-4 py-2 text-xs uppercase tracking-[0.35em] text-emerald-200 font-bold">Olingan</span>
+                                        {% elif stage.pending %}
+                                            <span class="inline-flex items-center justify-center rounded-full bg-amber-500/15 px-4 py-2 text-xs uppercase tracking-[0.35em] text-amber-200 font-bold">Tekshiruvda</span>
+                                        {% elif stage.can_claim %}
+                                            <button type="button" onclick="openRewardClaimModal('{{ stage.id }}')" class="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-[11px] font-black uppercase tracking-[0.35em] text-slate-950 hover:bg-emerald-400 transition">Bepul olish</button>
+                                        {% else %}
+                                            <span class="inline-flex items-center justify-center rounded-full bg-slate-900/90 px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-400 font-bold">Qulflangan</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 text-sm text-slate-400">
+                <p>Yashil qism — sarflangan pul, oq qism — qolgan yo'l. Qaysi sovringa yetgan bo'lsangiz, o'sha bosqichni bepul olish uchun talab yuborishingiz mumkin.</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<div id="rewardClaimModal" class="tg-modal-overlay" onclick="closeRewardClaimModalOnOutsideClick(event)">
+    <div class="tg-modal-container" style="max-width: 480px;" onclick="event.stopPropagation()">
+        <div class="tg-modal-header">
+            <div>
+                <h5 class="text-xl font-black text-white" id="claimStageTitle">Telegram username kiritish</h5>
+                <p class="text-sm text-slate-400 mt-1">Sovrin olish uchun Telegram username kerak.</p>
+            </div>
+            <button type="button" class="w-8 h-8 rounded-lg flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white transition" onclick="closeRewardClaimModal()" aria-label="Yopish">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <div class="tg-modal-body space-y-4">
+            <div class="rounded-3xl bg-slate-900/80 border border-white/10 p-4">
+                <p class="text-[11px] uppercase tracking-[0.35em] text-slate-500 font-black">Sovrin</p>
+                <div class="mt-3 text-lg font-black text-sky-400" id="claimStageReward">Bonus sovrin</div>
+            </div>
+            <div>
+                <label for="rewardTelegramUsername" class="text-sm font-bold text-slate-300">Telegram username</label>
+                <input id="rewardTelegramUsername" type="text" class="mt-2 w-full rounded-3xl border border-white/10 bg-slate-900/90 px-4 py-3 text-white outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-500/20" placeholder="@username" />
+            </div>
+            <p class="text-sm text-slate-400">Username adminga yuboriladi va sovrin talabingiz tekshiriladi.</p>
+        </div>
+        <div class="tg-modal-footer">
+            <button type="button" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm rounded-xl transition" onclick="closeRewardClaimModal()">Bekor qilish</button>
+            <button type="button" id="rewardClaimConfirm" class="flex-1 py-3.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-black text-sm rounded-xl transition" onclick="submitRewardClaim()">Sorovni yuborish</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedRewardStageId = null;
+
+    function openRewardClaimModal(stageId) {
+        const stageCard = document.querySelector(`[data-stage-id='${stageId}']`);
+        if (!stageCard) return;
+        selectedRewardStageId = stageId;
+
+        const title = stageCard.dataset.stageTitle || 'Telegram username kiritish';
+        const reward = stageCard.dataset.stageReward || 'Bonus sovrin';
+
+        document.getElementById('claimStageTitle').textContent = title;
+        document.getElementById('claimStageReward').textContent = reward;
+        document.getElementById('rewardTelegramUsername').value = '';
+
+        const modal = document.getElementById('rewardClaimModal');
+        modal.classList.add('active');
+        document.getElementById('rewardTelegramUsername').focus();
+
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    }
+
+    function closeRewardClaimModal() {
+        const modal = document.getElementById('rewardClaimModal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        selectedRewardStageId = null;
+    }
+
+    function closeRewardClaimModalOnOutsideClick(event) {
+        if (event.target.id === 'rewardClaimModal') {
+            closeRewardClaimModal();
+        }
+    }
+
+    function markRewardStageAsClaimed(stageId) {
+        const statusEl = document.getElementById(`reward-stage-status-${stageId}`);
+        if (!statusEl) return;
+        statusEl.innerHTML = '<span class="inline-flex items-center justify-center rounded-full bg-emerald-500/15 px-4 py-2 text-xs uppercase tracking-[0.35em] text-emerald-200 font-bold">Olingan</span>';
+    }
+
+    async function submitRewardClaim() {
+        if (!selectedRewardStageId) return;
+        const button = document.getElementById('rewardClaimConfirm');
+        const usernameInput = document.getElementById('rewardTelegramUsername');
+        const telegramUsername = usernameInput.value.trim();
+        const stageId = selectedRewardStageId;
+
+        if (!telegramUsername) {
+            new Toast('Iltimos, Telegram username kiriting.', 'warning');
+            usernameInput.focus();
+            return;
+        }
+
+        if (!validateTelegramUsername(telegramUsername)) {
+            new Toast('Telegram username noto\'g\'ri. Masalan: @username', 'warning');
+            usernameInput.focus();
+            return;
+        }
+
+        LoadingState.show(button);
+
+        try {
+            const response = await Api.post(`/telegram-services/rewards/claim/${stageId}/`, {
+                telegram_username: telegramUsername
+            });
+            closeRewardClaimModal();
+            markRewardStageAsClaimed(stageId);
+            new Toast(response.message || 'Sorov yuborildi.', 'success');
+        } catch (error) {
+            new Toast(error.message || 'Sorov yuborishda xatolik yuz berdi.', 'danger');
+        } finally {
+            LoadingState.hide(button);
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeRewardClaimModal();
+        }
+    });
+</script>
+{% endblock %}

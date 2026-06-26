@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms of Service{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="rounded-3xl bg-slate-950/90 border border-slate-800 p-8 shadow-2xl shadow-slate-950/20">
+        <h1 class="text-3xl font-bold text-white">Terms of Service</h1>
+        <p class="mt-4 text-slate-300 leading-8">Welcome to our platform. By creating an account and using our services, you agree to the rules, policies, and terms described on this page. These terms ensure a safe and reliable experience for all users.</p>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">Account obligations</h2>
+            <p class="mt-3 text-slate-300">You must keep your account secure and provide accurate information. Unauthorized access or misuse of another user's account is prohibited.</p>
+        </section>
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">Usage guidelines</h2>
+            <p class="mt-3 text-slate-300">Use the platform only for lawful purposes. Do not upload or share prohibited content, and respect intellectual property rights of creators.</p>
+        </section>
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">Payments and fees</h2>
+            <p class="mt-3 text-slate-300">All payments are processed through the platform. You are responsible for ensuring payments are correct and for reviewing purchase details before confirming.</p>
+        </section>
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">Policy changes</h2>
+            <p class="mt-3 text-slate-300">We may update these terms from time to time. Continued use of the service after changes means you accept the new terms.</p>
+        </section>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="rounded-3xl border border-slate-800 bg-slate-950/70 p-8 text-center">
+        <h3 class="text-2xl font-bold text-white mb-3">Shartlarga itirozlar?</h3>
+        <p class="text-slate-400 mb-6">Agar biron-bir shartni tushunmasangiz, biz bilan bog'laning.</p>
+        <a href="/contact/" title="Bog'lanish sahifasiga o'tish" aria-label="Bog'lanish sahifasiga o'tish" class="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+            Biz bilan bog'laning
+        </a>
+    </div>
+</div>
+{% endblock %}

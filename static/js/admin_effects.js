@@ -131,8 +131,10 @@
   function animateOnScroll() {
     const els = document.querySelectorAll('.card, .info-box, .model-card, #result_list tbody tr, .module');
     els.forEach((el, i) => {
-      el.classList.add('digsell-fade-up');
-      el.style.animationDelay = `${Math.min(i * 0.04, 0.6)}s`;
+      if (!el.classList.contains('digsell-fade-up')) {
+        el.classList.add('digsell-fade-up');
+        el.style.animationDelay = `${Math.min(i * 0.04, 0.6)}s`;
+      }
     });
   }
 
@@ -149,8 +151,12 @@
     animateOnScroll();
     polishSidebar();
 
-    const observer = new MutationObserver(() => animateOnScroll());
     const main = document.querySelector('.content-wrapper') || document.body;
+    const observer = new MutationObserver(() => {
+      observer.disconnect();
+      animateOnScroll();
+      observer.observe(main, { childList: true, subtree: true });
+    });
     observer.observe(main, { childList: true, subtree: true });
   }
 

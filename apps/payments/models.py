@@ -73,10 +73,99 @@ class Transaction(models.Model):
     transaction_id = models.CharField(max_length=255, unique=True)
     status = models.CharField(max_length=20, default="PENDING")
     created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         verbose_name = "Tranzaksiya"
         verbose_name_plural = "Tranzaksiyalar"
         ordering = ['-created_at']
+
+
+class HamyonPayment(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "PENDING", "Kutilmoqda"
+        SUCCESS = "SUCCESS", "Tasdiqlandi"
+        FAILED = "FAILED", "Xatolik"
+        CANCELLED = "CANCELLED", "Bekor qilingan"
+        EXPIRED = "EXPIRED", "Muddati o'tgan"
+
+    class Purpose(models.TextChoices):
+        WALLET_TOPUP = "WALLET_TOPUP", "Balans to'ldirish"
+        MARKETPLACE_ORDER = "MARKETPLACE_ORDER", "Marketplace buyurtmasi"
+        TELEGRAM_ORDER = "TELEGRAM_ORDER", "Telegram buyurtmasi"
+        VIDEO_PURCHASE = "VIDEO_PURCHASE", "Digital mahsulot"
+        OTHER = "OTHER", "Boshqa"
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="hamyon_payments")
+    external_id = models.CharField(max_length=255, unique=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    requested_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    fee_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment_code = models.CharField(max_length=20, blank=True, null=True, db_index=True)
+    provider = models.CharField(max_length=50, default="HAMYON")
+    purpose = models.CharField(max_length=30, choices=Purpose.choices, default=Purpose.WALLET_TOPUP)
+    purpose_reference = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True)
+    metadata = models.JSONField(blank=True, null=True)
+    card = models.CharField(max_length=100, blank=True, null=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    external_data = models.JSONField(blank=True, null=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    processed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Hamyon to'lovi"
+        verbose_name_plural = "Hamyon to'lovlari"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {format_uzs(self.amount)} ({self.get_status_display()})"
+
+    @property
+    def is_final(self):
+        return self.status in {
+            self.Status.SUCCESS,
+            self.Status.FAILED,
+            self.Status.CANCELLED,
+            self.Status.EXPIRED,
+        }
+
+    @property
+    def is_expired(self):
+        if self.expires_at is None:
+            return False
+        return timezone.now() > self.expires_at
+
+    @property
+    def unique_amount(self):
+        return self.amount
+
+    @property
+    def payment_id(self):
+        return self.external_id
+
+    def can_cancel(self):
+        return self.status == self.Status.PENDING
+
+    def apply_balance(self):
+        from apps.payments.wallet_services import WalletTopupService
+
+        if self.processed or self.status != self.Status.SUCCESS:
+            return
+
+        if self.purpose != self.Purpose.WALLET_TOPUP:
+            self.processed = True
+            self.paid_at = timezone.now()
+            self.save(update_fields=['processed', 'paid_at'])
+            return
+
+        credited = WalletTopupService.credit_from_payment(self)
+        if credited > 0:
+            self.processed = True
+            self.paid_at = timezone.now()
+            self.save(update_fields=['processed', 'paid_at'])
 
 
 class Coupon(models.Model):

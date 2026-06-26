@@ -78,22 +78,22 @@ class Wallet(models.Model):
 
     def add_funds(self, amount, reason="TOPUP"):
         """Xavfsiz hamyonga pul qo'shish (Balans)."""
-        from django.db import transaction
-        with transaction.atomic():
-            # Refresh and lock the wallet row
-            wallet = Wallet.objects.select_for_update().get(pk=self.pk)
-            wallet.balance += Decimal(str(amount))
-            wallet.save(update_fields=['balance', 'updated_at'])
-            
-            # Update the current instance to match
-            self.balance = wallet.balance
-            
-            WalletTransaction.objects.create(
-                wallet=wallet, 
-                amount=amount, 
-                tx_type='IN', 
-                reason=reason
-            )
+        from apps.payments.wallet_services import WalletService
+
+        operation_type = WalletTransaction.OperationType.TOPUP
+        if reason and 'bonus' in reason.lower():
+            operation_type = WalletTransaction.OperationType.BONUS
+        elif reason and 'admin' in reason.lower():
+            operation_type = WalletTransaction.OperationType.ADMIN
+
+        wallet = WalletService.credit(
+            self.user,
+            amount,
+            operation_type=operation_type,
+            description=reason,
+        )
+        self.balance = wallet.balance
+        return wallet
 
     def add_bonus_funds(self, amount, reason="BONUS"):
         """Xavfsiz holda bonus ballarni qo'shish."""
@@ -114,10 +114,28 @@ class Wallet(models.Model):
 
 
 class WalletTransaction(models.Model):
+    class OperationType(models.TextChoices):
+        TOPUP = 'TOPUP', 'Top-up'
+        PURCHASE = 'PURCHASE', 'Purchase'
+        REFUND = 'REFUND', 'Refund'
+        ADMIN = 'ADMIN', 'Admin'
+        TRANSFER = 'TRANSFER', 'Transfer'
+        BONUS = 'BONUS', 'Bonus'
+
     wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name='tx_logs')
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     tx_type = models.CharField(max_length=3, choices=[('IN', 'Inflow'), ('OUT', 'Outflow')])
     reason = models.CharField(max_length=100)
+    operation_type = models.CharField(
+        max_length=20,
+        choices=OperationType.choices,
+        blank=True,
+        default='',
+    )
+    balance_before = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    balance_after = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True)
+    description = models.TextField(blank=True, default='')
+    reference = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -130,15 +148,30 @@ class SellerApplication(models.Model):
         PENDING = 'PENDING', 'Pending'
         APPROVED = 'APPROVED', 'Approved'
         REJECTED = 'REJECTED', 'Rejected'
+        CHANGES_REQUESTED = 'CHANGES_REQUESTED', 'Changes Requested'
+        SUSPENDED = 'SUSPENDED', 'Suspended'
+        BANNED = 'BANNED', 'Banned'
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='seller_applications')
     full_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=30)
+    email = models.EmailField(blank=True)
+    telegram_username = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, blank=True)
+    city = models.CharField(max_length=100, blank=True)
     resume = models.TextField(blank=True)
+    experience = models.TextField(blank=True)
+    skills = models.CharField(max_length=512, help_text='Comma separated skills', blank=True)
+    niche = models.CharField(max_length=100, help_text='e.g. Designer, Prompt maker, Programmer', blank=True)
+    what_to_sell = models.CharField(max_length=255, blank=True, help_text='What products or services will you sell?')
+    website = models.URLField(blank=True, null=True)
+    portfolio = models.TextField(blank=True)
     avatar = models.ImageField(upload_to='seller_avatars/', null=True, blank=True)
-    skills = models.CharField(max_length=512, help_text='Comma separated skills')
-    niche = models.CharField(max_length=100, help_text='e.g. Designer, Prompt maker, Programmer')
+    identity_document = models.ImageField(upload_to='seller_documents/', null=True, blank=True)
+    agreed_to_terms = models.BooleanField(default=False)
+
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     admin_note = models.TextField(blank=True, null=True)
 
@@ -146,26 +179,41 @@ class SellerApplication(models.Model):
         verbose_name = 'Seller Application'
         verbose_name_plural = 'Seller Applications'
 
-    def save(self, *args, **kwargs):
-        is_approved = self.status == self.Status.APPROVED
-        
-        # If the application is already in the database
-        if self.pk:
-            old_instance = SellerApplication.objects.get(pk=self.pk)
-            # If status successfully changed to APPROVED
-            if old_instance.status != self.Status.APPROVED and is_approved:
-                user = self.user
-                user.role = User.Role.SELLER
-                user.is_verified = True
-                user.is_seller_approved = True
-                user.save(update_fields=['role', 'is_verified', 'is_seller_approved'])
-        
-        # If it's a new instance created as APPROVED
-        elif is_approved:
-            user = self.user
+    def __str__(self):
+        return f"{self.user.username} - {self.get_status_display()}"
+
+    def _apply_approval(self):
+        user = self.user
+        if user.role not in (User.Role.ADMIN, User.Role.SUPER_ADMIN):
             user.role = User.Role.SELLER
-            user.is_verified = True
-            user.is_seller_approved = True
-            user.save(update_fields=['role', 'is_verified', 'is_seller_approved'])
+        user.is_verified = True
+        user.is_seller_approved = True
+        if not user.is_active:
+            user.is_active = True
+        user.save(update_fields=['role', 'is_verified', 'is_seller_approved', 'is_active'])
+
+    def _revoke_approval(self, banned=False):
+        user = self.user
+        if user.role == User.Role.SELLER:
+            user.role = User.Role.USER
+        user.is_seller_approved = False
+        if banned:
+            user.is_active = False
+            user.save(update_fields=['role', 'is_seller_approved', 'is_active'])
+        else:
+            user.save(update_fields=['role', 'is_seller_approved'])
+
+    def save(self, *args, **kwargs):
+        previous_status = None
+        if self.pk:
+            previous_status = SellerApplication.objects.filter(pk=self.pk).values_list('status', flat=True).first()
 
         super().save(*args, **kwargs)
+
+        if previous_status != self.status:
+            if self.status == self.Status.APPROVED:
+                self._apply_approval()
+            elif self.status == self.Status.BANNED:
+                self._revoke_approval(banned=True)
+            else:
+                self._revoke_approval()

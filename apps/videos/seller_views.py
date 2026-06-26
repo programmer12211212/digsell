@@ -8,7 +8,7 @@ from .models import Video, CourseCategory, DigitalFile
 
 def _seller_required(view):
     def wrapper(request, *args, **kwargs):
-        if not (request.user.is_seller_approved or request.user.role in ('SELLER', 'ADMIN', 'SUPER_ADMIN') or request.user.is_staff):
+        if not (request.user.is_seller_approved or request.user.is_staff):
             messages.error(request, 'Siz sotuvchi sifatida tasdiqlanmagansiz. Avval sotuvchi bo‘lish uchun murojaat qiling.')
             return redirect('users:seller_apply')
         return view(request, *args, **kwargs)
@@ -18,7 +18,7 @@ def _seller_required(view):
 @login_required
 def seller_dashboard(request):
     # If user is not an approved seller, show the apply/need-approval page
-    if not (request.user.is_seller_approved or request.user.role in ('SELLER',) or request.user.is_staff):
+    if not (request.user.is_seller_approved or request.user.is_staff):
         return render(request, 'seller/need_approval.html')
     products = Video.objects.filter(seller=request.user).order_by('-created_at')
     return render(request, 'seller/dashboard.html', {
@@ -55,7 +55,12 @@ def product_create(request):
             seller=request.user,
             price=request.POST.get('price', 0) or 0,
             discount_price=request.POST.get('discount_price') or None,
+            tags=request.POST.get('tags', '').strip(),
+            demo_url=request.POST.get('demo_url') or None,
+            seo_title=request.POST.get('seo_title', '').strip(),
+            seo_description=request.POST.get('seo_description', '').strip(),
             is_active=request.POST.get('is_active') == 'on',
+            moderation_status=Video.ModerationStatus.PENDING,
         )
         if request.FILES.get('thumbnail'):
             video.thumbnail = request.FILES['thumbnail']
@@ -66,7 +71,7 @@ def product_create(request):
         if request.FILES.get('digital_file'):
             DigitalFile.objects.create(product=video, file=request.FILES['digital_file'], is_main=True)
 
-        messages.success(request, f'"{title}" muvaffaqiyatli qo\'shildi!')
+        messages.success(request, f'"{title}" muvaffaqiyatli qo\'shildi! Admin tasdiqini kuting.')
         return redirect('seller:dashboard')
     return render(request, 'seller/product_form.html', {'categories': categories, 'product': None})
 
@@ -82,7 +87,14 @@ def product_edit(request, product_id):
         product.price = request.POST.get('price', product.price) or 0
         dp = request.POST.get('discount_price')
         product.discount_price = dp if dp else None
+        product.tags = request.POST.get('tags', product.tags).strip()
+        product.demo_url = request.POST.get('demo_url') or None
+        product.seo_title = request.POST.get('seo_title', product.seo_title).strip()
+        product.seo_description = request.POST.get('seo_description', product.seo_description).strip()
         product.is_active = request.POST.get('is_active') == 'on'
+        if product.moderation_status == Video.ModerationStatus.APPROVED:
+            product.moderation_status = Video.ModerationStatus.PENDING
+            product.moderation_feedback = ''
         cat_id = request.POST.get('category')
         product.category = CourseCategory.objects.filter(id=cat_id).first() if cat_id else None
         if request.FILES.get('thumbnail'):
@@ -93,6 +105,6 @@ def product_edit(request, product_id):
         if request.FILES.get('digital_file'):
             DigitalFile.objects.filter(product=product, is_main=True).delete()
             DigitalFile.objects.create(product=product, file=request.FILES['digital_file'], is_main=True)
-        messages.success(request, 'Mahsulot yangilandi.')
+        messages.success(request, 'Mahsulot yangilandi. Admin tasdiqini kuting.')
         return redirect('seller:dashboard')
     return render(request, 'seller/product_form.html', {'categories': categories, 'product': product})

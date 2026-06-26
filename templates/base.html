@@ -6,6 +6,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{% block title %}Digsell.uz | Enterprise Marketplace{% endblock %}</title>
+    {% block meta %}
+    <meta name="description" content="Digsell.uz - premium raqamli bozor, Telegram Stars va Premium xizmatlar, freelance xizmatlar va xavfsiz raqamli mahsulotlar platformasi." />
+    {% endblock %}
     
     <!-- Enterprise Tech Stack -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -40,6 +43,7 @@
     <!-- Fonts & Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/modern.css' %}">
+    {% block extra_css %}{% endblock %}
     
     <!-- Frameworks -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -180,7 +184,7 @@
                         <i x-show="darkMode" data-lucide="sun" class="w-5 h-5 text-vibrant-amber animate-spin-slow" x-cloak></i>
                     </button>
                     
-                    <a href="/support/" class="hidden sm:flex items-center gap-3 h-11 px-5 rounded-2xl bg-primary-500 text-white shadow-lg shadow-primary-500/20 hover:scale-[1.02] active:scale-95 transition">
+                    <a href="/contact/" title="Yordam markaziga o'tish" aria-label="Yordam markaziga o'tish" class="hidden sm:flex items-center gap-3 h-11 px-5 rounded-2xl bg-primary-500 text-white shadow-lg shadow-primary-500/20 hover:scale-[1.02] active:scale-95 transition">
                         <i data-lucide="help-circle" class="w-4 h-4"></i>
                         <span class="text-xs font-black uppercase tracking-tight">Yordam</span>
                     </a>
@@ -188,7 +192,7 @@
             </header>
 
             <!-- Page Content Scroll Area -->
-            <main class="flex-1 overflow-y-auto custom-scrollbar bg-[#f8fafc] dark:bg-[#020617] relative">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar bg-[#f8fafc] dark:bg-[#020617] relative">
                 <!-- Page Background Decorative Elements -->
                 <div class="fixed top-0 right-0 w-[500px] h-[500px] bg-primary-500/5 blur-[120px] rounded-full -z-10"></div>
                 <div class="fixed bottom-0 left-0 w-[400px] h-[400px] bg-vibrant-violet/5 blur-[100px] rounded-full -z-10"></div>
@@ -198,10 +202,65 @@
                         {% block content %}{% endblock %}
                     </div>
                 </div>
-                
-                <!-- Bottom Spacing for Mobile Navigation (if needed) -->
-                <div class="h-20 lg:hidden"></div>
-            </main>
+
+                <!-- Global Footer (Inside scrollable area) -->
+                <footer class="border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-950 text-slate-300 mt-8">
+                    <div class="container-premium mx-auto px-4 py-12">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                            <div class="space-y-4">
+                                <div class="inline-flex items-center justify-center w-12 h-12 rounded-3xl bg-primary-500/10 text-primary-400">
+                                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-black text-white">Digsell.uz</h3>
+                                    <p class="text-sm text-slate-400 leading-relaxed">Premium Telegram xizmatlari, raqamli mahsulotlar va freelance bozor uchun ishonchli platforma.</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Kompaniya</h4>
+                                <ul class="space-y-3 text-sm text-slate-300">
+                                    <li><a href="/terms" class="transition text-slate-300 hover:text-primary-400">Terms of Service</a></li>
+                                    <li><a href="/privacy" class="transition text-slate-300 hover:text-primary-400">Privacy Policy</a></li>
+                                    <li><a href="/refund" target="_blank" class="transition text-slate-300 hover:text-primary-400">Refund Policy</a></li>
+                                    <li><a href="/about/" class="transition text-slate-300 hover:text-primary-400">Biz haqimizda</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Xizmatlar</h4>
+                                <ul class="space-y-3 text-sm text-slate-300">
+                                    <li><a href="/telegram-services/products/?category=stars" class="transition text-slate-300 hover:text-primary-400">Telegram Stars</a></li>
+                                    <li><a href="/telegram-services/products/?category=premium" class="transition text-slate-300 hover:text-primary-400">Telegram Premium</a></li>
+                                    <li><a href="/marketplace/" class="transition text-slate-300 hover:text-primary-400">Raqamli mahsulotlar</a></li>
+                                    <li><a href="/freelance/" class="transition text-slate-300 hover:text-primary-400">Freelance xizmatlari</a></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Aloqa</h4>
+                                <ul class="space-y-3 text-sm text-slate-300">
+                                    <li><a href="https://t.me/DigsellUz" target="_blank" rel="noopener noreferrer" title="Telegram kanal" aria-label="Telegram kanal" class="inline-flex items-center gap-2 group transition text-slate-300 hover:text-cyan-400">
+                                        <i data-lucide="send" class="w-4 h-4"></i>
+                                        <span>Telegram kanal</span>
+                                    </a></li>
+                                    <li><a href="https://instagram.com/digsell.uz" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Instagram" class="inline-flex items-center gap-2 group transition text-slate-300 hover:text-pink-400">
+                                        <i data-lucide="instagram" class="w-4 h-4"></i>
+                                        <span>Instagram</span>
+                                    </a></li>
+                                    <li><a href="/contact/" title="Bog'lanish" aria-label="Bog'lanish" class="inline-flex items-center gap-2 transition text-slate-300 hover:text-primary-400">
+                                        <i data-lucide="mail" class="w-4 h-4"></i>
+                                        <span>Bog'lanish</span>
+                                    </a></li>
+                                    <li><a href="/support/" title="Yordam markaziga o'tish" aria-label="Yordam markaziga o'tish" class="inline-flex items-center gap-2 transition text-slate-300 hover:text-primary-400">
+                                        <i data-lucide="help-circle" class="w-4 h-4"></i>
+                                        <span>Yordam markazi</span>
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="mt-10 pt-8 border-t border-slate-800/70 text-center text-slate-500 text-xs sm:text-sm">
+                            <p>© {% now "Y" %} Digsell.uz — All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </footer>
         </div>
     </div>
 
@@ -264,5 +323,6 @@
             }
         });
     </script>
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

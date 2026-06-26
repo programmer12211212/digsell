@@ -1,0 +1,58 @@
+{% load static %}
+
+{% if banners %}
+<div class="w-full mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for banner in banners %}
+            <div class="group cursor-pointer" x-data="{ hover: false }" @mouseenter="hover = true" @mouseleave="hover = false">
+                <div class="relative overflow-hidden rounded-3xl bg-slate-950/50 backdrop-blur-xl border border-slate-800/50 hover:border-slate-700/50 transition-all duration-300 h-full shadow-xl hover:shadow-2xl hover:shadow-slate-900/40">
+                    
+                    <!-- Card Image -->
+                    {% if banner.image %}
+                        <div class="relative overflow-hidden h-48 md:h-56">
+                            <img src="{{ banner.image.url }}" alt="{{ banner.heading }}"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                            
+                            <!-- Overlay -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Content -->
+                    <div class="p-5 md:p-6">
+                        {% if banner.heading %}
+                            <h3 class="text-lg md:text-xl font-bold text-white mb-2 line-clamp-2">
+                                {{ banner.heading }}
+                            </h3>
+                        {% endif %}
+                        
+                        {% if banner.subheading %}
+                            <p class="text-sm text-slate-300 mb-3 line-clamp-2">
+                                {{ banner.subheading }}
+                            </p>
+                        {% endif %}
+                        
+                        {% if banner.discount_label %}
+                            <div class="mb-4 inline-block">
+                                <span class="px-3 py-1 bg-red-500/80 text-white text-xs font-bold rounded-full">
+                                    {{ banner.discount_label }}
+                                </span>
+                            </div>
+                        {% endif %}
+                        
+                        {% if banner.cta_text and banner.cta_url %}
+                            <a href="{{ banner.cta_url }}"
+                               {% if banner.cta_target_blank %}target="_blank"{% endif %}
+                               @click="recordClick('{{ banner.id }}')"
+                               class="inline-flex items-center text-sm font-semibold text-violet-400 group-hover:text-violet-300 transition-colors">
+                                {{ banner.cta_text }}
+                                <i data-lucide="arrow-right" class="ml-1 w-4 h-4"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}

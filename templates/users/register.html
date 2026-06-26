@@ -17,7 +17,7 @@
                 <p class="text-slate-400">Bizga qo'shiling va raqamli bozorni zabt eting.</p>
             </div>
 
-            <form method="post" class="space-y-5">
+            <form method="post" class="space-y-5" id="registerForm">
                 {% csrf_token %}
                 
                 {% if form.non_field_errors %}
@@ -27,22 +27,62 @@
                 {% endif %}
 
                 {% for field in form %}
-                <div class="space-y-2">
-                    <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">{{ field.label }}</label>
-                    <div class="relative">
-                        {{ field }}
+                    {% if field.name != 'accept_terms' %}
+                    <div class="space-y-2">
+                        <label for="{{ field.id_for_label }}" class="text-xs font-bold text-slate-500 uppercase tracking-widest">{{ field.label }}</label>
+                        <div class="relative">
+                            {{ field }}
+                        </div>
+                        {% if field.errors %}
+                            <p class="text-rose-500 text-[10px] uppercase font-bold">{{ field.errors.0 }}</p>
+                        {% endif %}
                     </div>
-                    {% if field.errors %}
-                        <p class="text-rose-500 text-[10px] uppercase font-bold">{{ field.errors.0 }}</p>
                     {% endif %}
-                </div>
                 {% endfor %}
 
-                <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                <div class="flex items-start gap-3 rounded-2xl border border-slate-800/90 bg-slate-950/80 p-4">
+                    <div class="flex items-center">
+                        {{ form.accept_terms }}
+                    </div>
+                    <div class="text-sm text-slate-300 leading-relaxed">
+                        <label for="acceptTermsCheckbox" class="font-bold text-slate-200">
+                            Men <a href="/terms" target="_blank" class="text-primary-500 hover:text-primary-400 underline">Terms of Service</a> va <a href="/privacy" target="_blank" class="text-primary-500 hover:text-primary-400 underline">Privacy Policy</a> ga roziman.
+                        </label>
+                        {% if form.accept_terms.errors %}
+                            <p class="mt-2 text-rose-500 text-[10px] uppercase font-bold">{{ form.accept_terms.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <button type="submit" id="registerSubmit" disabled class="w-full py-4 bg-slate-800 text-slate-500 rounded-xl font-bold transition-all shadow-lg shadow-slate-950/20 flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60">
                     Hisob yaratish
                     <i data-lucide="sparkles" class="w-5 h-5"></i>
                 </button>
             </form>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const checkbox = document.getElementById('acceptTermsCheckbox');
+                    const submitBtn = document.getElementById('registerSubmit');
+
+                    if (checkbox && submitBtn) {
+                        const updateButton = () => {
+                            const checked = checkbox.checked;
+                            submitBtn.disabled = !checked;
+                            if (checked) {
+                                submitBtn.classList.remove('bg-slate-800', 'text-slate-500');
+                                submitBtn.classList.add('bg-emerald-600', 'text-white');
+                            } else {
+                                submitBtn.classList.remove('bg-emerald-600', 'text-white');
+                                submitBtn.classList.add('bg-slate-800', 'text-slate-500');
+                            }
+                        };
+
+                        updateButton();
+                        checkbox.addEventListener('change', updateButton);
+                    }
+                });
+            </script>
 
             {% if google_login_enabled %}
             <a href="{% provider_login_url 'google' process='login' %}" class="w-full inline-flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-slate-900 font-semibold hover:bg-slate-100 transition-all border border-slate-200">

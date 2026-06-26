@@ -1,0 +1,120 @@
+{% extends 'base.html' %}
+
+{% block title %}Bog'lanish | Digsell.uz{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header Section -->
+    <div class="text-center space-y-4">
+        <h1 class="text-4xl md:text-5xl font-black font-heading text-white">Biz bilan bog'laning</h1>
+        <p class="text-slate-400 text-lg max-w-2xl mx-auto">Savollar yoki takliflar bo'yicha biz bilan to'g'ridan-to'g'ri aloqa qiling. Jamoamiz 24/7 sizga xizmat qilishga tayyor.</p>
+    </div>
+
+    <!-- Contact Methods Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+        
+        <!-- Telegram Support -->
+        <div class="group rounded-3xl border border-slate-800 bg-slate-950/70 p-8 hover:border-primary-500/50 transition-all duration-300 hover:shadow-[0_20px_60px_-20px_rgba(6,182,212,0.3)]">
+            <div class="w-14 h-14 rounded-2xl bg-primary-500/10 text-primary-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a11.955 11.955 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.485-1.313.475-.431-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.155.217-.315.541-.417 2.212-.666 4.613-1.111 6.864-1.142.503-.007.968-.054 1.405-.164z"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Telegram orqali</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">Tezkor javob va to'liq yordam uchun Telegram orqali murojaat qiling.</p>
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-primary-500"></span>
+                    <a href="https://t.me/Digsell_Help" target="_blank" rel="noopener noreferrer" title="Telegram yordamga yuborish" aria-label="Telegram yordamga yuborish" class="text-primary-400 hover:text-primary-300 font-semibold transition-colors">
+                        @Digsell_Help
+                    </a>
+                </div>
+                <p class="text-xs text-slate-500">Tezkor yordam va qo'llab-quvvatlash</p>
+            </div>
+        </div>
+
+        <!-- Instagram -->
+        <div class="group rounded-3xl border border-slate-800 bg-slate-950/70 p-8 hover:border-pink-500/50 transition-all duration-300 hover:shadow-[0_20px_60px_-20px_rgba(236,72,153,0.3)]">
+            <div class="w-14 h-14 rounded-2xl bg-pink-500/10 text-pink-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.266.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.013-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.322a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Instagram</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">Eng yangi mavzular va taklif-takliflarni ko'ring.</p>
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-pink-500"></span>
+                    <a href="https://instagram.com/digsell.uz" target="_blank" rel="noopener noreferrer" title="Instagram sahifamiz" aria-label="Instagram sahifamiz" class="text-pink-400 hover:text-pink-300 font-semibold transition-colors">
+                        @digsell.uz
+                    </a>
+                </div>
+                <p class="text-xs text-slate-500">Yangiliklar va inspirasiya</p>
+            </div>
+        </div>
+
+        <!-- Telegram Channel -->
+        <div class="group rounded-3xl border border-slate-800 bg-slate-950/70 p-8 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-[0_20px_60px_-20px_rgba(34,211,238,0.3)]">
+            <div class="w-14 h-14 rounded-2xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a11.955 11.955 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.485-1.313.475-.431-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.155.217-.315.541-.417 2.212-.666 4.613-1.111 6.864-1.142.503-.007.968-.054 1.405-.164z"/>
+                </svg>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Telegram Kanal</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-6">Eng axarlar va e'lonlardan xabardor bo'ling.</p>
+            <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-cyan-500"></span>
+                    <a href="https://t.me/DigsellUz" target="_blank" rel="noopener noreferrer" title="Telegram kanal" aria-label="Telegram kanal" class="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors">
+                        @DigsellUz
+                    </a>
+                </div>
+                <p class="text-xs text-slate-500">Yangiliklar va e'lonlar</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Murojaat opsiyasi -->
+    <div class="rounded-3xl border border-slate-800 bg-gradient-to-r from-slate-950/70 via-slate-950/50 to-slate-950/70 p-8 md:p-12">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="space-y-3 md:max-w-2xl">
+                <h3 class="text-2xl font-bold text-white">Rasm va fayl yuboradigan murojaat</h3>
+                <p class="text-slate-400">Agar rasmlar yoki fayllar birga yuborish kerak bo'lsa, platformada murojaat yarating.</p>
+            </div>
+            {% if user.is_authenticated %}
+                <a href="{% url 'support:ticket_create' %}" title="Yangi murojaat yaratish" class="btn-premium btn-primary px-8 py-4 rounded-2xl font-bold whitespace-nowrap hover:scale-105 transition-transform">
+                    Yangi murojaat yaratish
+                </a>
+            {% else %}
+                <a href="/auth/login/" title="Yordam uchun kirish" class="btn-premium btn-primary px-8 py-4 rounded-2xl font-bold whitespace-nowrap hover:scale-105 transition-transform">
+                    Kirish kerak
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="space-y-4">
+        <h2 class="text-2xl font-bold text-white">Tez-tez soʻraladigan savollar</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-6 hover:border-slate-700 transition-colors">
+                <h4 class="font-bold text-white mb-2">Qachon javob olamiz?</h4>
+                <p class="text-slate-400 text-sm">Odatda Telegram orqali 1-2 soat ichida. Murojaat uchun 24 soat ichida.</p>
+            </div>
+            <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-6 hover:border-slate-700 transition-colors">
+                <h4 class="font-bold text-white mb-2">Pul qaytarish uchun?</h4>
+                <p class="text-slate-400 text-sm"><a href="/privacy/" class="text-primary-400 hover:text-primary-300">Privacy Policy</a>da qaytarish shartlari ko'rsatilgan.</p>
+            </div>
+            <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-6 hover:border-slate-700 transition-colors">
+                <h4 class="font-bold text-white mb-2">Qanday hisobni o'chirim?</h4>
+                <p class="text-slate-400 text-sm">Profil bo'limiga o'tib "Hisobni o'chirish" tugmasini bosing yoki @Digsell_Help ga yozing.</p>
+            </div>
+            <div class="rounded-2xl border border-slate-800 bg-slate-950/50 p-6 hover:border-slate-700 transition-colors">
+                <h4 class="font-bold text-white mb-2">Xavfsizlik muammosi bor?</h4>
+                <p class="text-slate-400 text-sm">Darhol @Digsell_Help ga yozing yoki <a href="{% url 'support:ticket_create' %}" class="text-primary-400 hover:text-primary-300">murojaat yarating</a>.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -59,7 +59,15 @@ function setupCsrfToken() {
 }
 
 function getCsrfToken() {
-    return window.csrfToken || '';
+    if (window.csrfToken) {
+        return window.csrfToken;
+    }
+    const cookieMatch = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    if (cookieMatch) {
+        return decodeURIComponent(cookieMatch[1]);
+    }
+    const input = document.querySelector('[name=csrfmiddlewaretoken]');
+    return input ? input.value : '';
 }
 
 /* ============================================================================
@@ -399,6 +407,7 @@ function throttle(func, limit) {
 window.Toast = Toast;
 window.Api = Api;
 window.LoadingState = LoadingState;
+window.validateTelegramUsername = validateTelegramUsername;
 window.copyToClipboard = copyToClipboard;
 window.formatCurrency = formatCurrency;
 window.formatNumber = formatNumber;

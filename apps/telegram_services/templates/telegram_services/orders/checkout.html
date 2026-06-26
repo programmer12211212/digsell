@@ -12,6 +12,8 @@
         <span class="text-slate-200">Buyurtmani rasmiylashtirish</span>
     </div>
 
+    <div id="checkoutStatusMessage" class="hidden rounded-3xl p-4 mb-6 text-sm font-semibold"></div>
+
     {% if error %}
         <div class="p-5 tg-glass border-rose-500/20 text-rose-500 rounded-3xl text-sm font-semibold flex items-center gap-3">
             <i data-lucide="alert-triangle" class="w-5 h-5"></i>
@@ -46,9 +48,29 @@
                                 >
                             </div>
                             <small class="text-[10px] text-slate-450 font-semibold block">
-                                Telegram username-ni @ belgisiz kiriting (kamida 5 ta belgi, faqat harflar, raqamlar va tagchiziqlar)
+                                Telegram username-ni @ belgisi bilan yoki undan holda kiriting (kamida 5 ta belgi, faqat harflar, raqamlar va pastki chiziq).
                             </small>
                         </div>
+
+                        {% if product.sku == 'custom_stars' %}
+                        <div class="space-y-2">
+                            <label for="customStarsInput" class="block text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Telegram Stars miqdori</label>
+                            <input
+                                id="customStarsInput"
+                                name="quantity"
+                                type="number"
+                                min="100"
+                                step="1"
+                                value="{{ checkout_quantity|default:'100' }}"
+                                class="w-full pl-4 pr-4 py-3.5 tg-input text-sm focus:outline-none"
+                                placeholder="100"
+                                required
+                            >
+                            <small class="text-[10px] text-slate-400 font-semibold block">
+                                100 dan boshlab, miqdor ortishi bilan noyob narx avtomatik hisoblanadi.
+                            </small>
+                        </div>
+                        {% endif %}
 
                         <!-- User Info Card Preview -->
                         <div id="userInfoPreview" class="hidden p-4 rounded-2xl border border-sky-500/20 bg-sky-500/5 animate-fade-in">
@@ -86,9 +108,9 @@
                         </div>
                         <div class="flex justify-between items-center text-xs">
                             <span class="text-slate-400 font-bold uppercase tracking-wider">Paket</span>
-                            <span class="font-extrabold text-slate-200">
+                            <span id="checkoutPackageText" class="font-extrabold text-slate-200">
                                 {% if product.sku == 'custom_stars' %}
-                                    {{ request.GET.quantity }} Stars (Batafsil)
+                                    {{ request.GET.quantity|default:'100' }} Stars Paket
                                 {% else %}
                                     {{ product.name }}
                                 {% endif %}
@@ -132,56 +154,226 @@
 
 {% block extra_js %}
 <script>
-document.getElementById('telegram_username').addEventListener('blur', async function() {
-    const username = this.value.trim().replace(/^@/, '');
-    
-    if (!/^\w{5,32}$/.test(username)) {
-        return;
-    }
-    
-    try {
-        const response = await fetch(`/telegram-services/api/user-info/?username=${username}`);
-        const data = await response.json();
-        
-        if (data.id) {
-            document.getElementById('userAvatar').src = data.photo || 'https://ui-avatars.com/api/?name=' + username + '&background=0ea5e9&color=fff';
-            document.getElementById('userName').textContent = (data.first_name || '') + ' ' + (data.last_name || '') || data.username;
-            document.getElementById('userId').textContent = `ID: ${data.id}`;
-            document.getElementById('userInfoPreview').classList.remove('hidden');
-        } else {
-            document.getElementById('userInfoPreview').classList.add('hidden');
+(function() {
+    const usernameInput = document.getElementById('telegram_username');
+    const submitBtn = document.getElementById('submitBtn');
+    const statusMessage = document.getElementById('checkoutStatusMessage');
+    const userInfoPreview = document.getElementById('userInfoPreview');
+    const userAvatar = document.getElementById('userAvatar');
+    const userNameEl = document.getElementById('userName');
+    const userIdEl = document.getElementById('userId');
+    const packageText = document.getElementById('checkoutPackageText');
+    const chosenQuantityText = document.getElementById('checkoutChosenQuantity');
+    const priceText = document.getElementById('checkoutCustomStarsPrice');
+    const customStarsInput = document.getElementById('customStarsInput');
+    const createOrderUrl = '{% url "telegram_services:create_order" product.pk %}';
+
+    const getCookie = (name) => {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i += 1) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
-    } catch (error) {
-        console.error('Error fetching user info:', error);
-        document.getElementById('userInfoPreview').classList.add('hidden');
-    }
-});
+        return cookieValue;
+    };
 
-document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    let username = document.getElementById('telegram_username').value.trim();
-    if (!username.startsWith('@')) {
-        username = '@' + username;
-    }
-    const customQty = '{{ request.GET.quantity|default:"" }}';
-    await createOrder('{{ product.pk }}', username, document.getElementById('submitBtn'), customQty);
-});
+    const csrfToken = getCookie('csrftoken') || document.querySelector('[name="csrfmiddlewaretoken"]')?.value || '';
 
-{% if product.sku == 'custom_stars' %}
-document.addEventListener('DOMContentLoaded', function() {
-    const qty = parseInt('{{ request.GET.quantity|default:100 }}') || 100;
-    let rate = 240;
-    if (qty < 100) rate = 240;
-    else if (qty < 250) rate = 220;
-    else if (qty < 500) rate = 208;
-    else if (qty < 1000) rate = 200;
-    else if (qty < 5000) rate = 190;
-    else rate = 180;
-    
-    const price = qty * rate;
-    document.getElementById('checkoutCustomStarsPrice').textContent = new Intl.NumberFormat('uz-UZ').format(price) + ' UZS';
-});
-{% endif %}
+    const showStatus = (type, message) => {
+        if (!statusMessage) return;
+        statusMessage.className = 'rounded-3xl p-4 mb-6 text-sm font-semibold';
+        statusMessage.classList.add('transition-all', 'duration-300');
+
+        if (type === 'success') {
+            statusMessage.classList.add('bg-emerald-500/10', 'border', 'border-emerald-500/20', 'text-emerald-200');
+        } else if (type === 'error') {
+            statusMessage.classList.add('bg-rose-500/10', 'border', 'border-rose-500/20', 'text-rose-200');
+        } else {
+            statusMessage.classList.add('bg-slate-950/80', 'border', 'border-white/10', 'text-slate-200');
+        }
+
+        statusMessage.textContent = message;
+        statusMessage.classList.remove('hidden');
+    };
+
+    const clearStatus = () => {
+        if (!statusMessage) return;
+        statusMessage.classList.add('hidden');
+    };
+
+    const toUzCurrency = (value) => new Intl.NumberFormat('uz-UZ').format(value) + ' UZS';
+
+    const calculateStarsPrice = (qty) => {
+        let rate = 240;
+        if (qty < 100) rate = 240;
+        else if (qty < 250) rate = 220;
+        else if (qty < 500) rate = 208;
+        else if (qty < 1000) rate = 200;
+        else if (qty < 5000) rate = 190;
+        else rate = 180;
+        return qty * rate;
+    };
+
+    const updatePricePreview = () => {
+        if (!customStarsInput || !priceText) return;
+        const qty = parseInt(customStarsInput.value, 10) || 100;
+        const price = calculateStarsPrice(qty);
+        priceText.textContent = toUzCurrency(price);
+        if (chosenQuantityText) {
+            chosenQuantityText.textContent = `${qty} Stars`;
+        }
+        if (packageText) {
+            packageText.textContent = `${qty} Stars Paket`;
+        }
+    };
+
+    const validateTelegramUsername = (value) => {
+        const cleaned = value.trim().replace(/^@/, '');
+        return /^\w{5,32}$/.test(cleaned);
+    };
+
+    const fetchTelegramUserInfo = async () => {
+        if (!usernameInput) return;
+
+        const username = usernameInput.value.trim().replace(/^@/, '');
+        if (!validateTelegramUsername(username)) {
+            if (userInfoPreview) userInfoPreview.classList.add('hidden');
+            return;
+        }
+
+        try {
+            clearStatus();
+            const response = await fetch(`/telegram-services/api/user-info/?username=${encodeURIComponent(username)}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                credentials: 'same-origin'
+            });
+            const data = await response.json();
+
+            if (response.ok && data.success && data.id) {
+                if (userAvatar) userAvatar.src = data.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=0ea5e9&color=fff`;
+                if (userNameEl) userNameEl.textContent = (data.first_name || '') + ' ' + (data.last_name || '') || data.username;
+                if (userIdEl) userIdEl.textContent = `ID: ${data.id}`;
+                if (userInfoPreview) userInfoPreview.classList.remove('hidden');
+            } else {
+                if (userInfoPreview) userInfoPreview.classList.add('hidden');
+                if (data && data.error) {
+                    showStatus('error', data.error);
+                } else {
+                    showStatus('error', 'Telegram foydalanuvchisini topib bo‘lmadi. Iltimos, username-ni tekshiring.');
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching user info:', error);
+            if (userInfoPreview) userInfoPreview.classList.add('hidden');
+            showStatus('error', 'Telegram API bilan bogʻlanishda xatolik yuz berdi. Iltimos, keyinroq qayta urinib ko‘ring.');
+        }
+    };
+
+    const createOrder = async () => {
+        if (!usernameInput) return;
+        let telegramUsername = usernameInput.value.trim();
+        if (!telegramUsername) {
+            showStatus('error', 'Telegram foydalanuvchi nomini kiriting.');
+            return;
+        }
+        if (!telegramUsername.startsWith('@')) {
+            telegramUsername = '@' + telegramUsername;
+        }
+        const usernameClean = telegramUsername.replace(/^@/, '');
+        if (!validateTelegramUsername(usernameClean)) {
+            showStatus('error', 'Telegram username notoʻgʻri formatda.');
+            return;
+        }
+
+        const payload = {
+            telegram_username: telegramUsername,
+        };
+
+        if (customStarsInput) {
+            const qty = parseInt(customStarsInput.value, 10);
+            if (!qty || qty < 100) {
+                showStatus('error', 'Iltimos, 100 yoki undan yuqori miqdorni kiriting.');
+                return;
+            }
+            payload.quantity = qty;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Iltimos kuting...';
+        }
+
+        try {
+            clearStatus();
+            const response = await fetch(createOrderUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRFToken': csrfToken || '',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(payload),
+                credentials: 'same-origin'
+            });
+
+            let data = null;
+            try {
+                data = await response.json();
+            } catch (parseError) {
+                data = null;
+            }
+
+            if (response.ok && data && data.success) {
+                showStatus('success', 'Buyurtma muvaffaqiyatli yaratildi. Toʻlov sahifasiga oʻtish...');
+                window.location.href = data.redirect_url;
+            } else {
+                const errorMessage = (data && (data.message || data.error)) || `Server javobi: ${response.status}`;
+                showStatus('error', errorMessage);
+            }
+        } catch (error) {
+            console.error('Order creation error:', error);
+            showStatus('error', 'Server bilan bogʻlanishda muammo yuz berdi. Iltimos, qayta urinib koʻring.');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="credit-card" class="w-4 h-4"></i> To\'lovga o\'tish';
+                if (window.lucide) window.lucide.createIcons();
+            }
+        }
+    };
+
+    if (usernameInput) {
+        usernameInput.addEventListener('blur', fetchTelegramUserInfo);
+        usernameInput.addEventListener('input', clearStatus);
+    }
+
+    if (customStarsInput) {
+        customStarsInput.addEventListener('input', () => {
+            updatePricePreview();
+            clearStatus();
+        });
+        updatePricePreview();
+    }
+
+    const checkoutForm = document.getElementById('checkoutForm');
+    if (checkoutForm) {
+        checkoutForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            createOrder();
+        });
+    }
+})();
 </script>
 {% endblock %}
 {% endblock %}

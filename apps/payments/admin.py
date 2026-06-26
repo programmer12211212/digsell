@@ -1,27 +1,19 @@
 from django.contrib import admin
-from .models import EscrowAccount, Transaction, WithdrawalRequest, CompanyCard, Coupon, CouponUsage, CouponValidationAttempt, DepositRequest
+from .models import (
+    EscrowAccount,
+    Transaction,
+    HamyonPayment,
+    WithdrawalRequest,
+    CompanyCard,
+    Coupon,
+    CouponUsage,
+    CouponValidationAttempt,
+)
 
 @admin.register(EscrowAccount)
 class EscrowAccountAdmin(admin.ModelAdmin):
     list_display = ('user', 'balance', 'frozen_balance')
 
-
-@admin.register(DepositRequest)
-class DepositRequestAdmin(admin.ModelAdmin):
-    list_display = ('user', 'amount', 'status', 'created_at')
-    list_filter = ('status', 'created_at')
-    search_fields = ('user__username', 'admin_note')
-    readonly_fields = ('created_at', 'updated_at')
-    actions = ['approve_deposits']
-
-    @admin.action(description="Tanlangan so'rovlarni tasdiqlash va hamyonga pul qo'shish")
-    def approve_deposits(self, request, queryset):
-        count = 0
-        for req in queryset.filter(status='PENDING'):
-            req.status = 'APPROVED'
-            req.save()
-            count += 1
-        self.message_user(request, f"{count} ta balans to'ldirish so'rovlari tasdiqlandi.")
 
 @admin.register(WithdrawalRequest)
 class WithdrawalRequestAdmin(admin.ModelAdmin):
@@ -56,6 +48,27 @@ class WithdrawalRequestAdmin(admin.ModelAdmin):
             else:
                 self.message_user(request, f"{req.user.username} balansida mablag' yetarli emas!", level='error')
         self.message_user(request, f"{count} ta so'rovlar tasdiqlandi va mablag'lar yechildi.")
+
+
+@admin.register(HamyonPayment)
+class HamyonPaymentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'purpose', 'purpose_reference', 'external_id', 'amount', 'requested_amount', 'fee_amount', 'status', 'processed', 'created_at')
+    list_filter = ('purpose', 'status', 'processed', 'created_at')
+    search_fields = ('external_id', 'purpose_reference', 'user__username')
+    readonly_fields = ('created_at', 'updated_at', 'external_data')
+    actions = ['recheck_payments']
+
+    @admin.action(description='Tanlangan Hamyon to‘lovlari holatini qayta tekshirish')
+    def recheck_payments(self, request, queryset):
+        from .services import HamyonPaymentService
+        service = HamyonPaymentService()
+        updated = 0
+        for payment in queryset:
+            previous_status = payment.status
+            service.process_payment_status(payment)
+            if payment.status != previous_status:
+                updated += 1
+        self.message_user(request, f"{updated} ta to‘lov holati yangilandi.")
 
 admin.site.register(Transaction)
 

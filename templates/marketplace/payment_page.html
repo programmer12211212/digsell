@@ -1,162 +1,184 @@
 {% extends 'base.html' %}
-{% load currency_tags %}
+{% load currency_tags static %}
 
 {% block title %}To'lov | Digsell.uz{% endblock %}
 
 {% block content %}
 <div class="py-8 px-4 flex items-center justify-center">
-    <div class="w-full max-w-xl space-y-8">
-
-        <!-- Header -->
-        <div class="text-center space-y-4">
-            <div class="w-20 h-20 bg-primary-500/10 rounded-3xl flex items-center justify-center mx-auto border border-primary-500/20 shadow-xl shadow-primary-500/5">
-                <i data-lucide="shield-check" class="w-10 h-10 text-primary-400"></i>
-            </div>
-            <h1 class="text-3xl font-heading font-black text-white tracking-tight">Xavfsiz To'lov</h1>
-            <p class="text-slate-400 text-sm max-w-sm mx-auto">Buyurtmani yakunlash uchun o'zingizga qulay to'lov usulini tanlang va chekni yuklang.</p>
-        </div>
-
-        <!-- Order Summary -->
-        <div class="glass p-5 rounded-2xl border-slate-800/50">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-slate-800 rounded-xl flex items-center justify-center text-primary-400">
-                    <i data-lucide="package" class="w-6 h-6"></i>
-                </div>
-                <div class="flex-1">
-                    <p class="font-bold text-white">
-                        {% if order.product %}{{ order.product.title }}{% else %}Freelance Loyiha{% endif %}
-                    </p>
-                    <p class="text-xs text-slate-500">Buyurtma #{{ order.id|stringformat:"05d" }}</p>
-                </div>
-                <p class="text-2xl font-bold text-white">{{ order.amount|uzs }}</p>
-            </div>
-        </div>
-
-        <!-- Promo Code Section -->
-        <div class="glass p-4 rounded-xl border-slate-800/50 space-y-3">
-            <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">Promo kod mavjudmi?</label>
-            <form id="coupon-form" class="flex gap-2">
-                {% csrf_token %}
-                <input 
-                    type="text" 
-                    name="coupon_code" 
-                    id="coupon_code"
-                    placeholder="Promo kodni kiriting"
-                    class="flex-1 px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-500"
-                    maxlength="50"
-                />
-                <button type="button" id="apply-coupon-btn" class="px-6 py-2 bg-primary-600 hover:bg-primary-500 rounded-lg font-bold text-white text-sm transition-all">
-                    Qo'llash
-                </button>
-            </form>
-            <div id="coupon-message" class="text-sm rounded px-3 py-2 hidden"></div>
-        </div>
-
-        <!-- Payment Form -->
-        <form method="POST" enctype="multipart/form-data" class="space-y-4">
-            {% csrf_token %}
-
-            <!-- Company Cards Selection -->
-            <div class="space-y-3">
-                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">To'lov uchun kartani tanlang</label>
-
-                {% for card in company_cards %}
-                <label class="flex flex-col p-4 glass rounded-xl border-slate-800/50 hover:border-primary-500/30 cursor-pointer transition-all group has-[:checked]:border-primary-500/50 has-[:checked]:bg-primary-500/5 relative overflow-hidden">
-                    <input type="radio" name="payment_method" value="{{ card.card_name }}" class="absolute opacity-0 w-0 h-0" {% if forloop.first %}checked{% endif %}>
-                    
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-8 bg-gradient-to-tr from-slate-800 to-slate-700 rounded flex items-center justify-center font-black text-white text-xs shadow-inner">
-                            {{ card.card_name }}
+    <style>
+        .neon-btn {
+            position: relative;
+            animation: neonPulse 2.8s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.18);
+        }
+        .neon-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
+        .neon-btn:hover::before {
+            opacity: 1;
+            box-shadow: 0 0 30px rgba(56,189,248,0.25), 0 0 50px rgba(59,130,246,0.18);
+        }
+        @keyframes neonPulse {
+            0%, 100% { box-shadow: 0 0 16px rgba(56, 189, 248, 0.18), 0 0 28px rgba(59, 130, 246, 0.12); }
+            50% { box-shadow: 0 0 26px rgba(56, 189, 248, 0.30), 0 0 44px rgba(59, 130, 246, 0.18); }
+        }
+    </style>
+    <div class="w-full max-w-7xl space-y-8">
+        <div class="grid gap-8 xl:grid-cols-[1.65fr_1fr]">
+            <div class="space-y-6">
+                <section class="glass rounded-[2rem] border border-slate-800/60 bg-slate-950/70 p-8 shadow-xl shadow-slate-900/40">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">Buyurtma tafsilotlari</p>
+                            <h1 class="text-3xl font-black text-white">#{{ order.id }}</h1>
                         </div>
-                        <div class="flex-1">
-                            <p class="font-mono text-lg font-bold tracking-widest text-white">{{ card.card_number }}</p>
-                            <p class="text-xs text-slate-400 uppercase font-bold">{{ card.card_holder }}</p>
-                        </div>
-                        <div class="w-6 h-6 rounded-full border-2 border-slate-700 flex items-center justify-center group-has-[:checked]:border-primary-500 transition-colors">
-                            <div class="w-2.5 h-2.5 rounded-full bg-primary-500 opacity-0 group-has-[:checked]:opacity-100 transition-opacity"></div>
+                        <div class="rounded-3xl bg-slate-900/70 border border-slate-800/70 px-4 py-3 text-sm font-semibold text-emerald-300">
+                            {{ order.get_status_display }}
                         </div>
                     </div>
-                </label>
-                {% empty %}
-                <div class="p-4 text-center text-rose-400 border border-rose-500/20 glass rounded-xl text-sm">
-                    Kechirasiz, hozircha to'lov uchun kartalar mavjud emas. Admin bilan bog'laning.
-                </div>
-                {% endfor %}
-            </div>
 
-            {% if wallet.balance >= order.amount %}
-            <!-- Pay from Balance Option -->
-            <div class="glass p-4 rounded-xl border-emerald-500/30 bg-emerald-500/5 mt-4">
-                <div class="flex justify-between items-center mb-3">
-                    <span class="text-sm font-bold text-white">Hisobingiz:</span>
-                    <span class="text-sm font-bold text-emerald-400">{{ wallet.balance|uzs }}</span>
-                </div>
-                <button type="submit" name="pay_from_balance" value="1" class="w-full py-3 bg-emerald-600/90 hover:bg-emerald-500 rounded-xl font-bold text-white text-sm transition-all flex items-center justify-center gap-2">
-                    <i data-lucide="wallet" class="w-4 h-4"></i>
-                    Balansdan to'lash (Chek talab qilinmaydi)
-                </button>
-            </div>
-            
-            <div class="text-center text-xs text-slate-500 mt-2 mb-2">— YOKI —</div>
-            {% endif %}
-
-            <!-- Receipt Upload -->
-            <div class="space-y-3 pt-2">
-                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest">To'lov chekini yuklang</label>
-                <div class="glass p-4 rounded-xl border-slate-800/50 border-dashed hover:border-primary-500/50 transition-colors relative">
-                    <input type="file" name="receipt_image" accept="image/*" {% if wallet.balance < order.amount %}required{% endif %} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="document.getElementById('file-name').textContent = this.files[0].name" />
-                    <div class="flex flex-col items-center justify-center space-y-2 text-slate-400 pointer-events-none">
-                        <i data-lucide="upload-cloud" class="w-8 h-8 text-primary-500/80"></i>
-                        <p class="text-sm font-bold"><span class="text-primary-400">Rasm tanlash</span> yoki faylni tashlang</p>
-                        <p id="file-name" class="text-xs text-slate-500 max-w-full truncate px-4">*.jpg, *.png (Max: 5MB)</p>
+                    <div class="mt-8 grid gap-4">
+                        {% for item in order.items.all %}
+                            <div class="group grid gap-4 sm:grid-cols-[auto_1fr_auto] items-center rounded-3xl border border-slate-800/50 bg-slate-900/70 p-4 transition-all duration-200 hover:border-slate-700/80">
+                                <div class="h-24 w-24 rounded-3xl overflow-hidden bg-slate-800 border border-slate-700">
+                                    {% if item.product.thumbnail %}
+                                        <img src="{{ item.product.thumbnail.url }}" alt="{{ item.product.title }}" class="h-full w-full object-cover" />
+                                    {% else %}
+                                        <div class="flex h-full items-center justify-center text-slate-500 text-xs uppercase tracking-[0.3em]">No Image</div>
+                                    {% endif %}
+                                </div>
+                                <div class="space-y-2">
+                                    <p class="text-white font-semibold">{{ item.product.title }}</p>
+                                    <p class="text-slate-500 text-sm">{{ item.product.product_type|default:'Raqamli mahsulot' }}</p>
+                                    <p class="text-slate-400 text-sm">{{ item.quantity }} × {{ item.price_at_purchase|uzs }}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-white font-black text-lg">{{ item.price_at_purchase|uzs }}</p>
+                                    <p class="text-slate-500 text-xs">Soni: {{ item.quantity }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
                     </div>
-                </div>
+
+                    <div class="mt-8 grid gap-3 sm:grid-cols-3">
+                        <div class="rounded-3xl border border-slate-800/50 bg-slate-900/70 p-5">
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-2">Jami summa</p>
+                            <p class="text-white font-black text-2xl">{{ order.total_amount|uzs }}</p>
+                        </div>
+                        <div class="rounded-3xl border border-slate-800/50 bg-slate-900/70 p-5">
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-2">Chegirma</p>
+                            <p class="text-white font-black text-2xl">{{ order.discount_amount|uzs }}</p>
+                        </div>
+                        <div class="rounded-3xl border border-slate-800/50 bg-slate-900/70 p-5">
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-2">Oxirgi summa</p>
+                            <p class="text-white font-black text-2xl">{{ order.final_amount|uzs }}</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="glass rounded-[2rem] border border-slate-800/60 bg-slate-950/70 p-8 shadow-xl shadow-slate-900/30">
+                    <h2 class="text-2xl font-black text-white mb-5">Tez va ishonchli to'lov</h2>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-3xl border border-slate-800/60 bg-slate-900/70 p-5">
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">1. Avtomatik aniqlash</p>
+                            <p class="text-slate-400 text-sm">Hamyon API orqali to'lov 5–30 soniya ichida aniqlanadi va buyurtma avtomatik tasdiqlanadi.</p>
+                        </div>
+                        <div class="rounded-3xl border border-slate-800/60 bg-slate-900/70 p-5">
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">2. Balans yoki Hamyon</p>
+                            <p class="text-slate-400 text-sm">Sayt hamyoni bilan to'lash yoki Hamyon orqali to'lash. Ikkala yo'l ham marketplace uchun qo'llab-quvvatlanadi.</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 rounded-3xl border border-slate-800/50 bg-slate-900/60 p-5">
+                        <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">Buyurtma identifikatori</p>
+                        <p class="text-slate-300 text-sm">{{ order.id }}</p>
+                    </div>
+                </section>
             </div>
 
-            <!-- Price Breakdown -->
-            <div class="glass p-4 rounded-xl border-slate-800/50 space-y-2 text-sm">
-                <div class="flex justify-between text-slate-400">
-                    <span>Mahsulot narxi</span>
-                    <span>{{ order.amount|uzs }}</span>
-                </div>
-                <div class="flex justify-between text-slate-400">
-                    <span>Xizmat haqqi (10%)</span>
-                    <span class="text-rose-400">-{{ order.commission|uzs }}</span>
-                </div>
-                {% if order.coupon_code %}
-                <div class="flex justify-between text-emerald-400 font-bold">
-                    <span>Promo kod ({{ order.coupon_code }})</span>
-                    <span>-{{ order.discount_amount|uzs }}</span>
-                </div>
-                {% endif %}
-                <div class="flex justify-between font-bold text-white pt-2 border-t border-slate-800">
-                    <span>Jami to'lov</span>
-                    <span class="text-lg">
-                        {% if order.final_amount %}
-                            {{ order.final_amount|uzs }}
-                        {% else %}
-                            {{ order.amount|uzs }}
-                        {% endif %}
-                    </span>
+            <aside class="space-y-6">
+                <section class="glass rounded-[2rem] border border-slate-800/60 bg-slate-950/70 p-6 shadow-2xl shadow-slate-900/20">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="rounded-3xl bg-cyan-500/10 p-3 text-cyan-300">
+                            <i data-lucide="credit-card" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold">To'lov usuli</p>
+                            <h3 class="text-xl font-black text-white">Hamyon va buyurtma</h3>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="rounded-3xl border border-slate-800/50 bg-slate-900/70 p-5">
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-sm text-slate-400">Oxirgi summa</span>
+                                <span class="text-lg font-black text-white">{{ order.final_amount|uzs }}</span>
+                            </div>
+                            <p class="text-slate-500 text-sm">Ushbu summa bo'yicha Hamyon to'lovini yarating yoki sayt hamyoni orqali to'lang.</p>
+                        </div>
+                        <div class="rounded-3xl border border-slate-800/50 bg-slate-900/70 p-5">
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">Hamyon orqali to'lash</p>
+                            <button type="button" id="marketplaceHamyonPayBtn" class="w-full py-4 bg-sky-500 hover:bg-sky-400 rounded-3xl font-black text-white text-lg transition-all neon-btn">
+                                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                                Hamyon orqali to'lash
+                            </button>
+                        </div>
+                        <div class="rounded-3xl border border-slate-800/50 bg-slate-900/70 p-5">
+                            <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">Sayt hamyoni</p>
+                            <button type="button" id="marketplaceWalletPayBtn" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-3xl font-black text-white text-lg transition-all neon-btn">
+                                <i data-lucide="wallet" class="w-5 h-5"></i>
+                                Hamyondan to'lash
+                            </button>
+                        </div>
+                        <div class="rounded-3xl border border-slate-800/50 bg-slate-900/70 p-5 text-sm text-slate-400">
+                            <p class="font-bold text-white mb-3">Muvofiqlik haqida</p>
+                            <p>Hamyon to'lovlari faqat marketplace buyurtmalari uchun ishlaydi. Telegram va Wallet flowga ta'sir qilinmaydi.</p>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div class="glass rounded-3xl p-5 border border-slate-800/50 bg-slate-950/70">
+                <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">Promo kod</p>
+                <form id="coupon-form" class="space-y-3">
+                    {% csrf_token %}
+                    <div class="grid gap-3 sm:grid-cols-[1fr_auto]">
+                        <input
+                            type="text"
+                            name="coupon_code"
+                            id="coupon_code"
+                            placeholder="Promo kodni kiriting"
+                            class="w-full px-4 py-3 bg-slate-900 border border-slate-800 rounded-3xl text-white placeholder-slate-500 focus:outline-none focus:border-primary-500"
+                            maxlength="50"
+                        />
+                        <button type="button" id="apply-coupon-btn" class="px-6 py-3 bg-primary-600 hover:bg-primary-500 rounded-3xl font-bold text-white text-sm transition-all">
+                            Qo'llash
+                        </button>
+                    </div>
+                    <div id="coupon-message" class="text-sm rounded-3xl px-4 py-3 hidden"></div>
+                </form>
+            </div>
+            <div class="glass rounded-3xl p-5 border border-slate-800/50 bg-slate-950/70">
+                <p class="text-xs uppercase tracking-[0.35em] text-slate-500 font-bold mb-3">To'lov haqida</p>
+                <div class="space-y-3 text-sm text-slate-400">
+                    <p>Hamyon orqali to'lov yaratganda, tizim sizga avtomatik ravishda to'lov kartasini ko'rsatadi.</p>
+                    <p>To'lov tasdiqlangach buyurtma holati yangilanadi va sizga <span class="text-white">core:order_tracking</span> sahifasiga yo'naltirish beriladi.</p>
+                    <p class="text-slate-500">Agar balans yetarli bo'lmasa, avtomatik to'ldirish oynasi ochiladi.</p>
                 </div>
             </div>
+        </div>
 
-            <!-- Security Note -->
-            <div class="flex items-center gap-2 text-xs text-slate-500">
-                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
-                <span>Barcha to'lovlar SSL orqali xavfsiz amalga oshiriladi</span>
-            </div>
-
-            <!-- Pay Button -->
-            <button type="submit" class="w-full py-4 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-bold text-white text-lg transition-all shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 mt-4">
-                <i data-lucide="upload" class="w-5 h-5"></i>
-                To'ladim va chekni yuborish
-            </button>
-
-            <a href="{% url 'marketplace:product_list' %}" class="block text-center text-sm text-slate-500 hover:text-slate-300 transition-colors">
-                Bekor qilish
+        <div class="text-center">
+            <a href="{% url 'marketplace:product_list' %}" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-3xl border border-slate-700 text-slate-400 hover:text-white transition-colors">
+                <i data-lucide="corner-down-left" class="w-4 h-4"></i>
+                Bekor qilish va mahsulotlar sahifasiga qaytish
             </a>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -203,5 +225,112 @@ document.getElementById('apply-coupon-btn').addEventListener('click', async func
         messageDiv.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/50');
     }
 });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hamyon-payment.css' %}">
+<link rel="stylesheet" href="{% static 'css/wallet-premium.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/hamyon-payment-controller.js' %}"></script>
+<script src="{% static 'js/wallet-insufficient-modal.js' %}"></script>
+<script>
+const ORDER_FINAL_AMOUNT = {{ order.final_amount|default:order.amount }};
+const WALLET_BALANCE = {{ wallet.balance }};
+const MIN_TOPUP = 5000;
+
+const marketplaceHamyonController = new HamyonPaymentController({
+    createUrl: '{% url "payments:hamyon_create" %}',
+    onSuccess: () => {
+        if (typeof Toast !== 'undefined') new Toast("Hisobingiz muvaffaqiyatli to'ldirildi.", 'success');
+        document.getElementById('walletBalanceDisplay').textContent = 'Yangilanmoqda...';
+        setTimeout(() => window.location.reload(), 1500);
+    },
+});
+window.walletHamyonController = marketplaceHamyonController;
+
+const ORDER_ID = '{{ order.id }}';
+const insufficientModal = new WalletInsufficientModal({ minTopup: MIN_TOPUP });
+
+async function payFromHamyon() {
+    const btn = document.getElementById('marketplaceHamyonPayBtn');
+    if (!btn) return;
+    btn.disabled = true;
+    try {
+        const formData = new FormData();
+        formData.append('amount', ORDER_FINAL_AMOUNT);
+        formData.append('purpose', 'MARKETPLACE_ORDER');
+        formData.append('purpose_reference', ORDER_ID);
+        formData.append('format', 'json');
+
+        await marketplaceHamyonController.start(formData, {
+            title: "Hamyon orqali to'lash",
+            subtitle: 'Bozorga buyurtma uchun',
+            serviceLabel: 'Marketplace buyurtma',
+            amountLabel: `${ORDER_FINAL_AMOUNT} UZS`,
+        });
+    } catch (error) {
+        alert(error.message || 'Hamyon orqali toʻlov yaratishda xatolik yuz berdi.');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+async function payFromWallet() {
+    const btn = document.getElementById('marketplaceWalletPayBtn');
+    btn.disabled = true;
+    try {
+        const formData = new FormData();
+        formData.append('pay_from_balance', '1');
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        const response = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: formData,
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            window.location.href = data.redirect_url || '{% url "core:order_tracking" order.id %}';
+            return;
+        }
+
+        if (data.code === 'INSUFFICIENT_BALANCE') {
+            insufficientModal.open({
+                requiredAmount: ORDER_FINAL_AMOUNT,
+                walletBalance: Number(data.wallet_balance || WALLET_BALANCE),
+                onAutoTopup: async (amount) => {
+                    insufficientModal.close();
+                    const topupData = new FormData();
+                    topupData.append('amount', amount);
+                    topupData.append('purpose', 'WALLET_TOPUP');
+                    topupData.append('format', 'json');
+                    await marketplaceHamyonController.start(topupData, {
+                        title: "Hamyon To'lovi",
+                        subtitle: 'Balans to\'ldirish',
+                        serviceLabel: 'Hamyon balansi',
+                    });
+                },
+            });
+            return;
+        }
+
+        alert(data.message || 'Xatolik yuz berdi');
+    } catch (error) {
+        alert(error.message || 'Tarmoq xatosi');
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+document.getElementById('marketplaceHamyonPayBtn')?.addEventListener('click', payFromHamyon);
+document.getElementById('marketplaceWalletPayBtn')?.addEventListener('click', payFromWallet);
 </script>
 {% endblock %}

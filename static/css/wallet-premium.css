@@ -1,0 +1,39 @@
+/* Premium wallet & payment UI enhancements */
+
+.wallet-premium-card {
+    border-radius: 1.75rem;
+    background: linear-gradient(145deg, rgba(14, 116, 144, 0.22), rgba(79, 70, 229, 0.12));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(24px);
+}
+
+.wallet-tx-row {
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.wallet-tx-row:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.hamyon-pay-countdown--lg {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #fbbf24;
+}
+
+.hamyon-pay-amount-box code {
+    color: #34d399;
+}
+
+.wallet-insufficient-modal {
+    max-width: 28rem;
+}
+
+@media (max-width: 640px) {
+    .hamyon-pay-countdown--lg {
+        font-size: 1.1rem;
+    }
+}

@@ -13,9 +13,9 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'seller', 'category', 'price', 'product_type', 'is_active', 'is_verified')
-    list_filter = ('product_type', 'is_active', 'is_verified', 'category')
-    search_fields = ('title', 'description', 'seller__email')
+    list_display = ('title', 'seller', 'category', 'price', 'sale_price', 'featured', 'popular', 'is_active', 'is_verified')
+    list_filter = ('product_type', 'featured', 'popular', 'is_active', 'is_verified', 'category')
+    search_fields = ('title', 'description', 'short_description', 'tags', 'seo_title', 'seller__email')
     prepopulated_fields = {'slug': ('title',)}
     inlines = [ProductFileInline]
     actions = ['approve_products']

@@ -1,29 +1,78 @@
 {% extends 'base.html' %}
-{% block title %}Yordam | Digsell.uz{% endblock %}
+{% block title %}Yordam Markazi | Digsell.uz{% endblock %}
 {% block content %}
-<div class="max-w-3xl mx-auto space-y-6">
-    <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-black font-heading">Yordam Markazi</h1>
-        <a href="{% url 'support:ticket_create' %}" class="btn-premium btn-primary px-6 py-3 rounded-2xl font-bold text-sm">+ Yangi murojaat</a>
-    </div>
-    <div class="space-y-3">
-        {% for ticket in tickets %}
-        <a href="{% url 'support:ticket_detail' ticket.id %}" class="glass block p-5 rounded-2xl hover:border-primary-500/30 border border-transparent transition">
-            <div class="flex justify-between items-start">
-                <div>
-                    <p class="font-bold">#{{ ticket.id }} — {{ ticket.subject }}</p>
-                    <p class="text-sm text-slate-500 mt-1">{{ ticket.message|truncatechars:80 }}</p>
-                </div>
-                <span class="text-xs font-bold px-3 py-1 rounded-lg bg-primary-500/10 text-primary-400">{{ ticket.get_status_display }}</span>
-            </div>
-            <p class="text-xs text-slate-600 mt-3">{{ ticket.created_at|date:"d.m.Y H:i" }}</p>
-        </a>
-        {% empty %}
-        <div class="glass p-12 rounded-3xl text-center text-slate-500">
-            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-            <p>Murojaatlar yo'q</p>
+<div class="space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-black font-heading text-white">Yordam Markazi</h1>
+            <p class="text-slate-400 mt-2">Sizning murojaatlar va tarixni bu yerda ko'rish mumkin.</p>
         </div>
-        {% endfor %}
+        <a href="{% url 'support:ticket_create' %}" class="btn-premium btn-primary px-8 py-4 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition-transform">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            <span>Yangi murojaat</span>
+        </a>
+    </div>
+
+    <!-- Quick Links Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="/contact/" title="Bog'lanish sahifasiga o'tish" class="group rounded-2xl border border-slate-800 bg-slate-950/50 p-6 hover:border-primary-500/50 hover:bg-slate-950/80 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-primary-500/10 text-primary-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <i data-lucide="mail" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-white mb-1">Bog'lanish</h3>
+            <p class="text-sm text-slate-400">Telegram, Instagram yoki murojaat</p>
+        </a>
+        <a href="https://t.me/Digsell_Help" target="_blank" rel="noopener noreferrer" title="Telegram yordamga o'tish" class="group rounded-2xl border border-slate-800 bg-slate-950/50 p-6 hover:border-cyan-500/50 hover:bg-slate-950/80 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-cyan-500/10 text-cyan-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a11.955 11.955 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.485-1.313.475-.431-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.155.217-.315.541-.417 2.212-.666 4.613-1.111 6.864-1.142.503-.007.968-.054 1.405-.164z"/></svg>
+            </div>
+            <h3 class="font-bold text-white mb-1">Tezkor Yordam</h3>
+            <p class="text-sm text-slate-400">Telegram orqali 24/7</p>
+        </a>
+        <a href="https://t.me/DigsellUz" target="_blank" rel="noopener noreferrer" title="Telegram kanaldan yangiliklarni olish" class="group rounded-2xl border border-slate-800 bg-slate-950/50 p-6 hover:border-sky-500/50 hover:bg-slate-950/80 transition-all">
+            <div class="w-10 h-10 rounded-lg bg-sky-500/10 text-sky-500 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <i data-lucide="megaphone" class="w-5 h-5"></i>
+            </div>
+            <h3 class="font-bold text-white mb-1">Yangiliklar</h3>
+            <p class="text-sm text-slate-400">Telegram kanalida</p>
+        </a>
+    </div>
+
+    <!-- Tickets List Section -->
+    <div class="space-y-4">
+        <div class="flex items-center gap-2">
+            <h2 class="text-2xl font-bold text-white">Mening Murojaatlarim</h2>
+            <span class="text-sm bg-primary-500/10 text-primary-400 px-3 py-1 rounded-lg font-bold">{{ tickets|length }} ta</span>
+        </div>
+        
+        {% if tickets %}
+        <div class="space-y-3">
+            {% for ticket in tickets %}
+            <a href="{% url 'support:ticket_detail' ticket.id %}" class="group glass block p-6 rounded-2xl border border-slate-800 hover:border-primary-500/30 transition">
+                <div class="flex justify-between items-start mb-3">
+                    <div class="space-y-1">
+                        <p class="font-bold text-white">
+                            <span class="text-primary-400">#{{ ticket.id }}</span> — {{ ticket.subject }}
+                        </p>
+                        <p class="text-sm text-slate-400 line-clamp-2">{{ ticket.message|truncatechars:100 }}</p>
+                    </div>
+                    <span class="text-xs font-black px-3 py-1 rounded-lg bg-primary-500/10 text-primary-400 whitespace-nowrap">{{ ticket.get_status_display }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                    <span>{{ ticket.created_at|date:"d.m.Y H:i" }}</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass p-12 rounded-3xl text-center">
+            <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4 text-slate-500 opacity-50"></i>
+            <p class="text-slate-400 font-semibold">Hozircha murojaatlar yo'q</p>
+            <p class="text-sm text-slate-500 mt-1">Muammosi yoki savoli bo'lsa, yangi murojaat yarating</p>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

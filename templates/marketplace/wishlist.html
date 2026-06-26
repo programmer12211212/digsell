@@ -46,10 +46,10 @@
                 <div class="mt-auto pt-4 flex items-center justify-between">
                     <div>
                         {% if item.video.discount_price %}
-                        <span class="text-lg font-black text-primary-400">{{ item.video.discount_price|format_uzs }}</span>
-                        <span class="text-sm text-slate-500 line-through ml-2">{{ item.video.price|format_uzs }}</span>
+                        <span class="text-lg font-black text-primary-400">{{ item.video.discount_price|uzs }}</span>
+                        <span class="text-sm text-slate-500 line-through ml-2">{{ item.video.price|uzs }}</span>
                         {% else %}
-                        <span class="text-lg font-black">{{ item.video.price|format_uzs }}</span>
+                        <span class="text-lg font-black">{{ item.video.price|uzs }}</span>
                         {% endif %}
                     </div>
                     <a href="{% url 'marketplace:product_detail' item.video.slug %}" class="px-4 py-2 bg-primary-600 rounded-xl text-sm font-bold">Ko'rish</a>

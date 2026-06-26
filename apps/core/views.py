@@ -18,9 +18,13 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        products = Video.objects.filter(is_active=True)
+        products = Video.objects.published()
 
-        context['banners'] = Banner.objects.filter(is_active=True).order_by('order')[:5]
+        # Hero banners for the homepage slider (only SLIDER type)
+        try:
+            context['hero_banners'] = Banner.objects.filter(is_active=True, banner_type='SLIDER').order_by('order')[:6]
+        except Exception:
+            context['hero_banners'] = []
         context['popular_products'] = products.order_by('-sales_count')[:8]
         context['popular_videos'] = products.filter(product_type='VIDEO').order_by('-views_count')[:6]
         context['discounted_products'] = products.filter(discount_price__isnull=False).order_by('-created_at')[:8]
@@ -59,7 +63,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context['referral_count'] = User.objects.filter(referred_by=user).count()
         
         # New products to show on dashboard (recently added)
-        context['new_products'] = Video.objects.filter(is_active=True).order_by('-created_at')[:8]
+        context['new_products'] = Video.objects.published().order_by('-created_at')[:8]
         # Site info block (rendered on dashboard instead of balance chart)
         context['site_info'] = (
             "<h4 class='font-bold mb-2'>Platforma haqida</h4>"

@@ -1,12 +1,14 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils import timezone
 from django.urls import reverse
 from django.db.models import Sum, Count
 from .models import (
     TelegramProvider, TelegramProductCategory, TelegramProduct,
     TelegramPaymentCard, TelegramOrder, TelegramPayment,
     TelegramGift, TelegramProviderLog, TelegramOrderLog,
-    TelegramNotification, TelegramSettings
+    TelegramNotification, TelegramSettings,
+    TelegramRewardCampaign, TelegramRewardStage, TelegramRewardClaim
 )
 
 
@@ -76,6 +78,7 @@ class TelegramProviderAdmin(admin.ModelAdmin):
 class TelegramProductCategoryAdmin(admin.ModelAdmin):
     list_display = ['display_name', 'icon', 'image_preview', 'name', 'product_count']
     list_filter = ['name']
+    search_fields = ['name', 'display_name']
     fieldsets = (
         ('Basic Info', {
             'fields': ('name', 'display_name', 'description')
@@ -109,6 +112,7 @@ class TelegramProductAdmin(admin.ModelAdmin):
     list_display = ['name', 'category', 'rarity_badge', 'price_display', 'price_stars', 'stock_display', 'status_badge', 'featured_badge', 'created_at']
     list_filter = ['category', 'rarity', 'is_resale', 'status', 'is_featured', 'created_at']
     search_fields = ['name', 'sku', 'description']
+    autocomplete_fields = ['category', 'provider']
     readonly_fields = ['created_at', 'updated_at']
     
     fieldsets = (
@@ -246,7 +250,7 @@ class TelegramOrderAdmin(admin.ModelAdmin):
             'fields': ('telegram_username', 'telegram_user_id', 'telegram_avatar')
         }),
         ('Payment Details', {
-            'fields': ('base_price', 'unique_amount', 'payment_method', 'payment_card', 'payment_screenshot')
+            'fields': ('base_price', 'unique_amount', 'payment_method', 'payment_card')
         }),
         ('Delivery Information', {
             'fields': ('transaction_id', 'delivery_attempts', 'provider_response'),
@@ -537,6 +541,122 @@ class TelegramNotificationAdmin(admin.ModelAdmin):
             color, status
         )
     read_badge.short_description = 'Status'
+
+
+# ============================================================================
+# REWARD TRACK ADMIN
+# ============================================================================
+
+class TelegramRewardStageInline(admin.TabularInline):
+    model = TelegramRewardStage
+    extra = 0
+    readonly_fields = ['created_at', 'updated_at']
+    fields = ['position', 'title', 'target_type', 'target_value', 'reward_type', 'reward_amount', 'is_active']
+
+
+@admin.register(TelegramRewardCampaign)
+class TelegramRewardCampaignAdmin(admin.ModelAdmin):
+    list_display = ['name', 'is_active', 'start_date', 'end_date', 'stage_count', 'created_at']
+    list_filter = ['is_active', 'start_date', 'end_date']
+    search_fields = ['name', 'description']
+    readonly_fields = ['created_at', 'updated_at']
+    inlines = [TelegramRewardStageInline]
+    fieldsets = (
+        ('Campaign Details', {
+            'fields': ('name', 'description', 'highlight_text', 'image', 'is_active')
+        }),
+        ('Schedule', {
+            'fields': ('start_date', 'end_date')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def stage_count(self, obj):
+        return obj.stages.count()
+    stage_count.short_description = 'Stages'
+
+
+@admin.register(TelegramRewardStage)
+class TelegramRewardStageAdmin(admin.ModelAdmin):
+    list_display = ['campaign', 'position', 'title', 'target_summary', 'reward_summary', 'is_active']
+    list_filter = ['campaign', 'target_type', 'reward_type', 'is_active']
+    search_fields = ['title', 'description', 'reward_description']
+    readonly_fields = ['created_at', 'updated_at']
+    fieldsets = (
+        ('Stage Basics', {
+            'fields': ('campaign', 'position', 'title', 'description', 'is_active')
+        }),
+        ('Reward Target', {
+            'fields': ('target_type', 'target_value')
+        }),
+        ('Reward Details', {
+            'fields': ('reward_type', 'reward_amount', 'reward_description')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def target_summary(self, obj):
+        return obj.target_label
+    target_summary.short_description = 'Target'
+
+    def reward_summary(self, obj):
+        return obj.reward_label
+    reward_summary.short_description = 'Reward'
+
+
+@admin.register(TelegramRewardClaim)
+class TelegramRewardClaimAdmin(admin.ModelAdmin):
+    list_display = ['user', 'campaign', 'stage', 'status', 'reward_summary', 'admin_note', 'reward_granted', 'requested_at']
+    list_filter = ['status', 'campaign', 'stage', 'reward_type', 'reward_granted']
+    search_fields = ['user__username', 'stage__title', 'campaign__name', 'admin_note']
+    readonly_fields = ['requested_at', 'processed_at']
+    actions = ['approve_claim_action', 'deny_claim_action']
+    fieldsets = (
+        ('Claim Information', {
+            'fields': ('user', 'campaign', 'stage', 'status', 'reward_type', 'reward_amount', 'reward_description', 'reward_granted')
+        }),
+        ('Processing', {
+            'fields': ('admin_note', 'processed_by', 'processed_at')
+        }),
+        ('Timestamps', {
+            'fields': ('requested_at',),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def reward_summary(self, obj):
+        if obj.reward_type == 'bonus_balance':
+            return f"Bonus {int(obj.reward_amount):,} UZS"
+        if obj.reward_type == 'cashback':
+            return f"Cashback {int(obj.reward_amount):,} UZS"
+        if obj.reward_type == 'bonus_points':
+            return f"{int(obj.reward_amount):,} points"
+        return obj.reward_description or obj.reward_type
+    reward_summary.short_description = 'Reward'
+
+    def approve_claim_action(self, request, queryset):
+        from .services import TelegramRewardService
+        approved = 0
+        for claim in queryset.filter(status=TelegramRewardClaim.ClaimStatus.PENDING):
+            if TelegramRewardService.approve_reward_claim(claim, request.user):
+                approved += 1
+        self.message_user(request, f'{approved} reward claims approved.')
+    approve_claim_action.short_description = 'Approve selected reward claims'
+
+    def deny_claim_action(self, request, queryset):
+        denied = queryset.filter(status=TelegramRewardClaim.ClaimStatus.PENDING).update(
+            status=TelegramRewardClaim.ClaimStatus.DENIED,
+            processed_at=timezone.now(),
+            processed_by=request.user
+        )
+        self.message_user(request, f'{denied} reward claims denied.')
+    deny_claim_action.short_description = 'Deny selected reward claims'
 
 
 # ============================================================================

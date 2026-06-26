@@ -1,0 +1,52 @@
+{% load static advertisement_tags %}
+
+{% if banner %}
+<div class="w-full mb-8 {{ banner|get_device_css }}">
+    <div class="group relative overflow-hidden rounded-3xl bg-gradient-to-br {{ banner.gradient|default:'from-slate-900 to-slate-800' }} backdrop-blur-xl border border-slate-700/50 shadow-2xl shadow-slate-900/50 hover:shadow-violet-900/30 transition-all duration-300">
+        
+        <!-- Background Image (if exists) -->
+        {% if banner.image %}
+            <div class="absolute inset-0 opacity-30 group-hover:opacity-40 transition-opacity duration-300"
+                 style="background-image: url('{{ banner.image.url }}'); background-size: cover; background-position: center;"></div>
+        {% endif %}
+        
+        <!-- Content -->
+        <div class="relative p-6 md:p-10 flex items-center justify-between">
+            <div class="flex-1">
+                {% if banner.heading %}
+                    <h3 class="text-2xl md:text-3xl font-black text-white mb-2">
+                        {{ banner.heading }}
+                    </h3>
+                {% endif %}
+                
+                {% if banner.subheading %}
+                    <p class="text-lg text-slate-200 mb-4">{{ banner.subheading }}</p>
+                {% endif %}
+                
+                {% if banner.content %}
+                    <p class="text-slate-300 text-sm md:text-base mb-6 max-w-xl">
+                        {{ banner.content }}
+                    </p>
+                {% endif %}
+                
+                {% if banner.cta_text and banner.cta_url %}
+                    <a href="{{ banner.cta_url }}"
+                       {% if banner.cta_target_blank %}target="_blank"{% endif %}
+                       class="inline-flex items-center px-6 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 transition-all duration-300">
+                        {{ banner.cta_text }}
+                        <i data-lucide="arrow-right" class="ml-2 w-4 h-4"></i>
+                    </a>
+                {% endif %}
+            </div>
+            
+            <!-- Mobile Image -->
+            {% if banner.mobile_image %}
+                <div class="hidden md:block flex-shrink-0 ml-6">
+                    <img src="{{ banner.mobile_image.url }}" alt="{{ banner.heading }}" 
+                         class="h-32 w-32 object-cover rounded-2xl">
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}

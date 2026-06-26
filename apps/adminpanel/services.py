@@ -66,9 +66,9 @@ def get_dashboard_stats():
     ).count()
 
     active_listings = Product.objects.filter(is_active=True, is_verified=True).count()
-    active_listings += Video.objects.filter(is_active=True).count()
+    active_listings += Video.objects.published().count()
     pending_listings = Product.objects.filter(is_verified=False, is_active=True).count()
-    pending_listings += Video.objects.filter(is_active=False).count()
+    pending_listings += Video.objects.exclude(moderation_status=Video.ModerationStatus.APPROVED).count()
 
     orders_today = Order.objects.filter(created_at__gte=today_start).count()
     orders_yesterday = Order.objects.filter(

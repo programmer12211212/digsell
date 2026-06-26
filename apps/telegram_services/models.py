@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, RegexValidator
 from django.utils.translation import gettext_lazy as _
-from enum import Enum
+from django.utils import timezone
 import uuid
 import random
 import string
@@ -205,7 +205,7 @@ class TelegramOrder(models.Model):
     # Payment Info
     payment_method = models.CharField(max_length=50, default='card_transfer')
     payment_card = models.ForeignKey(TelegramPaymentCard, on_delete=models.SET_NULL, null=True, blank=True)
-    payment_screenshot = models.ImageField(upload_to='telegram_services/payments/', blank=True)
+    # payment_screenshot removed - payments are now automated via Hamyon
     
     # Delivery Info
     transaction_id = models.CharField(max_length=200, blank=True, unique=True, null=True)
@@ -397,6 +397,139 @@ class TelegramNotification(models.Model):
     
     def __str__(self):
         return f"{self.title} - {self.user.username}"
+
+
+class TelegramRewardCampaign(models.Model):
+    """Reward campaign with stage-based loyalty progression."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    highlight_text = models.CharField(max_length=140, blank=True)
+    is_active = models.BooleanField(default=True)
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    image = models.ImageField(upload_to='telegram_services/rewards/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Telegram Reward Campaign'
+        verbose_name_plural = 'Telegram Reward Campaigns'
+        ordering = ['-start_date', '-created_at']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def is_live(self):
+        now = timezone.now()
+        if not self.is_active:
+            return False
+        if self.start_date and self.start_date > now:
+            return False
+        if self.end_date and self.end_date < now:
+            return False
+        return True
+
+
+class TelegramRewardStage(models.Model):
+    """Individual milestone stage for a campaign."""
+
+    TARGET_CHOICES = [
+        ('total_spent', 'Telegram spend (UZS)'),
+        ('stars_purchased', 'Telegram Stars purchased'),
+        ('premium_months', 'Telegram Premium months'),
+    ]
+
+    REWARD_CHOICES = [
+        ('bonus_balance', 'Bonus Balance'),
+        ('cashback', 'Cashback'),
+        ('bonus_points', 'Bonus Points'),
+        ('discount_code', 'Discount Voucher'),
+        ('manual_reward', 'Manual Reward'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    campaign = models.ForeignKey(TelegramRewardCampaign, on_delete=models.CASCADE, related_name='stages')
+    title = models.CharField(max_length=140)
+    description = models.TextField(blank=True)
+    position = models.PositiveIntegerField(default=1)
+    target_type = models.CharField(max_length=30, choices=TARGET_CHOICES, default='total_spent')
+    target_value = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    reward_type = models.CharField(max_length=30, choices=REWARD_CHOICES, default='bonus_balance')
+    reward_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    reward_description = models.CharField(max_length=220, blank=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Telegram Reward Stage'
+        verbose_name_plural = 'Telegram Reward Stages'
+        ordering = ['campaign', 'position']
+        indexes = [
+            models.Index(fields=['campaign', 'target_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.campaign.name}: {self.title}"
+
+    @property
+    def target_label(self):
+        if self.target_type == 'total_spent':
+            return f"{int(self.target_value):,} UZS"
+        if self.target_type == 'stars_purchased':
+            return f"{int(self.target_value):,} Stars"
+        if self.target_type == 'premium_months':
+            return f"{int(self.target_value)} oy"
+        return str(self.target_value)
+
+    @property
+    def reward_label(self):
+        if self.reward_type == 'bonus_balance':
+            return f"Bonus {int(self.reward_amount):,} UZS"
+        if self.reward_type == 'cashback':
+            return f"Cashback {int(self.reward_amount):,} UZS"
+        if self.reward_type == 'bonus_points':
+            return f"{int(self.reward_amount):,} bonus ball"
+        if self.reward_type == 'discount_code':
+            return self.reward_description or 'Discount voucher'
+        return self.reward_description or 'Reward unlocked'
+
+
+class TelegramRewardClaim(models.Model):
+    """User reward claim record."""
+
+    class ClaimStatus(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        APPROVED = 'APPROVED', 'Approved'
+        DENIED = 'DENIED', 'Denied'
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='telegram_reward_claims')
+    campaign = models.ForeignKey(TelegramRewardCampaign, on_delete=models.CASCADE, related_name='reward_claims')
+    stage = models.ForeignKey(TelegramRewardStage, on_delete=models.CASCADE, related_name='claims')
+    status = models.CharField(max_length=20, choices=ClaimStatus.choices, default=ClaimStatus.PENDING)
+    reward_type = models.CharField(max_length=30, choices=TelegramRewardStage.REWARD_CHOICES)
+    reward_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    reward_description = models.CharField(max_length=220, blank=True)
+    reward_granted = models.BooleanField(default=False)
+    admin_note = models.TextField(blank=True)
+    requested_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(blank=True, null=True)
+    processed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='processed_reward_claims')
+
+    class Meta:
+        verbose_name = 'Telegram Reward Claim'
+        verbose_name_plural = 'Telegram Reward Claims'
+        ordering = ['-requested_at']
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'stage'], name='unique_user_reward_stage')
+        ]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.stage.title} ({self.status})"
 
 
 class TelegramSettings(models.Model):

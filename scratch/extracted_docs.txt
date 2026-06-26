@@ -1,0 +1,139 @@
+0: ]'),Pm.has(s)||(Pm.add(s),t={rel:t,crossOrigin:n,href:e},i.querySelector(s)===null&&(e=i.createElement(
+1: &&i.querySelector(sl(u))||(e=i.createElement(
+2: :if(n.querySelector(sl(u)))return}i=n.createElement(
+3: :e},n),(n=qe.get(u))&&Du(t,n);var S=f=i.createElement(
+4: ,instance:f,count:1,state:g},s.set(u,f)}}}function Kx(t,e){Sn.X(t,e);var n=li;if(n&&t){var i=wa(n).hoistableScripts,s=oi(t),u=i.get(s);u||(u=n.querySelector(sl(s)),u||(t=b({src:t,async:!0},e),(e=qe.get(s))&&_u(t,e),u=n.createElement(
+5: },e),(e=qe.get(s))&&_u(t,e),u=n.createElement(
+6: )?i.loading=1:(e=t.createElement(
+7: :n.precedence,href:null,precedence:null});return i=(t.ownerDocument||t).createElement(
+8: :s=si(n.href);var u=t.querySelector(ll(s));if(u)return e.state.loading|=4,e.instance=u,$t(u),u;i=Wm(n),(s=qe.get(s))&&Du(i,s),u=(t.ownerDocument||t).createElement(
+9: :return u=oi(n.src),(s=t.querySelector(sl(u)))?(e.instance=s,$t(s),s):(i=n,(s=qe.get(u))&&(i=b({},n),_u(i,s)),t=t.ownerDocument||t,s=t.createElement(
+10: &&(t.count++,t=Bs.bind(t),e.then(t,t)),n.state.loading|=4,n.instance=u,$t(u);return}u=e.ownerDocument||e,i=Wm(i),(s=qe.get(s))&&Du(i,s),u=u.createElement(
+11: ){var Zs=__REACT_DEVTOOLS_GLOBAL_HOOK__;if(!Zs.isDisabled&&Zs.supportsFiber)try{xi=Zs.inject(s1),be=Zs}catch{}}return dl.createRoot=function(t,e){if(!c(t))throw Error(r(299));var n=!1,i=
+12: ))try{__REACT_DEVTOOLS_GLOBAL_HOOK__.checkDCE(a)}catch(l){console.error(l)}}return a(),ku.exports=p1(),ku.exports}var g1=y1();const Uc=L.createContext({});function Hc(a){const l=L.useRef(null);return l.current===null&&(l.current=a()),l.current}const v1=typeof window<
+13: ,Qp=v1?L.useLayoutEffect:L.useEffect,yo=L.createContext(null);function qc(a,l){a.indexOf(l)===-1&&a.push(l)}function so(a,l){const o=a.indexOf(l);o>-1&&a.splice(o,1)}const nn=(a,l,o)=>o>l?l:o<a?a:o;let Lc=()=>{};const Fn={},Kp=a=>/^-?(?:\d+(?:\.\d+)?|\.\d+)$/u.test(a);function Jp(a){return typeof a==
+14: ),jy=Ay(()=>{try{document.createElement(
+15: ):a}},Mc={...Ke,getAnimatableNone:a=>{const l=Ke.parse(a);return Ke.createTransformer(a)(l.map(r=>typeof r==
+16: )if(J.test(a))a=parseFloat(a);else return a;const o=np(a,l.target.x),r=np(a,l.target.y);return`${o}% ${r}%`}},nS={correct:(a,{treeScale:l,projectionDelta:o})=>{const r=a,c=Ke.parse(a);if(c.length>5)return r;const d=Ke.createTransformer(a),h=typeof c[0]!=
+17: }),ff=L.createContext({transformPagePoint:a=>a,isStatic:!1,reducedMotion:
+18: ?`bottom: ${q}`:`top: ${_}`;y.current.dataset.motionPopId=h;const G=document.createElement(
+19: ))&&(r[c]=a[c]);return r}const bo=L.createContext({});function mT(a,l){if(xo(a)){const{initial:o,animate:r}=a;return{initial:o===!1||Sl(o)?o:void 0,animate:Sl(r)?r:void 0}}return a.inherit!==!1?l:{}}function pT(a){const{initial:l,animate:o}=mT(a,L.useContext(bo));return L.useMemo(()=>({initial:l,animate:o}),[Dp(l),Dp(o)])}function Dp(a){return Array.isArray(a)?a.join(
+20: &&(c.current=y)}else c.current?(c.current(),c.current=null):h(d);else h&&(h.current=d);l&&(d?l.mount(d):l.unmount())},[l])}const Ng=L.createContext({});function ui(a){return a&&typeof a==
+21: ?a:`create(${a.displayName??a.name??
+22: ,l=>this.onPointerDown(l))}update(){this.session&&this.session.updateHandlers(this.createPanHandlers())}unmount(){this.removePointerDownListener(),this.session&&this.session.end()}}let sc=!1;class e3 extends L.Component{componentDidMount(){const{visualElement:l,layoutGroup:o,switchLayoutGroup:r,layoutId:c}=this.props,{projection:d}=l;d&&(o.group&&o.group.add(d),r&&r.register&&c&&r.register(d),sc&&d.root.didUpdate(),d.addEventListener(
+23: )return!0;return!1},S3=L.createContext({}),T3=()=>L.useContext(S3),A3=L.forwardRef(({color:a,size:l,strokeWidth:o,absoluteStrokeWidth:r,className:c=
+24: }=T3()??{},_=r??b?Number(o??x)*24/Number(l??p):o??x;return L.createElement(
+25: },...y},[...h.map(([H,U])=>L.createElement(H,U)),...Array.isArray(d)?d:[d]])});const Vt=(a,l)=>{const o=L.forwardRef(({className:r,...c},d)=>L.createElement(A3,{ref:d,iconNode:l,className:_g(`lucide-${v3(kp(a))}`,`lucide-${a}`,r),...c}));return o.displayName=kp(a),o};const j3=[[
+26: lov kuzatish"})]}),m.jsxs("div",{className:"p-6 font-mono text-sm text-left space-y-3",children:[m.jsxs("div",{className:"flex items-start gap-3",children:[m.jsx("span",{className:"text-violet-400 select-none",children:"$"}),m.jsx("span",{className:"text-slate-300",children:"POST /payment/create"})]}),m.jsxs("div",{className:"pl-6 space-y-1",children:[m.jsxs("div",{children:[m.jsx("span",{className:"text-slate-500",children:"shop_id:"})," ",m.jsx("span",{className:"text-emerald-300",children:
+27: shop_123
+28: })]}),m.jsxs("div",{children:[m.jsx("span",{className:"text-slate-500",children:"amount:"})," ",m.jsx("span",{className:"text-yellow-300",children:"50000"})]}),m.jsxs("div",{children:[m.jsx("span",{className:"text-slate-500",children:"shop_key:"})," ",m.jsx("span",{className:"text-emerald-300",children:
+29: da @HamyonAPIBot botini oching va /start buyrug
+30: lov yarating",description:"API orqali to
+31: rovini yuboring. shop_id, shop_key va amount parametrlarini ko
+32: rovi yuborilmoqda...","info"),await uc(800),b("shop_id: shop_demo123","info"),b("shop_key: sk_****","info"),b("amount: 50000","info"),await uc(600);const U="pay_"+Math.random().toString(36).substring(2,10);d(U),r("pending"),b(`✅ To
+33: lov tasdiqlandi! (${Math.floor(Math.random()*20+5)}s)`,"success"),b("Webhook yuborildi: status=paid","info")):(r("expired"),b("⏰ To
+34: shop_id
+35: your_shop_id
+36: shop_key
+37: your_shop_key
+38: payment_id
+39: status
+40: payment_id
+41: status
+42: payment_id
+43: status
+44: lov yaratish
+def create_payment(shop_id, shop_key, amount):
+    url = "https://hamyon-api.uz/payment/create"
+    data = {
+        "shop_id": shop_id,
+        "shop_key": shop_key,
+        "amount": amount
+    }
+    response = requests.post(url, json=data)
+    return response.json()
+
+# To
+45: https://hamyon-api.uz/merchant/{payment_id}/json
+46: shop_123
+47: Payment ID: {result['payment_id']}
+48: lov yaratish
+async function createPayment(shopId, shopKey, amount) {
+  const response = await axios.post(
+    
+49: ,
+    { shop_id: shopId, shop_key: shopKey, amount }
+  );
+  return response.data;
+}
+
+// To
+50: shop_123
+51: Payment ID:
+52: create
+53: lov yaratish",color:"bg-blue-500/20 text-blue-300 border-blue-500/30"},{method:"GET",path:"/merchant/{id}/json",desc:"To
+54: },{status:
+55: lov tasdiqlandi"},{status:"expired",color:"text-red-400",bg:"bg-red-500/10",border:"border-red-500/20",icon:"❌",desc:"Muddati o
+56: ,{className:`text-sm font-bold ${d.color}`,children:d.status}),m.jsx(
+57: ,children:d.desc})]})]},d.status))})]})]})]})]})}const TA=[{q:
+58: lov tizimini ulash imkonini beruvchi API platforma. U HUMO va UZCARD kartalariga tushgan to
+59: dan qanday foydalanaman?",a:"Avval @HamyonAPIBot botiga /start yuboring va shop_id hamda shop_key oling. So
+60: rov yuboring. Javobda payment_id qaytariladi.",emoji:"🔧",code:`POST https://hamyon-api.uz/payment/create
+{ shop_id, shop_key, amount }`},{q:"To
+61: ladi?",a:"GET https://hamyon-api.uz/merchant/{payment_id}/json manziliga so
+62: rinadi.",emoji:"🔍",code:"GET https://hamyon-api.uz/merchant/{payment_id}/json"},{q:"To
+63: lsa kimga yozaman?",a:"Texnik yordam uchun @HamyonAPIBot botiga /support yuboring yoki @HamyonAPI kanalida so
+64: ,children:[m.jsx(sA,{}),m.jsx(rA,{}),m.jsx(cA,{}),m.jsx(hA,{}),m.jsx(pA,{}),m.jsx(SA,{}),m.jsx(jA,{}),m.jsx(EA,{}),m.jsx(NA,{})]})}g1.createRoot(document.getElementById(
+65: >Hamyon</span><span class=
+66: >API</span></div></div><div class=
+67: >API Docs</button><button class=
+68: >Hamyon API orqali HUMO va UZCARD kartalariga tushgan to'lovlarni <span class=
+69: ><span>API hujjatlari</span><svg xmlns=
+70: >hamyon-api.uz — to'lov kuzatish</span></div><div class=
+71: >POST /payment/create</span></div><div class=
+72: >shop_id:</span> <span class=
+73: >shop_key:</span> <span class=
+74: >payment_id:</span> <span class=
+75: >status:</span> <span class=
+76: >status:</span> <span class=
+77: >@HamyonAPIBot ni boshlang</h3><p class=
+78: >Telegram'da @HamyonAPIBot botini oching va /start buyrug'ini yuboring. Bot sizga shop_id va shop_key beradi.</p><div class=
+79: >shop_id va shop_key olish</span><span class=
+80: >API sozlamalarini qilish</span></div></div></div><div class=
+81: >API orqali to'lov so'rovini yuboring. shop_id, shop_key va amount parametrlarini ko'rsating.</p><div class=
+82: >POST /payment/create</span><span class=
+83: >shop_id, shop_key, amount</span><span class=
+84: >payment_id qaytariladi</span></div></div></div><div class=
+85: >Status: paid</span></div></div></div></div></div></div></section><section id=
+86: >Hamyon API?</span></h2><p class=
+87: >Oddiy API</h3><p class=
+88: >REST API bilan ishlash juda oson. Har qanday dasturlash tilida integratsiya qiling.</p></div><div class=
+89: >Quyidagi simulyatorda Hamyon API qanday ishlashini real vaqtda ko'ring</p></div><div class=
+90: >shop_id</label><div class=
+91: >shop_demo123</div></div><div><label class=
+92: >shop_key</label><div class=
+93: >hamyon-api — log monitor</span></div><div class=
+94: ></path></svg><span>API Hujjatlari</span></div><h2 class=
+95: >Oddiy REST API — istalgan dasturlash tili bilan bir necha daqiqada ulaning</p></div><div class=
+96: >/payment/create</code></div><p class=
+97: >/merchant/{id}/json</code></div><p class=
+98: >https://hamyon-api.uz</code></div><div class=
+99: >shop_id</code><span class=
+100: >shop_key</code><span class=
+101: ><span>shop_id va shop_key olish</span><svg xmlns=
+102: >//hamyon-api.uz/payment/create</span></span>
+
+<span class=
+103: >Hamyon API nima?</span><div class=
+104: >Hamyon API qanday ishlaydi?</span><div class=
+105: >API'dan qanday foydalanaman?</span><div class=
+106: >Hamyon API bilan Telegram botingizga to'liq avtomatlashtirilgan to'lov tizimini ulang. Faqat bir necha daqiqa vaqt talab etadi.</p><div class=
+107: ></path></svg><span>@HamyonAPIBot</span><svg xmlns=
+108: >Hamyon</span><span class=
+109: >API</span></div></div><p class=
+110: ></path></svg><span>hamyon-api.uz</span><svg xmlns=
+111: >API Docs</button></li><li><button class=
+112: ></path></svg></span>@HamyonAPIBot</a></li><li><a href=
+113: ></circle></svg></span>@HamyonAPI (Kanal)</a></li><li><a href=
+114: >hamyon-api.uz</code></div></div></div></div><div class=
+115: >© 2024 Hamyon API. Barcha huquqlar himoyalangan.</p><div class=

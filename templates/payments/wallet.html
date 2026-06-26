@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load currency_tags %}
+{% load currency_tags static %}
 
 {% block title %}Hamyon | Digsell.uz{% endblock %}
 
@@ -10,20 +10,21 @@
             <h1 class="text-3xl font-heading font-bold text-white">Mening hamyonim</h1>
             <p class="text-slate-400">Balansingizni boshqaring va tranzaksiyalarni kuzating.</p>
         </div>
-        <div class="flex flex-wrap items-center gap-3">
-            <button onclick="document.getElementById('topup-modal').classList.remove('hidden')" class="px-5 py-3 bg-primary-600 hover:bg-primary-500 rounded-xl transition-colors font-bold text-white text-sm">
-                Hisobni to'ldirish
+        <div class="flex flex-wrap items-center gap-3 min-w-0">
+            <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+            <button onclick="document.getElementById('hamyon-modal').classList.remove('hidden')" class="px-5 py-3 bg-primary-600 hover:bg-primary-500 rounded-xl transition-colors font-bold text-white text-sm">
+                Balansni to'ldirish
             </button>
-            <form action="{% url 'payments:withdraw' %}" method="post" class="flex gap-2 mb-0">
+            <form action="{% url 'payments:withdraw' %}" method="post" class="flex flex-wrap items-center gap-2 mb-0 min-w-0">
                 {% csrf_token %}
-                <select name="card_id" class="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 outline-none text-white text-sm" required>
+                <select name="card_id" class="min-w-0 flex-1 sm:flex-none bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 outline-none text-white text-sm" required>
                     <option value="">Kartani tanlang</option>
                     {% for card in cards %}
                         <option value="{{ card.id }}">**** {{ card.card_number|slice:"-4:" }}</option>
                     {% endfor %}
                 </select>
-                <input type="number" name="amount" placeholder="Summa" step="0.01" class="w-32 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 outline-none text-white text-sm" required>
-                <button type="submit" class="px-6 py-3 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors font-bold">
+                <input type="number" name="amount" placeholder="Summa" step="0.01" class="w-full sm:w-32 bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 outline-none text-white text-sm" required>
+                <button type="submit" class="w-full sm:w-auto px-6 py-3 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors font-bold">
                     Pul yechish
                 </button>
             </form>
@@ -33,7 +34,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Balance Card -->
         <div class="lg:col-span-2 space-y-6">
-            <div class="glass p-8 rounded-3xl border-primary-500/20 bg-gradient-to-br from-primary-600/20 to-indigo-600/10 relative overflow-hidden">
+            <div class="glass p-8 rounded-3xl border-primary-500/20 bg-gradient-to-br from-primary-600/20 to-indigo-600/10 relative overflow-hidden wallet-premium-card">
                 <div class="absolute -right-20 -top-20 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl"></div>
                 
                 <div class="relative z-10 space-y-6">
@@ -52,6 +53,29 @@
                             <p class="font-bold text-white">+0 UZS</p>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Transaction History -->
+            <div class="glass p-6 rounded-2xl border-slate-800/50">
+                <h3 class="font-bold mb-4 text-white">Tranzaksiya tarixi</h3>
+                <div class="space-y-3 max-h-96 overflow-y-auto">
+                    {% for tx in transactions %}
+                    <div class="wallet-tx-row flex justify-between items-center p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                        <div class="min-w-0">
+                            <p class="font-bold text-white truncate">{{ tx.description|default:tx.reason }}</p>
+                            <p class="text-[10px] text-slate-500">{{ tx.created_at|date:"d.m.Y H:i" }}{% if tx.operation_type %} · {{ tx.get_operation_type_display|default:tx.operation_type }}{% endif %}</p>
+                            {% if tx.balance_after is not None %}
+                            <p class="text-[10px] text-slate-400 mt-1">Balans: {{ tx.balance_after|uzs }}</p>
+                            {% endif %}
+                        </div>
+                        <span class="text-sm font-black {% if tx.tx_type == 'IN' %}text-emerald-400{% else %}text-rose-400{% endif %}">
+                            {% if tx.tx_type == 'IN' %}+{% else %}-{% endif %}{{ tx.amount|uzs }}
+                        </span>
+                    </div>
+                    {% empty %}
+                    <p class="text-slate-500 text-sm text-center py-4">Tranzaksiyalar mavjud emas.</p>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -76,31 +100,47 @@
                 </div>
             </div>
 
-            <!-- Balans to'ldirish tarixi -->
+            <!-- Hamyon avtomatik to'lovlari -->
             <div class="glass p-6 rounded-2xl border-slate-800/50 mt-6">
-                <h3 class="font-bold mb-4 text-white">Balans to'ldirish tarixi</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-bold text-white">Hamyon avtomatik to'lovlari</h3>
+                    <button onclick="document.getElementById('hamyon-modal').classList.remove('hidden')" class="text-xs font-bold text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                        <i data-lucide="plus" class="w-3 h-3"></i>
+                        Hamyon bilan to'ldirish
+                    </button>
+                </div>
                 <div class="space-y-4">
-                    {% for d in deposits %}
-                    <div class="flex justify-between items-center p-4 bg-slate-900/50 rounded-xl border border-slate-800">
-                        <div>
-                            <p class="font-bold text-white">+{{ d.amount|uzs }}</p>
-                            <p class="text-[10px] text-slate-500">{{ d.created_at|date:"d.m.Y H:i" }}</p>
-                            {% if d.admin_note %}
-                                <p class="text-[10px] text-slate-400 mt-1">Izoh: {{ d.admin_note }}</p>
-                            {% endif %}
-                        </div>
-                        <div class="flex items-center gap-2">
-                            {% if d.receipt_image %}
-                                <a href="{{ d.receipt_image.url }}" target="_blank" class="text-xs font-bold text-primary-400 hover:text-primary-300 mr-2">Chekni ko'rish</a>
-                            {% endif %}
-                            <span class="px-2 py-1 rounded text-[10px] font-bold uppercase 
-                                {% if d.status == 'PENDING' %}bg-amber-500/10 text-amber-500{% elif d.status == 'APPROVED' %}bg-emerald-500/10 text-emerald-500{% else %}bg-rose-500/10 text-rose-500{% endif %}">
-                                {{ d.get_status_display }}
+                    {% for payment in hamyon_payments %}
+                    <div id="hamyon-payment-card-{{ payment.id }}" class="p-4 bg-slate-900/50 rounded-xl border border-slate-800">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="min-w-0">
+                                <p class="font-bold text-white">{{ payment.amount|uzs }}{% if payment.requested_amount %} <span class="text-[10px] text-slate-400 font-normal">(so'ralgan: {{ payment.requested_amount|uzs }})</span>{% endif %}</p>
+                                <p class="text-[10px] text-slate-500">ID: {{ payment.external_id }}</p>
+                                {% if payment.card %}
+                                <p class="text-[10px] text-slate-400 mt-1">Hamyon karta: {{ payment.card }}</p>
+                                {% endif %}
+                            </div>
+                            <span id="hamyon-payment-status-{{ payment.id }}" class="px-2 py-1 rounded text-[10px] font-bold uppercase 
+                                {% if payment.status == 'PENDING' %}bg-amber-500/10 text-amber-500{% elif payment.status == 'SUCCESS' %}bg-emerald-500/10 text-emerald-500{% elif payment.status == 'CANCELLED' or payment.status == 'EXPIRED' or payment.status == 'FAILED' %}bg-rose-500/10 text-rose-500{% else %}bg-slate-700/10 text-slate-200{% endif %}">
+                                {{ payment.get_status_display }}
                             </span>
                         </div>
+                        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                            <p class="text-[10px] text-slate-500">Muddati: <span id="hamyon-countdown-{{ payment.id }}">...</span></p>
+                            {% if payment.status == 'PENDING' %}
+                            <button type="button" onclick="cancelHamyonPayment({{ payment.id }})" class="px-3 py-2 text-[11px] font-bold rounded-xl border border-rose-500 text-rose-500 hover:bg-rose-500/10">
+                                Bekor qilish
+                            </button>
+                            {% endif %}
+                        </div>
+                        <div id="hamyon-payment-data-{{ payment.id }}" class="hidden"
+                            data-payment-id="{{ payment.id }}"
+                            data-expires-at="{{ payment.expires_at|date:'c' }}"
+                            data-status="{{ payment.status }}"
+                        ></div>
                     </div>
                     {% empty %}
-                    <p class="text-slate-500 text-sm text-center py-4">To'ldirish tarixi mavjud emas.</p>
+                    <p class="text-slate-500 text-sm text-center py-4">Hozircha avtomatik Hamyon to'lovlari yo'q.</p>
                     {% endfor %}
                 </div>
             </div>
@@ -165,26 +205,198 @@
     </div>
 </div>
 
-<!-- Topup Modal -->
-<div id="topup-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+<!-- Hamyon Topup Modal -->
+<div id="hamyon-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
     <div class="glass max-w-md w-full p-8 rounded-3xl border-slate-800">
-        <h2 class="text-2xl font-bold mb-6 text-white">Balansni to'ldirish</h2>
-        <form action="{% url 'payments:topup' %}" method="post" enctype="multipart/form-data" class="space-y-4">
-            {% csrf_token %}
+        <h2 class="text-2xl font-bold mb-6 text-white">Hamyon orqali balansni to'ldirish</h2>
+        <div class="space-y-4">
             <div>
                 <label class="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">To'ldirish summasi (UZS)</label>
-                <input type="number" name="amount" min="1000" placeholder="10000" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 outline-none text-white" required>
-            </div>
-            <div>
-                <label class="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-2">To'lov cheki (skrinshot rasm)</label>
-                <input type="file" name="receipt_image" accept="image/*" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 outline-none text-white text-sm" required>
-                <p class="text-[10px] text-slate-500 mt-1">Humo/Uzcard orqali to'langan kvitansiyani yuklang.</p>
+                <input type="number" id="hamyonTopupAmount" min="{{ min_topup_amount|default:5000 }}" step="1000" placeholder="10000" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 outline-none text-white" required>
+                <p class="text-[10px] text-slate-500 mt-1">Minimal {{ min_topup_amount|default:5000|floatformat:0 }} so'm. Noyob to'lov summasi avtomatik yaratiladi. Status har 5 soniyada tekshiriladi.</p>
             </div>
             <div class="flex gap-3 pt-4">
-                <button type="button" onclick="document.getElementById('topup-modal').classList.add('hidden')" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-slate-300">Bekor qilish</button>
-                <button type="submit" class="flex-1 py-3 bg-primary-600 rounded-xl font-bold text-white">So'rov yuborish</button>
+                <button type="button" onclick="document.getElementById('hamyon-modal').classList.add('hidden')" class="flex-1 py-3 bg-slate-800 rounded-xl font-bold text-slate-300">Bekor qilish</button>
+                <button type="button" id="walletHamyonStartBtn" class="flex-1 py-3 bg-primary-600 rounded-xl font-bold text-white">Hamyon bilan to'ldirish</button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
+
+<script>
+const csrfToken = document.getElementById('csrfToken')?.value || '';
+const hamyonStatusUrl = "{% url 'payments:hamyon_status' 0 %}";
+const hamyonCancelUrl = "{% url 'payments:hamyon_cancel' 0 %}";
+
+function getCsrfToken() {
+    if (csrfToken) {
+        return csrfToken;
+    }
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : '';
+}
+
+function formatStatusClasses(status) {
+    if (status === 'PENDING') {
+        return 'px-2 py-1 rounded text-[10px] font-bold uppercase bg-amber-500/10 text-amber-500';
+    }
+    if (status === 'SUCCESS') {
+        return 'px-2 py-1 rounded text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-500';
+    }
+    return 'px-2 py-1 rounded text-[10px] font-bold uppercase bg-rose-500/10 text-rose-500';
+}
+
+async function cancelHamyonPayment(paymentId) {
+    const url = hamyonCancelUrl.replace('/0/', `/${paymentId}/`);
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken(),
+            },
+            credentials: 'same-origin',
+        });
+        const data = await response.json();
+        if (!data.success) {
+            alert(data.message || 'To‘lovni bekor qilishda xatolik yuz berdi.');
+            return;
+        }
+        refreshPaymentCard(paymentId, {status: 'CANCELLED', status_display: 'Bekor qilingan'});
+    } catch (error) {
+        console.error(error);
+        alert('Tarmoq xatosi yuz berdi. Iltimos, qayta urinib ko'ring.');
+    }
+}
+
+async function refreshPaymentCard(paymentId) {
+    const url = hamyonStatusUrl.replace('/0/', `/${paymentId}/`) + '?refresh=1';
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            credentials: 'same-origin',
+        });
+        const data = await response.json();
+        if (!data.success) {
+            return;
+        }
+        const statusLabel = document.getElementById(`hamyon-payment-status-${paymentId}`);
+        const countdownLabel = document.getElementById(`hamyon-countdown-${paymentId}`);
+        const cardData = document.getElementById(`hamyon-payment-data-${paymentId}`);
+        if (statusLabel) {
+            const paymentStatus = data.payment_status || data.status;
+            statusLabel.textContent = data.message || paymentStatus;
+            statusLabel.className = formatStatusClasses(paymentStatus);
+        }
+        if (cardData && data.expires_at) {
+            cardData.dataset.expiresAt = data.expires_at;
+            cardData.dataset.status = data.payment_status || data.status;
+        }
+        if (countdownLabel) {
+            const expiresAt = new Date(data.expires_at);
+            countdownLabel.textContent = getCountdownText(expiresAt, data.payment_status || data.status);
+        }
+        if ((data.payment_status || data.status) !== 'PENDING') {
+            const cancelButton = document.querySelector(`#hamyon-payment-card-${paymentId} button`);
+            if (cancelButton) {
+                cancelButton.remove();
+            }
+        }
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function getCountdownText(expiresAt, status) {
+    const now = new Date();
+    if (!expiresAt || status !== 'PENDING') {
+        return status === 'PENDING' ? 'Yuklanmoqda...' : '—';
+    }
+    const diff = Math.max(0, Math.floor((expiresAt - now) / 1000));
+    if (diff <= 0) {
+        return 'Muddati o'tgan';
+    }
+    const minutes = String(Math.floor(diff / 60)).padStart(2, '0');
+    const seconds = String(diff % 60).padStart(2, '0');
+    return `${minutes}:${seconds}`;
+}
+
+function initializeHamyonCountdowns() {
+    const nodes = document.querySelectorAll('[id^="hamyon-payment-data-"]');
+    nodes.forEach(node => {
+        const paymentId = node.dataset.paymentId;
+        const expiresAt = node.dataset.expiresAt ? new Date(node.dataset.expiresAt) : null;
+        const status = node.dataset.status || 'PENDING';
+        const countdownLabel = document.getElementById(`hamyon-countdown-${paymentId}`);
+        if (countdownLabel) {
+            countdownLabel.textContent = getCountdownText(expiresAt, status);
+        }
+    });
+}
+
+function scheduleHamyonRefresh() {
+    const ids = Array.from(document.querySelectorAll('[id^="hamyon-payment-data-"]')).map(el => el.dataset.paymentId);
+    if (!ids.length) {
+        return;
+    }
+
+    setInterval(() => {
+        ids.forEach(paymentId => refreshPaymentCard(paymentId));
+    }, 5000);
+}
+
+initializeHamyonCountdowns();
+scheduleHamyonRefresh();
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/hamyon-payment.css' %}">
+<link rel="stylesheet" href="{% static 'css/wallet-premium.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/hamyon-payment-controller.js' %}"></script>
+<script>
+const walletHamyonController = new HamyonPaymentController({
+    createUrl: '{% url "payments:hamyon_create" %}',
+    timelineSteps: [
+        { key: 'waiting', label: "To'lov kutilmoqda" },
+        { key: 'processing', label: 'Balans yangilanmoqda' },
+        { key: 'completed', label: 'Tugallandi' },
+    ],
+    onSuccess: () => {
+        if (typeof Toast !== 'undefined') new Toast("Hisobingiz muvaffaqiyatli to'ldirildi.", 'success');
+        setTimeout(() => window.location.reload(), 1500);
+    },
+});
+
+document.getElementById('walletHamyonStartBtn')?.addEventListener('click', async () => {
+    const minTopup = {{ min_topup_amount|default:5000 }};
+    const amount = document.getElementById('hamyonTopupAmount')?.value;
+    if (!amount || Number(amount) < minTopup) {
+        alert(`Minimal summa ${minTopup.toLocaleString('uz-UZ')} so'm`);
+        return;
+    }
+    const btn = document.getElementById('walletHamyonStartBtn');
+    btn.disabled = true;
+    try {
+        document.getElementById('hamyon-modal')?.classList.add('hidden');
+        const formData = new FormData();
+        formData.append('amount', amount);
+        formData.append('purpose', 'WALLET_TOPUP');
+        formData.append('format', 'json');
+        await walletHamyonController.start(formData, {
+            title: "Hamyon To'lovi",
+            subtitle: 'Balans to\'ldirish',
+            serviceLabel: 'Hamyon balansi',
+            amountLabel: `${amount} UZS`,
+        });
+    } catch (error) {
+        alert(error.message || "Hamyon to'lovini yaratishda xatolik");
+    } finally {
+        btn.disabled = false;
+    }
+});
+</script>
 {% endblock %}

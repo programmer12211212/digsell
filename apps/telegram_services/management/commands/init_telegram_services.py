@@ -92,7 +92,7 @@ class Command(BaseCommand):
         
         # Stars Products
         stars_products = [
-            {'sku': 'stars_50', 'name': '50 Telegram Stars', 'quantity': 50, 'price': 12000, 'featured': True},
+            {'sku': 'stars_50', 'name': '50 Telegram Stars', 'quantity': 50, 'price': 1500, 'featured': True},
             {'sku': 'stars_100', 'name': '100 Telegram Stars', 'quantity': 100, 'price': 22000, 'featured': True},
             {'sku': 'stars_250', 'name': '250 Telegram Stars', 'quantity': 250, 'price': 52000, 'featured': False},
             {'sku': 'stars_500', 'name': '500 Telegram Stars', 'quantity': 500, 'price': 100000, 'featured': True},

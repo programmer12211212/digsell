@@ -35,7 +35,7 @@
                     <div class="px-4 py-1.5 rounded-full bg-primary-500 text-slate-950 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary-500/20">
                         LEVEL {{ user_obj.loyalty_level }}
                     </div>
-                    {% if user_obj.role == 'SELLER' %}
+                    {% if user_obj.is_seller_approved %}
                     <div class="px-4 py-1.5 rounded-full bg-slate-900 border border-emerald-500/30 text-emerald-500 text-[10px] font-black uppercase tracking-widest">
                         VERIFIED SELLER
                     </div>

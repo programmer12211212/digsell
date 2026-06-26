@@ -20,9 +20,7 @@ class CourseListView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        return Video.objects.filter(
-            is_active=True, product_type='VIDEO'
-        ).select_related('seller', 'category')
+        return Video.objects.published().filter(product_type='VIDEO').select_related('seller', 'category')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -34,6 +32,12 @@ class CourseDetailView(DetailView):
     model = Video
     template_name = 'videos/course_detail.html'
     context_object_name = 'course'
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        if obj.is_published or self.request.user.is_staff or obj.seller == self.request.user:
+            return obj
+        raise Http404('Mahsulot topilmadi yoki ko‘rish huquqiga ega emassiz.')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -135,36 +139,46 @@ def serve_hls_segment(request, slug, segment):
 @require_POST
 def course_purchase(request, slug):
     video = get_object_or_404(Video, slug=slug)
-    
-    # Check if already purchased
+    if not video.is_published and video.seller != request.user and not request.user.is_staff:
+        messages.error(request, "Mahsulot hozirda sotuvga chiqmagan.")
+        return redirect('core:dashboard')
+
     if VideoPurchase.objects.filter(user=request.user, product=video).exists():
         messages.info(request, "Siz ushbu kursni allaqachon sotib olgansiz.")
         return redirect('videos:course_watch', slug=video.slug)
-    
-    wallet, _ = Wallet.objects.get_or_create(user=request.user)
-    
-    if wallet.balance < video.price:
-        messages.error(request, "Balansingizda mablag' yetarli emas. Iltimos, hisobingizni to'ldiring.")
-        return redirect('payments:wallet')
-        
-    # Process payment
-    wallet.balance -= video.price
-    wallet.save()
-    
-    WalletTransaction.objects.create(
-        wallet=wallet, 
-        amount=video.price, 
-        tx_type='OUT', 
-        reason=f"Kurs xaridi: {video.title}"
+
+    from apps.payments.wallet_services import WalletPurchaseService
+
+    wants_json = (
+        'application/json' in request.headers.get('Accept', '')
+        or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
     )
-    
-    VideoPurchase.objects.create(
-        user=request.user,
-        product=video,
-        amount=video.price,
-        payment_status=VideoPurchase.PaymentStatus.PAID
+
+    def deliver():
+        VideoPurchase.objects.create(
+            user=request.user,
+            product=video,
+            amount=video.price,
+            payment_status=VideoPurchase.PaymentStatus.PAID,
+        )
+
+    result = WalletPurchaseService.purchase(
+        request.user,
+        video.price,
+        deliver,
+        description=f"Kurs xaridi: {video.title}",
+        reference=video.slug,
     )
-    
-    messages.success(request, f"Tabriklaymiz! {video.title} kursi muvaffaqiyatli sotib olindi.")
-    return redirect('videos:course_watch', slug=video.slug)
+
+    if wants_json:
+        if result.get('success'):
+            result['redirect_url'] = f'/videos/course/{video.slug}/watch/'
+        return JsonResponse(result, status=200 if result.get('success') else 402)
+
+    if result.get('success'):
+        messages.success(request, f"Tabriklaymiz! {video.title} kursi muvaffaqiyatli sotib olindi.")
+        return redirect('videos:course_watch', slug=video.slug)
+
+    messages.error(request, result.get('message', "Balansingizda mablag' yetarli emas."))
+    return redirect('payments:wallet')
 

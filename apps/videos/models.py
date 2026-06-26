@@ -18,12 +18,27 @@ class CourseCategory(models.Model):
         return self.name
 
 
+class VideoQuerySet(models.QuerySet):
+    def published(self):
+        return self.filter(
+            is_active=True,
+            moderation_status=Video.ModerationStatus.APPROVED,
+        )
+
+
 class Video(models.Model):
     class ProductType(models.TextChoices):
         PHYSICAL = 'PHYSICAL', 'Physical Product'
         DIGITAL = 'DIGITAL', 'Digital File (PDF/ZIP/EXE)'
         VIDEO_COURSE = 'VIDEO', 'Premium Video Course'
         SERVICE = 'SERVICE', 'Professional Service'
+
+    class ModerationStatus(models.TextChoices):
+        PENDING = 'PENDING', 'Pending Review'
+        APPROVED = 'APPROVED', 'Approved'
+        REJECTED = 'REJECTED', 'Rejected'
+        CHANGES_REQUESTED = 'CHANGES_REQUESTED', 'Changes Requested'
+        SUSPENDED = 'SUSPENDED', 'Suspended'
 
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
@@ -41,6 +56,10 @@ class Video(models.Model):
 
     price = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     discount_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    tags = models.CharField(max_length=255, blank=True, default='')
+    demo_url = models.URLField(blank=True, null=True)
+    seo_title = models.CharField(max_length=255, blank=True)
+    seo_description = models.TextField(blank=True, default='')
 
     thumbnail = models.ImageField(upload_to='thumbnails/%Y/%m/', blank=True, null=True)
     preview_video = models.FileField(upload_to='previews/%Y/%m/', null=True, blank=True)
@@ -53,8 +72,21 @@ class Video(models.Model):
     avg_rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0, db_column='rating')
 
     is_active = models.BooleanField(default=True)
+    moderation_status = models.CharField(
+        max_length=20,
+        choices=ModerationStatus.choices,
+        default=ModerationStatus.APPROVED,
+    )
+    moderation_feedback = models.TextField(blank=True, default='')
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = VideoQuerySet.as_manager()
+
+    @property
+    def is_published(self):
+        return self.is_active and self.moderation_status == self.ModerationStatus.APPROVED
 
     def __str__(self):
         return self.title

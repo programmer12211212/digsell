@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import TemplateView
 from .views import (
     DashboardView, PurchasesListView, HomeView,
     order_tracking, download_purchase, download_digital_product, wallet_history,
@@ -17,4 +18,7 @@ urlpatterns = [
     path("purchases/track/<uuid:order_id>/", order_tracking, name="order_tracking"),
     path("purchases/download/<uuid:order_id>/", download_purchase, name="download_purchase"),
     path("downloads/<int:product_id>/", download_digital_product, name="download_digital"),
+    path("terms/", TemplateView.as_view(template_name="core/terms.html"), name="terms"),
+    path("privacy/", TemplateView.as_view(template_name="core/privacy.html"), name="privacy"),
+    path("contact/", TemplateView.as_view(template_name="core/contact.html"), name="contact"),
 ]

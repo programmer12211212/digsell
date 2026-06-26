@@ -110,16 +110,32 @@ def toggle_follow(request, user_id):
 def seller_apply(request):
     """View for users to submit seller application."""
     existing = SellerApplication.objects.filter(user=request.user).order_by('-created_at').first()
+
+    if existing and existing.status == SellerApplication.Status.APPROVED:
+        messages.info(request, 'Siz allaqachon tasdiqlangan sotuvchisiz.')
+        return redirect('core:dashboard')
+
     if request.method == 'POST':
-        form = SellerApplicationForm(request.POST, request.FILES)
+        form = SellerApplicationForm(request.POST, request.FILES, instance=existing)
         if form.is_valid():
             app = form.save(commit=False)
             app.user = request.user
+            if existing and existing.status in (
+                SellerApplication.Status.REJECTED,
+                SellerApplication.Status.CHANGES_REQUESTED,
+            ):
+                app.status = SellerApplication.Status.PENDING
+                app.admin_note = ''
+            elif not existing:
+                app.status = SellerApplication.Status.PENDING
             app.save()
             messages.success(request, 'Sizning arizangiz yuborildi. Admin tasdiqlashini kuting.')
             return redirect('core:dashboard')
     else:
-        form = SellerApplicationForm(instance=existing)
+        initial = {}
+        if not existing:
+            initial['email'] = request.user.email
+        form = SellerApplicationForm(instance=existing, initial=initial)
 
     return render(request, 'users/seller_apply.html', {
         'form': form,

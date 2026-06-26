@@ -12,6 +12,7 @@ from apps.videos.models import Video, CourseCategory, VideoPurchase, VideoReview
 from apps.orders.models import Order, OrderItem, Cart, CartItem, Coupon
 from apps.users.models import Wallet, WalletTransaction
 from apps.payments.models import CompanyCard
+from apps.payments.wallet_services import WalletPurchaseService
 from apps.marketing.models import Promocode, BonusRule
 
 
@@ -22,7 +23,7 @@ class ProductListView(ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = Video.objects.filter(is_active=True).select_related('seller', 'category')
+        queryset = Video.objects.published().select_related('seller', 'category')
         q = self.request.GET.get('q')
         cat = self.request.GET.get('category')
         min_price = self.request.GET.get('min_price')
@@ -59,7 +60,7 @@ class ProductListView(ListView):
 
 
 def product_detail(request, slug):
-    product = get_object_or_404(Video, slug=slug, is_active=True)
+    product = get_object_or_404(Video.objects.published(), slug=slug)
     product.views_count += 1
     product.save(update_fields=['views_count'])
 
@@ -74,8 +75,8 @@ def product_detail(request, slug):
 
     reviews = product.reviews.select_related('user').order_by('-created_at')[:20]
 
-    related = Video.objects.filter(
-        category=product.category, is_active=True
+    related = Video.objects.published().filter(
+        category=product.category
     ).exclude(id=product.id)[:4]
 
     return render(request, "marketplace/product_detail.html", {
@@ -91,7 +92,7 @@ def product_detail(request, slug):
 @login_required
 @require_POST
 def submit_review(request, product_id):
-    product = get_object_or_404(Video, id=product_id, is_active=True)
+    product = get_object_or_404(Video.objects.published(), id=product_id)
     rating = int(request.POST.get('rating', 5))
     comment = request.POST.get('comment', '').strip()
     if not comment:
@@ -129,7 +130,7 @@ def cart_view(request):
 @login_required
 @require_POST
 def add_to_cart(request, product_id):
-    product = get_object_or_404(Video, id=product_id, is_active=True)
+    product = get_object_or_404(Video.objects.published(), id=product_id)
     cart = _get_or_create_cart(request.user)
     item, created = CartItem.objects.get_or_create(cart=cart, product=product, saved_for_later=False)
     if not created:
@@ -176,7 +177,7 @@ def save_for_later(request, item_id):
 
 @login_required
 def create_order(request, product_id):
-    product = get_object_or_404(Video, id=product_id, is_active=True)
+    product = get_object_or_404(Video.objects.published(), id=product_id)
     price = product.discount_price or product.price
     commission = (price * Decimal('0.10')).quantize(Decimal('0.01'))
 
@@ -231,20 +232,30 @@ def payment_page(request, order_id):
         return redirect('core:order_tracking', order_id=order.id)
 
     if request.method == 'POST':
+        wants_json = (
+            'application/json' in request.headers.get('Accept', '')
+            or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        )
+
         if 'pay_from_balance' in request.POST:
-            if wallet.balance >= order.final_amount:
-                wallet.balance -= order.final_amount
-                wallet.save()
-                WalletTransaction.objects.create(
-                    wallet=wallet,
-                    amount=order.final_amount,
-                    tx_type='OUT',
-                    reason=f"Buyurtma #{order.id}",
-                )
-                _complete_order(order, request.user)
+            result = WalletPurchaseService.purchase_marketplace_order(
+                request.user,
+                order,
+                _complete_order,
+            )
+            if wants_json:
+                if result.get('success'):
+                    from django.urls import reverse
+                    result['redirect_url'] = reverse('core:order_tracking', kwargs={'order_id': order.id})
+                status_code = 200 if result.get('success') else 402
+                return JsonResponse(result, status=status_code)
+
+            if result.get('success'):
                 messages.success(request, "To'lov muvaffaqiyatli amalga oshirildi!")
                 return redirect('core:order_tracking', order_id=order.id)
-            messages.error(request, "Balans yetarli emas.")
+
+            messages.error(request, result.get('message', "Balans yetarli emas."))
+            return redirect('marketplace:payment_page', order_id=order.id)
 
         elif request.FILES.get('receipt_image'):
             order.receipt_image = request.FILES['receipt_image']
@@ -455,7 +466,7 @@ def wishlist_view(request):
 @require_POST
 def toggle_wishlist(request, product_id):
     from apps.marketplace.models import VideoWishlist
-    product = get_object_or_404(Video, id=product_id, is_active=True)
+    product = get_object_or_404(Video.objects.published(), id=product_id)
     wishlist, created = VideoWishlist.objects.get_or_create(user=request.user, video=product)
     if not created:
         wishlist.delete()

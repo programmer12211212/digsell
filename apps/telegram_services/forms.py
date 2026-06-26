@@ -91,12 +91,6 @@ class ProductFilterForm(forms.Form):
 
 class PaymentConfirmationForm(forms.Form):
     """Form for payment confirmation"""
-    
-    payment_screenshot = forms.ImageField(
-        required=False,
-        widget=forms.FileInput(attrs={'class': 'form-control'})
-    )
-    
     confirmation_note = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={

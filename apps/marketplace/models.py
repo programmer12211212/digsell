@@ -7,6 +7,9 @@ class Category(models.Model):
     slug = models.SlugField(unique=True, blank=True)
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='children')
     icon = models.CharField(max_length=50, help_text="Lucide icon name", blank=True, null=True)
+    description = models.TextField(blank=True, default='')
+    display_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -37,23 +40,37 @@ class Product(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
+    short_description = models.TextField(blank=True, default='')
     product_type = models.CharField(max_length=20, choices=ProductType.choices)
     
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     
     preview_image = models.ImageField(upload_to="products/previews/")
+    cover_image = models.ImageField(upload_to="products/covers/", blank=True, null=True)
+    gallery = models.JSONField(default=list, blank=True)
     demo_url = models.URLField(blank=True, null=True)
+    
+    language = models.CharField(max_length=50, blank=True)
+    framework = models.CharField(max_length=50, blank=True)
+    file_size = models.CharField(max_length=50, blank=True)
     
     tags = models.CharField(max_length=255, help_text="Comma separated tags")
     
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
+    featured = models.BooleanField(default=False)
+    popular = models.BooleanField(default=False)
+    downloads = models.PositiveIntegerField(default=0)
     
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.00)
     is_sold = models.BooleanField(default=False)
     sales_count = models.PositiveIntegerField(default=0)
     view_count = models.PositiveIntegerField(default=0)
+    
+    seo_title = models.CharField(max_length=255, blank=True)
+    seo_description = models.TextField(blank=True, default='')
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

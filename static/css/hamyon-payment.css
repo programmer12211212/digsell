@@ -1,0 +1,167 @@
+/* Unified Hamyon payment modal */
+.hamyon-pay-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(2, 6, 23, 0.92);
+    backdrop-filter: blur(12px);
+}
+
+.hamyon-pay-modal {
+    width: 100%;
+    max-width: 28rem;
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(165deg, #060b17 0%, #091221 48%, #0c1528 100%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45), 0 0 25px rgba(0, 162, 255, 0.15);
+    overflow: hidden;
+}
+
+.hamyon-pay-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.hamyon-pay-modal__body {
+    padding: 1.25rem 1.5rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.hamyon-pay-details {
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    font-size: 0.875rem;
+}
+
+.hamyon-pay-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.hamyon-pay-row strong {
+    color: #fff;
+    font-weight: 700;
+    text-align: right;
+}
+
+.hamyon-pay-card-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(0, 0, 0, 0.35);
+}
+
+.hamyon-pay-card-box code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    color: #fff;
+}
+
+.hamyon-pay-status {
+    border-radius: 1rem;
+    border: 1px solid rgba(251, 191, 36, 0.15);
+    background: rgba(251, 191, 36, 0.08);
+    padding: 0.875rem 1rem;
+}
+
+.hamyon-pay-status__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.hamyon-pay-status__text {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fcd34d;
+}
+
+.hamyon-pay-status__text.is-error { color: #fb7185; }
+.hamyon-pay-status__text.is-success { color: #34d399; }
+.hamyon-pay-status__text.is-processing { color: #7dd3fc; }
+
+.hamyon-pay-countdown {
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.hamyon-pay-hint {
+    font-size: 0.625rem;
+    line-height: 1.5;
+    color: rgba(254, 243, 199, 0.65);
+}
+
+.hamyon-pay-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.hamyon-pay-btn {
+    flex: 1;
+    height: 2.75rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.hamyon-pay-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.hamyon-pay-btn:active { transform: scale(0.98); }
+.hamyon-pay-btn--ghost { color: rgba(255, 255, 255, 0.75); }
+
+.hamyon-pay-timeline {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.hamyon-pay-step {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.45);
+}
+
+.hamyon-pay-step.is-active { color: #7dd3fc; font-weight: 700; }
+.hamyon-pay-step.is-done { color: #34d399; }
+
+.hamyon-pay-step-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: currentColor;
+    flex-shrink: 0;
+}

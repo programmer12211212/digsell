@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="rounded-3xl bg-slate-950/90 border border-slate-800 p-8 shadow-2xl shadow-slate-950/20">
+        <h1 class="text-3xl font-bold text-white">Privacy Policy</h1>
+        <p class="mt-4 text-slate-300 leading-8">We collect and process personal data only to deliver services, protect accounts, and improve your experience. This page explains how we handle information and your rights.</p>
+    </div>
+
+    <div class="grid gap-6 lg:grid-cols-2">
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">Data we collect</h2>
+            <p class="mt-3 text-slate-300">We collect information such as your name, email address, phone number, and account activity to operate the service safely and communicate with you.</p>
+        </section>
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">How we use data</h2>
+            <p class="mt-3 text-slate-300">Your data is used for account management, payment processing, support, and personalized recommendations. We do not sell your personal information.</p>
+        </section>
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">Security</h2>
+            <p class="mt-3 text-slate-300">We use reasonable technical measures to protect your data from unauthorized access and disclosure.</p>
+        </section>
+        <section class="rounded-3xl bg-slate-950/90 border border-slate-800 p-6">
+            <h2 class="text-xl font-semibold text-white">Your rights</h2>
+            <p class="mt-3 text-slate-300">You can request access, correction, or deletion of your personal data through your account settings or by contacting support.</p>
+        </section>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="rounded-3xl border border-slate-800 bg-slate-950/70 p-8 text-center">
+        <h3 class="text-2xl font-bold text-white mb-3">Sizning huquqlar qayta bildir?</h3>
+        <p class="text-slate-400 mb-6">Ma'lumotlar to'g'risidagi barcha so'rovlar uchun bizni bog'laning.</p>
+        <a href="/contact/" title="Bog'lanish sahifasiga o'tish" aria-label="Bog'lanish sahifasiga o'tish" class="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white rounded-xl font-semibold hover:bg-primary-600 transition">
+            <i data-lucide="mail" class="w-4 h-4"></i>
+            Biz bilan bog'laning
+        </a>
+    </div>
+</div>
+{% endblock %}

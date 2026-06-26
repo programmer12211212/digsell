@@ -88,6 +88,7 @@ INSTALLED_APPS = [
     'apps.marketing',
     'apps.adminpanel',
     'apps.telegram_services.apps.TelegramServicesConfig',
+    'apps.advertisements.apps.AdvertisementsConfig',
 ]
 
 SITE_ID = 1
@@ -95,6 +96,7 @@ SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'apps.core.middleware.SessionInterruptedMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -125,6 +127,9 @@ TEMPLATES = [
                 'apps.notifications.context_processors.notifications_ctx',
                 'apps.marketing.context_processors.advertisements_ctx',
                 'apps.core.context_processors.branding_ctx',
+            ],
+            'builtins': [
+                'apps.core.templatetags.custom_filters',
             ],
         },
     },
@@ -406,6 +411,18 @@ ACCOUNT_AUTHENTICATED_LOGIN_REDIRECTS = True
 # Celery (background tasks)
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default=CELERY_BROKER_URL)
+CELERY_BEAT_SCHEDULE = {
+    'payments.check_pending_hamyon_payments': {
+        'task': 'apps.payments.tasks.check_pending_hamyon_payments',
+        'schedule': timedelta(seconds=env.int('HAMYON_STATUS_CHECK_INTERVAL', default=10)),
+    },
+}
+
+# Hamyon API settings
+HAMYON_API_URL = env('HAMYON_API_URL', default='https://hamyon-api.uz')
+HAMYON_SHOP_ID = env('HAMYON_SHOP_ID', default='')
+HAMYON_SHOP_KEY = env('HAMYON_SHOP_KEY', default='')
+HAMYON_API_TIMEOUT = env.int('HAMYON_API_TIMEOUT', default=15)
 
 # X-Accel / sendfile support: when True, views will set X-Accel-Redirect for nginx
 USE_X_ACCEL_REDIRECT = env.bool('USE_X_ACCEL_REDIRECT', default=False)
@@ -441,3 +458,37 @@ else:
             'CONFIG': {'hosts': [REDIS_URL]},
         },
     }
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'apps': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}

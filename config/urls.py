@@ -29,6 +29,7 @@ urlpatterns = [
     path('seller/', include('apps.videos.seller_urls')),
     path('admin-console/', include('apps.adminpanel.urls')),
     path('telegram-services/', include('apps.telegram_services.urls')),
+    path('ads/', include('apps.advertisements.urls')),
 ]
 
 if settings.DEBUG:
